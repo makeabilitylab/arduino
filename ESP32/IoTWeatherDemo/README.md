@@ -1,0 +1,1 @@
+The full tutorial can be found in the following Google Doc: https://docs.google.com/document/d/1VUGFmX0t2AkmVuapwaWO3dm5uPoV5QN2RXnja-HRu9g/edit?usp=sharing
