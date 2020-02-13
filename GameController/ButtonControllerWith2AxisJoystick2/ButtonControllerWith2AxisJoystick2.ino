@@ -1,6 +1,8 @@
 
 /*
  * TODO
+ * Originally written for the Parallax 2-Axis Joystick (https://www.adafruit.com/product/245)
+ * but should work with other analog joystick inputs
  * 
  * References
  *  - https://www.arduino.cc/en/Reference.MouseKeyboard
@@ -19,6 +21,7 @@ const int BUTTON_RIGHT_PIN = 3;
 const int BUTTON_DOWN_PIN = 4;
 const int BUTTON_LEFT_PIN = 5;
 const int BUTTON_SPACEBAR_PIN = 6;
+const int BUTTON_MOUSE_TOGGLE_PIN = 7;
 
 const int JOYSTICK_UPDOWN_PIN = A0;
 const int JOYSTICK_LEFTRIGHT_PIN = A1;
@@ -26,7 +29,11 @@ const boolean JOYSTICK_FLIP_XY = true;
 
 const int MAX_ANALOG_VAL = 1023;
 const int JOYSTICK_CENTER_VALUE = int(MAX_ANALOG_VAL / 2);
-const int JOYSTICK_MOVEMENT_THRESHOLD = 10;
+
+// Sets the overall amount of movement in either X or Y direction
+// that will trigger the Arduino board *sending* a Mouse.move()
+// command to the computer
+const int JOYSTICK_MOVEMENT_THRESHOLD = 12; 
 
 // Sets the overall mouse sensitivity based on joystick movement
 // a higher value will move the mouse more with joystick movement
@@ -37,6 +44,8 @@ boolean isUpKeyPressed = false;
 boolean isRightKeyPressed = false;
 boolean isDownKeyPressed = false;
 boolean isLeftKeyPressed = false;
+boolean isMouseActive = true;
+int prevButtonMouseToggleVal = HIGH;
 
 void setup() {
   pinMode(BUTTON_UP_PIN, INPUT_PULLUP);
@@ -44,6 +53,7 @@ void setup() {
   pinMode(BUTTON_DOWN_PIN, INPUT_PULLUP);
   pinMode(BUTTON_LEFT_PIN, INPUT_PULLUP);
   pinMode(BUTTON_SPACEBAR_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_MOUSE_TOGGLE_PIN, INPUT_PULLUP);
 
   // Turn on serial for debugging
   Serial.begin(9600); 
@@ -57,7 +67,19 @@ void loop() {
   int buttonDownVal = digitalRead(BUTTON_DOWN_PIN);
   int buttonLeftVal = digitalRead(BUTTON_LEFT_PIN);
   int buttonSpaceBarVal = digitalRead(BUTTON_SPACEBAR_PIN);
-  int numButtonsPressed = 0;
+  int buttonMouseToggleVal = digitalRead(BUTTON_MOUSE_TOGGLE_PIN);
+
+  if(buttonMouseToggleVal != prevButtonMouseToggleVal){
+    if(buttonMouseToggleVal == LOW && isMouseActive == false){
+      Serial.println("*** Activating mouse! ***");
+      isMouseActive = true;
+      Mouse.begin();
+    }else if(buttonMouseToggleVal == LOW && isMouseActive == true){
+      Serial.println("*** Deactivating mouse! ***");
+      isMouseActive = false;
+      Mouse.end();
+    }
+  }
 
   /** HANDLE JOYSTICK INPUT AS MOUSE **/
   int joystickUpDownVal = analogRead(JOYSTICK_UPDOWN_PIN);
@@ -66,22 +88,23 @@ void loop() {
   // If hooked up on the breadboard, we typically have to
   // flip the axes to get everything to fit and work together
   if(JOYSTICK_FLIP_XY == true){
-    int tmpXY = joystickLeftRightVal;
+    int tmpX = joystickLeftRightVal;
     joystickLeftRightVal = joystickUpDownVal;
-    joystickUpDownVal = MAX_ANALOG_VAL - tmpXY;
+    joystickUpDownVal = MAX_ANALOG_VAL - tmpX;
   }
-  
-  Serial.print("joystickUpDownVal: ");
-  Serial.print(joystickUpDownVal);
-  Serial.print(" joystickLeftRightVal: ");
-  Serial.println(joystickLeftRightVal);
+
+  Serial.print("joystickLeftRightVal: ");
+  Serial.print(joystickLeftRightVal);
+  Serial.print(" joystickUpDownVal: ");
+  Serial.println(joystickUpDownVal);
 
   int yDistFromCenter = joystickUpDownVal - JOYSTICK_CENTER_VALUE;
   int xDistFromCenter = joystickLeftRightVal - JOYSTICK_CENTER_VALUE;
-  Serial.print("yDistFromCenter: ");
-  Serial.print(yDistFromCenter);
-  Serial.print(" xDistFromCenter: ");
-  Serial.println(xDistFromCenter);    
+  
+  Serial.print("xDistFromCenter: ");
+  Serial.print(xDistFromCenter);    
+  Serial.print(" yDistFromCenter: ");
+  Serial.println(yDistFromCenter);
 
   int yMouse = 0, xMouse = 0;
   if(abs(yDistFromCenter) > JOYSTICK_MOVEMENT_THRESHOLD){
@@ -92,10 +115,13 @@ void loop() {
     xMouse = map(joystickLeftRightVal, 0, MAX_ANALOG_VAL, -MAX_MOUSE_MOVE_VAL, MAX_MOUSE_MOVE_VAL);
   }
 
-  Mouse.move(xMouse, yMouse, 0);        
+  if(isMouseActive){
+    Mouse.move(xMouse, yMouse, 0);
+  }        
 
   /** HANDLE BUTTON INPUT AS KEYBOARD **/
-
+  int numButtonsPressed = 0;
+  
   // List of non-alphanumerica keys:
   //  - https://www.arduino.cc/en/Reference/KeyboardModifiers
   if(buttonUpVal == LOW){
@@ -154,4 +180,5 @@ void loop() {
   if(numButtonsPressed > 0){
     Serial.println();
   }
+  prevButtonMouseToggleVal = buttonMouseToggleVal;
 }
