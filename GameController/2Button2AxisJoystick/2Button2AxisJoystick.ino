@@ -2,6 +2,10 @@
 /*
  * TODO
  * 
+ * Originally written for the Adafruit 2-Axis Joystick (https://www.adafruit.com/product/512)
+ * with the select button (press down on joystick for select) but should work with any other analog 
+ * inputs tied to A0 and A1 to control the x and y movements of the mouse, respectively.
+ * 
  * References
  *  - https://www.arduino.cc/en/Reference.MouseKeyboard
  *  - https://www.arduino.cc/reference/en/language/functions/usb/keyboard/keyboardpress/
@@ -68,7 +72,20 @@ void setup() {
 
   // Activate mouse and keyboard
   Keyboard.begin();
-  //Mouse.begin();
+  activateMouse(true);
+}
+
+void activateMouse(boolean turnMouseOn){
+  if(turnMouseOn){
+    Serial.println("*** Activating mouse! ***"); 
+    Mouse.begin();
+  }else{
+    Serial.println("*** Deactivating mouse! ***");
+    isMouseActive = false;
+    Mouse.end();
+  }
+
+  isMouseActive = turnMouseOn;
 }
 
 void loop() {
@@ -78,13 +95,9 @@ void loop() {
   // Check to see if we should activate the mouse
   if(buttonMouseToggleVal != prevButtonMouseToggleVal){
     if(buttonMouseToggleVal == LOW && isMouseActive == false){
-      Serial.println("*** Activating mouse! ***");
-      isMouseActive = true;
-      Mouse.begin();
+      activateMouse(true);
     }else if(buttonMouseToggleVal == LOW && isMouseActive == true){
-      Serial.println("*** Deactivating mouse! ***");
-      isMouseActive = false;
-      Mouse.end();
+      activateMouse(false);
     }
   }
 
