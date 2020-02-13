@@ -1,6 +1,11 @@
 
-/*
- * TODO
+/* Converts digital input to keyboard input. Specifically, uses digital input on pins 
+ * 2, 3, 4, 5, 6 for UP_ARROW, RIGHT_ARROW, DOWN_ARROW, LEFT_ARROW, and SPACE BAR respectively 
+ * on the keyboard. All digital input is assumed to use the Arduino's internal pull-up resistors
+ *  
+ * This sketch should work with any 32u4- or SAMD-based boards like the Arduino
+ * Leondardo, Esplora, Zero, Due, which can appear as a native mouse and/or keyboard
+ * when connected to the computer via USB.
  * 
  * References
  *  - https://www.arduino.cc/en/Reference.MouseKeyboard
