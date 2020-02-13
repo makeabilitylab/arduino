@@ -1,10 +1,21 @@
 
-/*
- * TODO
+/* Converts analog input on A0 and A1 to control the x and y movements of the mouse
+ * Uses digital input on pins 2, 3, and 4 for mouse press and two controllable
+ * keyboard presses (currently assigned to the key 'a' and 'b' respectively to
+ * mimic the original NES8 controllers).
+ * 
+ * The last digital input on pin 5 is used to toggle through three joystick states:
+ *   1. OFF: the joystick is off and does not control the mouse
+ *   2. MOUSE: the joystick is used to control the mouse
+ *   3. KEYBOARD: the joystick is used to control UP, DOWN, LEFT, and RIGHT arrow keys
  * 
  * Originally written for the Adafruit 2-Axis Joystick (https://www.adafruit.com/product/512)
  * with the select button (press down on joystick for select) but should work with any other analog 
  * inputs tied to A0 and A1 to control the x and y movements of the mouse, respectively.
+ * 
+ * This sketch is compatible with any 32u4- or SAMD-based boards like the Arduino
+ * Leondardo, Esplora, Zero, Due, which can appear as a native mouse and/or keyboard
+ * when connected to the computer via USB.
  * 
  * References
  *  - https://www.arduino.cc/en/Reference.MouseKeyboard
@@ -27,7 +38,6 @@ const int BUTTON_MOUSE_TOGGLE_PIN = 5;
 // Analog in pins
 const int JOYSTICK_XOUT_PIN = A0;
 const int JOYSTICK_YOUT_PIN = A1;
-const boolean JOYSTICK_FLIP_XY = false;
 
 // The joysticks orientation with respect to the user
 // We need this because sometimes we have to place a joystick

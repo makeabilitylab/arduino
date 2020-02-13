@@ -71,8 +71,13 @@ void loop() {
     Keyboard.print(xVal);
     Keyboard.print(",");
     Keyboard.println(yVal);
+
+    // for debugging
+    Serial.print(xVal);
+    Serial.print(",");
+    Serial.println(yVal);
   }
   
-  delay(5000);
+  delay(100);
   prevKeyboardToggleVal = keyboardToggleVal;
 }
