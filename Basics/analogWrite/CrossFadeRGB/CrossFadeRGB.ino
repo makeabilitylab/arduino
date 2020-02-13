@@ -2,12 +2,13 @@
  * This example fades the colors of the RGB LED
  * 
  * By Jon Froehlich
+ * @jonfroehlich
  * http://makeabilitylab.io
  * 
  * Adapted from https://learn.adafruit.com/adafruit-arduino-lesson-3-rgb-leds?view=all
  */
 
-// Change this to 0 if you are working with a common cathode RGB LED
+// Change this to false if you are working with a common cathode RGB LED
 // We purchased common anode RGB LEDs for class: https://www.adafruit.com/product/159
 const boolean COMMON_ANODE = true; 
 

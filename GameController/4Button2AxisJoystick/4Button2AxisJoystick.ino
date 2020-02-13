@@ -1,9 +1,19 @@
 
-/*
- * TODO
+/* Converts analog input on A0 and A1 to control the x and y movements of the mouse
+ * Uses digital input on pins 2, 3, 4, 5, 6 for UP_ARROW, RIGHT_ARROW, DOWN_ARROW, 
+ * LEFT_ARROW, and SPACE BAR respectively on the keyboard. 
+ * 
+ * Digital input on pin 7 toggles the joystick on and off.
+ * 
+ * All digital input is assumed to use the Arduino's internal pull-up resistors
+ * 
  * Originally written for the Parallax 2-Axis Joystick (https://www.adafruit.com/product/245)
  * but should work with any other analog inputs tied to A0 and A1 to control the x and y movements 
  * of the mouse, respectively.
+ * 
+ * This sketch is compatible with any 32u4- or SAMD-based boards like the Arduino
+ * Leondardo, Esplora, Zero, Due, which can appear as a native mouse and/or keyboard
+ * when connected to the computer via USB.
  * 
  * References
  *  - https://www.arduino.cc/en/Reference.MouseKeyboard
