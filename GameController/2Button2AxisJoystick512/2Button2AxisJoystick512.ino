@@ -16,14 +16,26 @@
 
 // Digital in pins
 const int BUTTON_JOYSTICK_SEL_PIN = 2;
-const int BUTTON_A_PIN = 3;
-const int BUTTON_B_PIN = 4;
+const int BUTTON_1_PIN = 3;
+const int BUTTON_2_PIN = 4;
 const int BUTTON_MOUSE_TOGGLE_PIN = 5;
 
 // Analog in pins
 const int JOYSTICK_XOUT_PIN = A0;
 const int JOYSTICK_YOUT_PIN = A1;
-const boolean JOYSTICK_FLIP_XY = true;
+const boolean JOYSTICK_FLIP_XY = false;
+
+// The joysticks orientation with respect to the user
+// We need this because sometimes we have to place a joystick
+// upside down, etc. in our designs
+enum JoystickYDirection {
+  UP,
+  RIGHT,
+  DOWN,
+  LEFT
+};
+
+enum JoystickYDirection joystickYDir = RIGHT;
 
 const int MAX_ANALOG_VAL = 1023;
 const int JOYSTICK_CENTER_VALUE = int(MAX_ANALOG_VAL / 2);
@@ -33,8 +45,12 @@ const int JOYSTICK_MOVEMENT_THRESHOLD = 10;
 // a higher value will move the mouse more with joystick movement
 const int MAX_MOUSE_MOVE_VAL = 30; 
 
-boolean isAButtonPressed = false;
-boolean isBButtonPressed = false;
+boolean isButton1Pressed = false;
+const char button1Char = 'a';
+
+boolean isButton2Pressed = false;
+const char button2Char = 'b';
+
 boolean isJoystickSelPressed = false;
 int prevJoystickSelPressedVal = HIGH;
 
@@ -43,8 +59,8 @@ int prevButtonMouseToggleVal = HIGH;
 
 void setup() {
   pinMode(BUTTON_JOYSTICK_SEL_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_A_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_B_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_1_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_2_PIN, INPUT_PULLUP);
   pinMode(BUTTON_MOUSE_TOGGLE_PIN, INPUT_PULLUP);
 
   // Turn on serial for debugging
@@ -57,10 +73,9 @@ void setup() {
 
 void loop() {
   int buttonJoystickSelVal = digitalRead(BUTTON_JOYSTICK_SEL_PIN);
-  int buttonAVal = digitalRead(BUTTON_A_PIN);
-  int buttonBVal = digitalRead(BUTTON_B_PIN);
   int buttonMouseToggleVal = digitalRead(BUTTON_MOUSE_TOGGLE_PIN);
 
+  // Check to see if we should activate the mouse
   if(buttonMouseToggleVal != prevButtonMouseToggleVal){
     if(buttonMouseToggleVal == LOW && isMouseActive == false){
       Serial.println("*** Activating mouse! ***");
@@ -77,27 +92,33 @@ void loop() {
   int joystickXVal = analogRead(JOYSTICK_XOUT_PIN);
   int joystickYVal = analogRead(JOYSTICK_YOUT_PIN);
 
-  // If hooked up on the breadboard, we typically have to
-  // flip the axes to get everything to fit and work together
-  if(JOYSTICK_FLIP_XY == true){
+  // If hooked up on the breadboard, we often have to 
+  // install the joystick in a different orientation than
+  // with the Y up direction facing up. The code below
+  // handles the different orientations
+  if(joystickYDir == RIGHT){
     int tmpX = joystickXVal;
     joystickXVal = joystickYVal;
     joystickYVal = MAX_ANALOG_VAL - tmpX;
+  }else if(joystickYDir == DOWN){
+    joystickYVal = MAX_ANALOG_VAL - joystickYVal;
+    joystickXVal = MAX_ANALOG_VAL - joystickXVal;
+  }else if(joystickYDir == LEFT){
+    int tmpX = joystickXVal;
+    joystickXVal = MAX_ANALOG_VAL - joystickYVal;
+    joystickYVal = tmpX;
   }
 
   Serial.print("joystickXVal: ");
   Serial.print(joystickXVal);
   Serial.print(" joystickYVal: ");
   Serial.println(joystickYVal);
- 
+
+  // Check to see if the joystick position has moved a certain
+  // threshold amount beyond its center point for each axis
+  // If so, calculate the movement values respectively
   int yDistFromCenter = joystickYVal - JOYSTICK_CENTER_VALUE;
   int xDistFromCenter = joystickXVal - JOYSTICK_CENTER_VALUE;
- 
-  Serial.print(" xDistFromCenter: ");
-  Serial.print(xDistFromCenter);  
-  Serial.print("yDistFromCenter: ");
-  Serial.println(yDistFromCenter);  
-
   int yMouse = 0, xMouse = 0;
   if(abs(yDistFromCenter) > JOYSTICK_MOVEMENT_THRESHOLD){
     yMouse = map(joystickYVal, 0, MAX_ANALOG_VAL, MAX_MOUSE_MOVE_VAL, -MAX_MOUSE_MOVE_VAL);
@@ -111,41 +132,45 @@ void loop() {
     Mouse.move(xMouse, yMouse, 0);
   }       
 
-  // TODO: investigate whether this joystick selection is using pull up or down
-  // resistor...
+  // Handle the joystick press as a mouse press
   if(prevJoystickSelPressedVal != buttonJoystickSelVal){
-    if(buttonJoystickSelVal == LOW && isJoystickSelPressed == false){ 
-      isJoystickSelPressed = true;
+    if(buttonJoystickSelVal == LOW){ 
       Mouse.press();
-    }else if(buttonJoystickSelVal == LOW && isJoystickSelPressed == true){
-      isJoystickSelPressed = false;
+      Serial.println("** MOUSE PRESS **");
+    }else if(buttonJoystickSelVal == HIGH){
       Mouse.release();
+      Serial.println("** MOUSE RELEASE **");
     }
   }
 
   /** HANDLE BUTTON INPUT AS KEYBOARD **/
+  int button1Val = digitalRead(BUTTON_1_PIN);
+  int button2Val = digitalRead(BUTTON_2_PIN);
   int numButtonsPressed = 0;
 
   // List of non-alphanumerica keys:
   //  - https://www.arduino.cc/en/Reference/KeyboardModifiers
-  if(buttonAVal == LOW){
-    isAButtonPressed = true;
-    Keyboard.press('a');
-    Serial.print("'a': Pressed\t");
+  if(button1Val == LOW){
+    isButton1Pressed = true;
+    Keyboard.press(button1Char);
+    Serial.print("'");
+    Serial.print(button1Char);
+    Serial.print("': Pressed\t");
     numButtonsPressed++;
-  }else if(isAButtonPressed == true && buttonAVal == HIGH){
-    Keyboard.release('a');
-    isAButtonPressed = false;
+  }else if(isButton1Pressed == true && button1Val == HIGH){
+    Keyboard.release(button1Char);
+    isButton1Pressed = false;
   }
 
-  if(buttonBVal == LOW){
-    isBButtonPressed = true;
-    Keyboard.press('b');
-    Serial.print("'b': Pressed\t");
+  if(button2Val == LOW){
+    isButton2Pressed = true;
+    Serial.print("'");
+    Serial.print(button2Char);
+    Serial.print("': Pressed\t");
     numButtonsPressed++;
-  }else if(isBButtonPressed == true && buttonBVal == HIGH){
-    Keyboard.release('b');
-    isBButtonPressed = false;
+  }else if(isButton2Pressed == true && button2Val == HIGH){
+    Keyboard.release(button2Char);
+    isButton2Pressed = false;
   }
   
   delay(50);
