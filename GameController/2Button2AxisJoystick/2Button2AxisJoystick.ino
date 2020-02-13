@@ -41,6 +41,18 @@ enum JoystickYDirection {
 
 enum JoystickYDirection joystickYDir = RIGHT;
 
+// The joystick can be off or can control the mouse or keyboard
+// For the keyboard, the UP movement on the joystick is mapped to the
+// UP ARROW on keyboard, the RIGHT movement on the joystick is mapped
+// to the RIGHT ARROW on the keyboard, etc.
+enum JoystickMode{
+  OFF,
+  MOUSE,
+  KEYBOARD 
+};
+
+enum JoystickMode joystickMode = OFF;
+
 const int MAX_ANALOG_VAL = 1023;
 const int JOYSTICK_CENTER_VALUE = int(MAX_ANALOG_VAL / 2);
 const int JOYSTICK_MOVEMENT_THRESHOLD = 10;
@@ -60,6 +72,11 @@ int prevJoystickSelPressedVal = HIGH;
 
 boolean isMouseActive = false;
 int prevButtonMouseToggleVal = HIGH;
+
+boolean isUpKeyPressed = false;
+boolean isRightKeyPressed = false;
+boolean isDownKeyPressed = false;
+boolean isLeftKeyPressed = false;
 
 void setup() {
   pinMode(BUTTON_JOYSTICK_SEL_PIN, INPUT_PULLUP);
@@ -88,20 +105,32 @@ void activateMouse(boolean turnMouseOn){
   isMouseActive = turnMouseOn;
 }
 
+JoystickMode getNextJoystickMode(){
+  switch(joystickMode){
+    case OFF:
+      Serial.println("** Switching joystick to control MOUSE **");
+      return MOUSE;
+    case MOUSE:
+      Serial.println("** Switching joystick to control KEYBOARD **");
+      return KEYBOARD;
+    default:
+      Serial.println("** Switching joystick to OFF **");
+      return OFF;
+  }
+}
+
 void loop() {
   int buttonJoystickSelVal = digitalRead(BUTTON_JOYSTICK_SEL_PIN);
   int buttonMouseToggleVal = digitalRead(BUTTON_MOUSE_TOGGLE_PIN);
 
   // Check to see if we should activate the mouse
   if(buttonMouseToggleVal != prevButtonMouseToggleVal){
-    if(buttonMouseToggleVal == LOW && isMouseActive == false){
-      activateMouse(true);
-    }else if(buttonMouseToggleVal == LOW && isMouseActive == true){
-      activateMouse(false);
+    if(buttonMouseToggleVal == LOW){
+      joystickMode = getNextJoystickMode();
     }
   }
 
-  /** HANDLE JOYSTICK INPUT AS MOUSE **/
+  /** HANDLE JOYSTICK INPUT **/
   int joystickXVal = analogRead(JOYSTICK_XOUT_PIN);
   int joystickYVal = analogRead(JOYSTICK_YOUT_PIN);
 
@@ -141,9 +170,45 @@ void loop() {
     xMouse = map(joystickXVal, 0, MAX_ANALOG_VAL, -MAX_MOUSE_MOVE_VAL, MAX_MOUSE_MOVE_VAL);
   }
 
-  if(isMouseActive){
+  if(joystickMode == MOUSE){
     Mouse.move(xMouse, yMouse, 0);
-  }       
+  }else if(joystickMode == KEYBOARD){
+    // If we're here, we want to convert the joystick position
+    // as keyboard input. So, moving up on the joystick, will
+    // send an UP ARROW key to the computer. Moving left
+    // on the joystick, will send a LEFT ARROW key, etc.
+    if(xMouse < 0 && isLeftKeyPressed == false){
+      Keyboard.press(KEY_LEFT_ARROW);
+      isLeftKeyPressed = true;
+    }else if(xMouse >= 0 && isLeftKeyPressed == true){
+      Keyboard.release(KEY_LEFT_ARROW);
+      isLeftKeyPressed = false;
+    }
+    
+    if(xMouse > 0 && isRightKeyPressed == false){
+      Keyboard.press(KEY_RIGHT_ARROW);
+      isRightKeyPressed = true;
+    }else if(xMouse <= 0 && isRightKeyPressed == true){
+      Keyboard.release(KEY_RIGHT_ARROW);
+      isRightKeyPressed = false;
+    }
+  
+    if(yMouse < 0 && isUpKeyPressed == false){
+      Keyboard.press(KEY_UP_ARROW);
+      isUpKeyPressed = true;
+    }else if(yMouse >= 0 && isUpKeyPressed == true){
+      Keyboard.release(KEY_UP_ARROW);
+      isUpKeyPressed = false;
+    }
+  
+    if(yMouse > 0 && isDownKeyPressed == false){
+      Keyboard.press(KEY_DOWN_ARROW);
+      isDownKeyPressed = true;
+    }else if(yMouse <= 0 && isDownKeyPressed == true){
+      Keyboard.release(KEY_DOWN_ARROW);
+      isDownKeyPressed = false;
+    }
+  }
 
   // Handle the joystick press as a mouse press
   if(prevJoystickSelPressedVal != buttonJoystickSelVal){
