@@ -79,7 +79,6 @@ void activateMouse(boolean turnMouseOn){
     Mouse.begin();
   }else{
     Serial.println("*** Deactivating mouse! ***");
-    isMouseActive = false;
     Mouse.end();
   }
 
