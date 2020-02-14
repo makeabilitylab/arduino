@@ -9,7 +9,9 @@
  * This sketch will work with any 32u4- or SAMD-based boards like the Arduino
  * Leondardo, Esplora, Zero, Due, which can appear as a native mouse and/or keyboard
  * when connected to the computer via USB.
-
+ *
+ * TODO: 
+ *  - Add in support for mouse wheel
  * 
  * By Jon Froehlich
  * @jonfroehlich
