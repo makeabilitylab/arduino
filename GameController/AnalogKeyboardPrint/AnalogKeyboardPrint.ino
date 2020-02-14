@@ -13,7 +13,7 @@
  * Which can then be parsed by a computer program running on your laptop/computer.
  * 
  * Note: the keyboard starts in OFF mode so as not to write random text all over the place.
- * You can enable it by pressing a toggle button hooked up to pin 5 (with a pull-up configuration).
+ * You can enable it by pressing a toggle button hooked up to pin 2 (with a pull-up configuration).
  * 
  * As an example, run this sketch on your Arduino, then check out the 'Analog Keyboard' 
  * p5js sketch: 
@@ -36,7 +36,7 @@ const int ANALOG_Y_PIN = A1;
 const int MAX_ANALOG_VAL = 1023;
 
 // Digital I/O pins
-const int BUTTON_TOGGLE_KEYBOARD_PIN = 5;
+const int BUTTON_TOGGLE_KEYBOARD_PIN = 2;
 const int KEYBOARD_ON_LED_PIN = 13;
 
 boolean isKeyboardActive = false;
