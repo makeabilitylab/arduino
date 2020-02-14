@@ -13,7 +13,7 @@
  * with the select button (press down on joystick for select) but should work with any other analog 
  * inputs tied to A0 and A1 to control the x and y movements of the mouse, respectively.
  * 
- * This sketch is compatible with any 32u4- or SAMD-based boards like the Arduino
+ * This sketch will work with any 32u4- or SAMD-based boards like the Arduino
  * Leondardo, Esplora, Zero, Due, which can appear as a native mouse and/or keyboard
  * when connected to the computer via USB.
  * 

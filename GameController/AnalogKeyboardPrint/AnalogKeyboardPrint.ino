@@ -47,7 +47,7 @@ void setup() {
   pinMode(KEYBOARD_ON_LED_PIN, OUTPUT);
   
   // Turn on serial for debugging
-  Serial.begin(9600); 
+  Serial.begin(9600);
 
   // Importantly, we need to start with the keyboard off
   // So that it doesn't immediately start to inadvertently
