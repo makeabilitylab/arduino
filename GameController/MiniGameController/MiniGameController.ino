@@ -117,18 +117,18 @@ void loop() {
     joystickUpDownVal = tmpX;
   }
 
-  Serial.print("joystickLeftRightVal: ");
+  Serial.print("Joystick x: ");
   Serial.print(joystickLeftRightVal);
-  Serial.print(" joystickUpDownVal: ");
+  Serial.print(" y: ");
   Serial.println(joystickUpDownVal);
 
   int yDistFromCenter = joystickUpDownVal - JOYSTICK_CENTER_VALUE;
   int xDistFromCenter = joystickLeftRightVal - JOYSTICK_CENTER_VALUE;
   
-  Serial.print("xDistFromCenter: ");
-  Serial.print(xDistFromCenter);    
-  Serial.print(" yDistFromCenter: ");
-  Serial.println(yDistFromCenter);
+//  Serial.print("xDistFromCenter: ");
+//  Serial.print(xDistFromCenter);    
+//  Serial.print(" yDistFromCenter: ");
+//  Serial.println(yDistFromCenter);
 
   int yMouse = 0, xMouse = 0;
   if(abs(yDistFromCenter) > JOYSTICK_MOVEMENT_THRESHOLD){
@@ -189,7 +189,7 @@ void loop() {
   }
 
   /** TOGGLE MOUSE **/
-  int buttonMouseToggleVal = buttonUpVal & buttonRightVal; 
+  int buttonMouseToggleVal = buttonUpVal | buttonRightVal; 
 
   if(buttonMouseToggleVal != prevButtonMouseToggleVal){
     if(buttonMouseToggleVal == LOW && isMouseActive == false){
@@ -200,7 +200,7 @@ void loop() {
   }
 
   /** HANDLE SPACE BAR WHICH IS JUST DOWN AND RIGHT BUTTONS SIMULTANEOUSLY **/
-  int buttonSpaceBarVal = buttonDownVal & buttonRightVal;
+  int buttonSpaceBarVal = buttonDownVal | buttonRightVal;
   if(buttonSpaceBarVal == LOW){
     isSpaceBarPressed = true;
     Keyboard.press(' ');
