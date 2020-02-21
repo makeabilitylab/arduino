@@ -198,6 +198,18 @@ void loop() {
       activateMouse(false);
     }
   }
+
+  /** HANDLE SPACE BAR WHICH IS JUST DOWN AND RIGHT BUTTONS SIMULTANEOUSLY **/
+  int buttonSpaceBarVal = buttonDownVal & buttonRightVal;
+  if(buttonSpaceBarVal == LOW){
+    isSpaceBarPressed = true;
+    Keyboard.press(' ');
+    Serial.print("SPACE BAR: Pressed\t");
+    isSpaceBarPressed = true;
+  }else if(isSpaceBarPressed == true && buttonSpaceBarVal == HIGH){
+    Keyboard.release(' ');
+    isSpaceBarPressed = false;
+  } 
   
   delay(50);
 
