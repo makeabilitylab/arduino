@@ -19,6 +19,6 @@ All things Arduino
 - Reddit with links to DIy electornics and arduino
 
 ## Books
-While there are numerous Arduino and electronics books, generally, I find that the online guides above offer the best quality learning content. Some exceptions include:
+While there are numerous Arduino and electronics books, generally, I find that online guides offer the best quality learning content. Some exceptions include:
 - Jeremey Blumstein book
 - Make Electronics book
