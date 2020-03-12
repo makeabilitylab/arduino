@@ -4,7 +4,7 @@ All things Arduino
 # Resources
 
 ## Online Tutorials
-- [Adafruit's 18-Step Learn Arduino Guide](https://learn.adafruit.com/series/learn-arduino) is my most recommended "getting started" guide for Arduino. [Adafruit](https://www.adafruit.com), in general, has an extensive number of [online electronic tutorials](https://learn.adafruit.com/)—both for their products and beyond—which helps build demand for their wares and trust/credibility amongst consumers. 
+- [Adafruit's 18-Step Learn Arduino Guide](https://learn.adafruit.com/series/learn-arduino) is my most recommended "getting started" guide for Arduino. [Adafruit](https://www.adafruit.com), in general, has an extensive number of [online electronic tutorials](https://learn.adafruit.com/)—both for their products and beyond.
 
 - [Sparkfun's Tutorial Series](https://learn.sparkfun.com/tutorials). Similar to Adafruit, [Sparkfun](https://www.sparkfun.com/) creates a large number of tutorials and videos to help the electronic/maker community (and build demand for their products).
 
