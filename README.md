@@ -28,4 +28,6 @@ While there are numerous Arduino and electronics books, generally, I find that o
 - Look at: http://ladyada.net/learn/arduino/
 - Look at some related online courses:
 -- EdX IOT: https://courses.edx.org/courses/course-v1:UPValenciaX+IOT101.1x+3T2019a/course/
--- 
+-- https://www.coursera.org/specializations/iot
+- Look at related academic courses
+-- E.g., Mayanks
