@@ -8,6 +8,13 @@ All things Arduino
 - Tangible Interactive Computing (name of my UMD course)
 - Prototyping Interactive Systems (name of my UW 599)
 
+## Buikd
+To build the docs,
+- Open iTerm in /physcomp/docs
+- `> bundle`
+- `> bundle exec jekyll serve`
+- Follow directions for web addie
+
 # Resources
 
 ## Online Tutorials
@@ -27,7 +34,7 @@ All things Arduino
 
 ## Books
 While there are numerous Arduino and electronics books, generally, I find that online guides offer the best quality learning content. Some exceptions include:
-- Jeremey Blumstein book
+- Jeremey Blumstein book. This is my favorite Arduino book. Interestingly, Blumstein was inspired to work in physical computing after taking Cornell HCI Professor [François Guimbretière](https://www.cs.cornell.edu/~francois/) *Introduction to Rapid Prototyping and Physical Computing* course.
 - Make Electronics book
 
 ## TODO:

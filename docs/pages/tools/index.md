@@ -22,3 +22,5 @@ This is the parent page for tools!
 - Breadboards
 - Perfboards
 - Soldering
+- Connectors
+  - http://derekmolloy.ie/general/tools-for-electronics/, https://youtu.be/GkbOJSvhCgU 

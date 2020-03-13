@@ -32,12 +32,10 @@ has_toc: true # (on by default)
 
 # Books
 While there are numerous Arduino and electronics books, generally, I find that online guides offer the best quality learning content. Some exceptions include:
-- Jeremey Blumstein book
-- Make Electronics book
 
 ## Electronics
 
-- Charles Platt, *Make: Electronics*, 2nd Edition, Maker Media., 2015 [[UW Library EBook](https://alliance-primo.hosted.exlibrisgroup.com/permalink/f/kjtuig/CP71290798850001451), [O'Reilly Online](https://learning.oreilly.com/library/view/make-electronics-2nd/9781680450255/)]. The best 'Intro to Electronics' book I've found.
+- Charles Platt, *Make: Electronics*, 2nd Edition, Maker Media, 2015 [[UW Library EBook](https://alliance-primo.hosted.exlibrisgroup.com/permalink/f/kjtuig/CP71290798850001451), [O'Reilly Online](https://learning.oreilly.com/library/view/make-electronics-2nd/9781680450255/)]. The best 'Intro to Electronics' book I've found.
 
 - Simon Monk, *Hacking Electronics: An Illustrated DIY Guide for Makers and Hobbyists*, McGraw-Hill, 2013. [[UW Library EBook](https://alliance-primo.hosted.exlibrisgroup.com/permalink/f/kjtuig/CP71297764200001451), [O'Reilly Online](https://learning.oreilly.com/library/view/hacking-electronics-an/9780071802369/)]
 
@@ -49,9 +47,9 @@ While there are numerous Arduino and electronics books, generally, I find that o
 
 ## Microcontrollers
 
-- Dan O'Sullivan and Tom Igoe, Physical Computing: Sensing and Controlling the Physical World with Computers, Thomson, 2004, Amazon
+- Jeremy Blum, *Exploring Arduino: Tools and Techniques for Engineering Wizardry*, 2nd Edition, Wiley, 2020. This is my favorite Arduino book. [[UW Library EBook](https://alliance-primo.hosted.exlibrisgroup.com/permalink/f/kjtuig/CP51311244450001451), [Wiley Online](https://onlinelibrary-wiley-com.offcampus.lib.washington.edu/doi/book/10.1002/9781119405320)]. Interestingly, Blum was inspired to work in physical computing after taking HCI Professor [François Guimbretière's](https://www.cs.cornell.edu/~francois/) *Introduction to Rapid Prototyping and Physical Computing* course at Cornell.
 
-- Jeremy Blum, Exploring Arduino, Wiley, 2013 (this is by far my favorite Arduino book). In addition, Jeremy runs his own YouTube Arduino tutorial channel, which I also recommend (link). UPDATE: new edition.
+- Dan O'Sullivan and Tom Igoe, Physical Computing: Sensing and Controlling the Physical World with Computers, Thomson, 2004, Amazon
 
 # TODO:
 - Look at my resources list from [CMSC838f](https://web.archive.org/web/20170605201324/http:/cmsc838f-s15.wikispaces.com/)
