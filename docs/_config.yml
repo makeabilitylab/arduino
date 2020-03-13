@@ -37,7 +37,7 @@ aux_links:
 heading_anchors: true
 
 # Footer content appears at the bottom of every page's main content
-footer_content: "By <a href=\"https://github.com/jonfroehlich\">Jon E. Froehlich</a>"
+footer_content: "By <a href=\"https://github.com/jonfroehlich\">Jon E. Froehlich</a>."
 
 # Google Analytics Tracking (optional)
 # e.g, UA-1234567-89
