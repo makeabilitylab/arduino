@@ -6,16 +6,13 @@ has_children: true
 has_toc: true # (on by default)
 ---
 # Resources
-
 {: .no_toc }
 
 ## Table of Contents
-
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
-
 ---
 
 ## Online Tutorials
