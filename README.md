@@ -6,6 +6,7 @@ All things Arduino
 - Ubiquitous Computing (or ubicomp)
 - Interactive Device Design (Bjoern's name)
 - Tangible Interactive Computing (name of my UMD course)
+- Prototyping Interactive Systems (name of my UW 599)
 
 # Resources
 
