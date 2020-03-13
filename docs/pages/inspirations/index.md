@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Inspirations
-nav_order: 3
+nav_order: 10
 has_children: true
 has_toc: true # (on by default)
 ---
@@ -15,7 +15,8 @@ has_toc: true # (on by default)
 {:toc}
 ---
 
-# Idea Inspirations
+## Project Hubs
+Need something to inspire you? Check out these project pages.
 
 - [Instructables](https://www.instructables.com/). Step-by-step maker tutorials ranging from woodworking to fabric craft to electronics. I will ocassionally invite students to post Instructables of their work in my courses to more broadly share their creativity and knowledge (e.g., [Fall 2012](https://www.instructables.com/id/CMSC838f-Fall-2012-Tangible-Interactive-Computing-/), [Spring 2014](https://www.instructables.com/id/CMSC838f-Spring-2014-Tangible-Interactive-Computin/), [Spring 2015](https://www.instructables.com/id/CMSC838f-Spring-2015-Tangible-Interactive-Computin/))
 
@@ -23,9 +24,11 @@ has_toc: true # (on by default)
 
 - [Hackaday](https://hackaday.com/). Hackaday shares daily updates about IoT, robotics, and other interactive electronics projects. [Hackaday.io](https://hackaday.io/) is their version of the Arduino Project Hub.
 
-# Course Inspirations
+## Courses
 
 The following courses have inspired my pedagogical approach and materials.
+
+- **CMSC838f: Tangible Interactive Computing**, UMD, Taught by Professor Jon E. Froehlich. Example offerings: [Spring 2015](https://web.archive.org/web/20150709105051/http://cmsc838f-s15.wikispaces.com/)
 
 - **CS294-84: Interactive Device Design**, UC Berkeley, Co-taught by Professors Björn Hartmann and Paul Wright. Example offerings: [Fall 2012](http://web.archive.org/web/20150516223132/http://husk.eecs.berkeley.edu/courses/cs294-84-fall12/index.php/Main_Page), [Fall 2013](http://web.archive.org/web/20150717021918/http://husk.eecs.berkeley.edu/courses/cs294-84-fall13/index.php/Main_Page), [Fall 2014](http://web.archive.org/web/20150712080846/http://husk.eecs.berkeley.edu/courses/cs294-84-fall14/index.php/Main_Page)
 

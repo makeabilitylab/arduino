@@ -19,6 +19,8 @@ This is the parent page for tools!
 # Things to add
 - Multimeters
 - Oscilliscopes
+- Benchtop Power Supplies
+  - https://vimeo.com/109134974
 - Breadboards
 - Perfboards
 - Soldering

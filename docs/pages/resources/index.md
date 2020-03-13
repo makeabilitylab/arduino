@@ -41,13 +41,13 @@ I've gone through a large set of electronics and microcontroller books. Here are
 
 ### Advanced Electronics
 
-- Paul Scherz and Simon Monk, Practical Electronics for Inventors, 4th Edition, McGraw-Hill Education, 2016. [UW Library EBook](https://alliance-primo.hosted.exlibrisgroup.com/permalink/f/kjtuig/CP71291894620001451), [O'Reilly Online](https://learning.oreilly.com/library/view/practical-electronics-for/9781259587559) This is a more advanced book, *e.g.,* the first chapter entitled *Theory* is 200+ pages long.
+- Paul Scherz and Simon Monk, Practical Electronics for Inventors, 4th Edition, McGraw-Hill Education, 2016. [[UW Library EBook](https://alliance-primo.hosted.exlibrisgroup.com/permalink/f/kjtuig/CP71291894620001451), [O'Reilly Online](https://learning.oreilly.com/library/view/practical-electronics-for/9781259587559)]. This is a more advanced book, *e.g.,* the first chapter entitled *Theory* is 200+ pages long.
 
-- Charles Platt, *Make: Encyclopedia of Electronic Components Volume 1: Resistors, Capacitors, Inductors, Switches, Encoders, Relays, Transistors*, O'Reilly, 2012. [UW Library EBook](https://alliance-primo.hosted.exlibrisgroup.com/permalink/f/kjtuig/CP71290698970001451), [O'Reilly Online](https://learning.oreilly.com/library/view/encyclopedia-of-electronic/9781449333881/)
+- Charles Platt, *Make: Encyclopedia of Electronic Components Volume 1: Resistors, Capacitors, Inductors, Switches, Encoders, Relays, Transistors*, O'Reilly, 2012. [[UW Library EBook](https://alliance-primo.hosted.exlibrisgroup.com/permalink/f/kjtuig/CP71290698970001451), [O'Reilly Online](https://learning.oreilly.com/library/view/encyclopedia-of-electronic/9781449333881/)]
 
-- Charles Platt, *Make: Encyclopedia of Electronic Components Volume 2: LEDs, LCDs, audio, thyristors, digital logic, and amplification*, O'Reilly, 2015. [UW Library EBook](https://alliance-primo.hosted.exlibrisgroup.com/permalink/f/kjtuig/CP71290765560001451), [O'Reilly Online](https://learning.oreilly.com/library/view/encyclopedia-of-electronic/9781449334178/)
+- Charles Platt, *Make: Encyclopedia of Electronic Components Volume 2: LEDs, LCDs, audio, thyristors, digital logic, and amplification*, O'Reilly, 2015. [[UW Library EBook](https://alliance-primo.hosted.exlibrisgroup.com/permalink/f/kjtuig/CP71290765560001451), [O'Reilly Online](https://learning.oreilly.com/library/view/encyclopedia-of-electronic/9781449334178/)]
 
-- Charles Platt, *Make: Encyclopedia of Electronic Components Volume 3: Sensing Light, Sound, Heat, Motion, and More*, O'Reilly, 2016. [UW Library EBook](https://alliance-primo.hosted.exlibrisgroup.com/permalink/f/kjtuig/CP71290815340001451), [O'Reilly Online](https://learning.oreilly.com/library/view/encyclopedia-of-electronic/9781449334307)
+- Charles Platt, *Make: Encyclopedia of Electronic Components Volume 3: Sensing Light, Sound, Heat, Motion, and More*, O'Reilly, 2016. [[UW Library EBook](https://alliance-primo.hosted.exlibrisgroup.com/permalink/f/kjtuig/CP71290815340001451), [O'Reilly Online](https://learning.oreilly.com/library/view/encyclopedia-of-electronic/9781449334307)]
 
 ### Microcontrollers
 
@@ -65,9 +65,12 @@ I *encourage* you to ask questions! There are so many people out there willing t
 
 - **Online Forums**. The most popular electronics and Arduino-based Q/A forums, include: [Adafruit](https://forums.adafruit.com/viewforum.php?f=37&sid=39a6c8dce50981dcc363bdd5b0a77b23), [Sparkfun](https://forum.sparkfun.com/index.php), [Arduino.cc](https://forum.arduino.cc/), and [EEVBlog](https://www.eevblog.com/forum/).
 
+## Online Tools
+TODO: 
+
 ## Inspirations
 
-Searching for project ideas or some divine epiphany on what to work on next? Check out our Inspirations (TODO: link this).
+Searching for project ideas or some divine epiphany on what to work on next? Check out our [Inspirations]({% link pages/inspirations/index.md %}.
 
 ## TODO:
 
