@@ -1,6 +1,12 @@
 # arduino
 All things Arduino
 
+## Ideas to Call This Repo and Site?
+- Physical Computing (or physcomp)
+- Ubiquitous Computing (or ubicomp)
+- Interactive Device Design (Bjoern's name)
+- Tangible Interactive Computing (name of my UMD course)
+
 # Resources
 
 ## Online Tutorials
