@@ -13,6 +13,7 @@ permalink: /
 - Possible to add last modified date into file?
 - Embedding code from github repo into jekyll post
   - https://blog.revathskumar.com/2012/08/embed-files-from-github-repository-into-webpage.html
+  - https://flowerinthenight.com/blog/2017/11/28/embed-github-code
 
 ## Possible H1 Content
 - Motors
