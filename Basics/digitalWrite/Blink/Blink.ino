@@ -1,7 +1,7 @@
 /*
  * Simply turns on and off pin 3 once a second
  * 
- * By Jon #. Froehlich
+ * By Jon E. Froehlich
  * @jonfroehlich
  * http://makeabilitylab.io
  * 
