@@ -7,9 +7,6 @@
  * 
  * Example Tinkcard circuit:
  *  - https://www.tinkercad.com/things/3EzaisGSd0c-blink-led-onoff
- * 
- * Adapted from the official Arduino Blink example:
- *   File -> Examples -> 01. Basics -> Blink
  */
 
 // While not necessary, it's a good idea to use const variables
@@ -22,12 +19,12 @@ void setup() {
   // We must specify how we're using the pin by using pinMode. In this case, we want to
   // control an LED, so set the pin to OUTPUT
   pinMode(LED_OUTPUT_PIN, OUTPUT);
+
+  // turn the LED on (HIGH is the voltage level, 5V on the Uno and Leonardo)
+  digitalWrite(LED_OUTPUT_PIN, HIGH);   
 }
 
 // The loop function runs over and over again forever
 void loop() {
-  digitalWrite(LED_OUTPUT_PIN, HIGH);   // turn LED on (5V)
-  delay(1000);                          // delay is in milliseconds; so wait one second
-  digitalWrite(LED_OUTPUT_PIN, LOW);    // turn LED off (0V)
-  delay(1000);                          // wait for a second
+  // This function is intentionally blank
 }
