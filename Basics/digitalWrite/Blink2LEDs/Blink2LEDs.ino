@@ -10,8 +10,12 @@
  * will turn off the LED.
  * 
  * See lecture slides for details.
+ *
+ * The Tinkercad Circuit:
+ * https://www.tinkercad.com/things/dMNGuq4tYeo-led-blink-2
  * 
- * By Jon Froehlich
+ * By Jon E. Froehlich
+ * @jonfroehlich
  * http://makeabilitylab.io
  * 
  */
