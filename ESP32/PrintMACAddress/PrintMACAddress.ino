@@ -10,14 +10,13 @@
 #include <WiFi.h>
  
 void setup(){
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   WiFi.mode(WIFI_STA);
-
-  Serial.print("Device MAC address:");
-  Serial.println(WiFi.macAddress());
 }
 
 void loop(){
-  // Intentionally blank
+  Serial.print("Device MAC address:");
+  Serial.println(WiFi.macAddress());
+  delay(2000);
 }
