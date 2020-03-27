@@ -1,18 +1,20 @@
 /*
  * This example reads in a button input on D2 (with an external pull-down resistor configuration)
- * and turns on/off an LED on D3 accordingly
+ * and turns on/off the embedded LED on the Arduino (at LED_BUILTIN) accordingly
  * 
  * By Jon Froehlich
+ * @jonfroehlich
  * http://makeabilitylab.io
+ * 
  */
 
 const int BUTTON_INPUT_PIN = 2;
-const int LED_OUTPUT_PIN = 3;
+const int LED_OUTPUT_PIN = LED_BUILTIN; // change this if you want to use an external LED 
 
 void setup() {
   pinMode(BUTTON_INPUT_PIN, INPUT);
   pinMode(LED_OUTPUT_PIN, OUTPUT);
-  Serial.begin(9600);
+  Serial.begin(9600); // used for debugging
 }
 
 void loop() {
@@ -25,6 +27,6 @@ void loop() {
   digitalWrite(LED_OUTPUT_PIN, buttonVal);
   Serial.println(buttonVal);
   
-  // Check for new input every 100ms (10 times a sec)
-  delay(100);
+  // Check for new input every 50ms (20 times a sec)
+  delay(50);
 }
