@@ -1,0 +1,6 @@
+- Make Blink with internal LED
+- Show fade example (With internal LED too?)
+	- Fade examples: https://microcontrollerslab.com/esp32-pwm-arduino-ide-led-fading-example/
+	- Official: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html
+	- https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/AnalogOut/LEDCSoftwareFade/LEDCSoftwareFade.ino
+	
