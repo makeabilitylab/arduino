@@ -1,12 +1,12 @@
 /*
- * Simply turns on and off pin 3 once a second
+ * Simply turns on and off pin 3 once a second. 
  * 
  * By Jon E. Froehlich
  * @jonfroehlich
  * http://makeabilitylab.io
  * 
- * Example Tinkcard circuit:
- *  - https://www.tinkercad.com/things/3EzaisGSd0c-blink-led-onoff
+ * For a walkthrough and circuit diagram, see:
+ * https://makeabilitylab.github.io/physcomp/arduino/led-blink
  * 
  * Adapted from the official Arduino Blink example:
  *   File -> Examples -> 01. Basics -> Blink
