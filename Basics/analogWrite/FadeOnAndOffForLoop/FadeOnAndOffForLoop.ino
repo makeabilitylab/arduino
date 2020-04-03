@@ -12,6 +12,7 @@
  * http://www.arduino.cc/en/Tutorial/Fading
  */
 const int LED_OUTPUT_PIN = 3;
+const int DELAY_MS = 5; // delay between each fade value
 
 void setup() {
   // set the LED pin to an output
@@ -22,12 +23,12 @@ void loop(){
   // fade on
   for(int i = 0; i <= 255; i += 1){
     analogWrite(LED_OUTPUT_PIN, i);
-    delay(30);
+    delay(DELAY_MS);
   }
 
   //fade off
   for(int i = 255; i >= 0; i -= 1){
     analogWrite(LED_OUTPUT_PIN, i);
-    delay(30);
+    delay(DELAY_MS);
   }
 }
