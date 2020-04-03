@@ -5,8 +5,8 @@
  * @jonfroehlich
  * http://makeabilitylab.io
  * 
- * Tinkcard circuit:
- * https://www.tinkercad.com/things/3EzaisGSd0c-blink-led-onoff
+ * Step-by-step tutorial:
+ * https://makeabilitylab.github.io/physcomp/arduino/led-fade
  *  
  * Adapted from the official Arduino Fading example:
  * http://www.arduino.cc/en/Tutorial/Fading
