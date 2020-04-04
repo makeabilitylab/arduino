@@ -1,21 +1,29 @@
 /*
- * This example fades the colors of the RGB LED
+ * This example cross fades the colors of the RGB LED
  * 
  * By Jon Froehlich
  * @jonfroehlich
  * http://makeabilitylab.io
  * 
- * Adapted from https://learn.adafruit.com/adafruit-arduino-lesson-3-rgb-leds?view=all
+ * For a walkthrough and circuit diagram, see:
+ * https://makeabilitylab.github.io/physcomp/arduino/rgb-led-fade
+ * 
+ * Based, in part, on:
+ * - https://learn.adafruit.com/adafruit-arduino-lesson-3-rgb-leds?view=all
+ * - https://gist.github.com/jamesotron/766994 (link no longer available)
  */
 
-// Change this to false if you are working with a common cathode RGB LED
-// We purchased common anode RGB LEDs for class: https://www.adafruit.com/product/159
-const boolean COMMON_ANODE = true; 
+// Change this to based on whether you are using a common anode or common cathode
+// RGB LED. See: https://makeabilitylab.github.io/physcomp/arduino/rgb-led 
+// If you are working with a common cathode RGB LED, set this to false.
+// Note Adafruit sells a common anode design: https://www.adafruit.com/product/159
+const boolean COMMON_ANODE = false; 
 
 const int RGB_RED_PIN = 6;
 const int RGB_GREEN_PIN  = 5;
 const int RGB_BLUE_PIN  = 3;
-const int DELAY = 200; // delay in ms between changing colors
+const int DELAY_MS = 200; // delay in ms between changing colors
+const int MAX_ANALOG_VAL = 255; // 255 is the max analog val on Arduino Uno, Leonardo, etc.
 
 enum RGB{
   RED,
@@ -24,10 +32,10 @@ enum RGB{
   NUM_COLORS
 };
 
-int _rgbLedValues[] = {255, 0, 0};
+int _rgbLedValues[] = {255, 0, 0}; // Red, Green, Blue
 enum RGB _curFadingUp = GREEN;
 enum RGB _curFadingDown = RED;
-const int FADE_STEP = 5;
+const int FADE_STEP = 5;          
 
 void setup() {
   // Set the RGB pins to output
@@ -43,11 +51,8 @@ void setup() {
 
 void loop() {
 
-  // For fading the RGB LED: https://gist.github.com/jamesotron/766994
-  // For hooking up the RGB LED: https://learn.adafruit.com/adafruit-arduino-lesson-3-rgb-leds
-  // Note that this Adafruit tutorial assumes a "common cathode" RGB LED but we are
-  // using "common anode" RGBS in this class 
-  if(_rgbLedValues[_curFadingUp] >= 255){
+  // This fade code partially based on: https://gist.github.com/jamesotron/766994
+  if(_rgbLedValues[_curFadingUp] >= MAX_ANALOG_VAL){
     _curFadingUp = (RGB)((int)_curFadingUp + 1);
 
     if(_curFadingUp > (int)BLUE){
@@ -67,7 +72,7 @@ void loop() {
   _rgbLedValues[_curFadingDown] -= FADE_STEP;
   setColor(_rgbLedValues[RED], _rgbLedValues[GREEN], _rgbLedValues[BLUE]);
 
-  delay(DELAY);
+  delay(DELAY_MS);
 }
 
 /**
@@ -90,9 +95,9 @@ void setColor(int red, int green, int blue)
 
   // If a common anode LED, invert values
   if(COMMON_ANODE == true){
-    red = 255 - red;
-    green = 255 - green;
-    blue = 255 - blue;
+    red = MAX_ANALOG_VAL - red;
+    green = MAX_ANALOG_VAL - green;
+    blue = MAX_ANALOG_VAL - blue;
   }
   analogWrite(RGB_RED_PIN, red);
   analogWrite(RGB_GREEN_PIN, green);
