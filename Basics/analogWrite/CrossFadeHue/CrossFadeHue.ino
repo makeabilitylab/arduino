@@ -1,25 +1,29 @@
 /*
- * This example cross fades the hue, which is then converted to RGB.
+ * This example cross fades the hue, which is then converted to RGB. 
+ * This implemention is much cleaner and more understandable than CrossFadeRGB: 
+ * https://github.com/makeabilitylab/arduino/tree/master/Basics/analogWrite/CrossFadeRGB
  * 
  * Uses an RGB to HSL and HSL to RGB conversion library from here:
  *   https://github.com/ratkins/RGBConverter
  *   
- * By Jon Froehlich
+ * By Jon E. Froehlich
+ * @jonfroehlich
  * http://makeabilitylab.io
  * 
- * Adapted from https://learn.adafruit.com/adafruit-arduino-lesson-3-rgb-leds?view=all
  */
 
 #include "src/RGBConverter/RGBConverter.h"
 
-// Change this to 0 if you are working with a common cathode RGB LED
-// We purchased Common Anode RGB LEDs for class: https://www.adafruit.com/product/159
+// Change this to based on whether you are using a common anode or common cathode
+// RGB LED. See: https://makeabilitylab.github.io/physcomp/arduino/rgb-led 
+// If you are working with a common cathode RGB LED, set this to false.
 const boolean COMMON_ANODE = true; 
 
 const int RGB_RED_PIN = 6;
 const int RGB_GREEN_PIN  = 5;
 const int RGB_BLUE_PIN  = 3;
 const int DELAY_INTERVAL = 10; // interval in ms between incrementing hues
+
 float _hue = 0; //hue varies between 0 - 1
 float _step = 0.001f;
 
@@ -36,7 +40,11 @@ void setup() {
 }
 
 void loop() {
- 
+
+  // Convert current hue, saturation, and lightness to RGB
+  // Currently using 1.0 for saturation and 0.5 for lightness
+  // The library assumes hue, saturation, and lightness range from 0 - 1
+  // and that RGB ranges from 0 - 255
   byte rgb[3];
   _rgbConverter.hslToRgb(_hue,1.0,0.5,rgb);
 
@@ -51,7 +59,10 @@ void loop() {
   
   setColor(rgb[0], rgb[1], rgb[2]); 
 
+  // update hue based on step size
   _hue += _step;
+
+  // hue ranges between 0-1, so if > 1, reset to 0
   if(_hue > 1.0){
     _hue = 0;
   }

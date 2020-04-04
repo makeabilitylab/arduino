@@ -23,7 +23,6 @@ const int RGB_RED_PIN = 6;
 const int RGB_GREEN_PIN  = 5;
 const int RGB_BLUE_PIN  = 3;
 const int DELAY_MS = 200; // delay in ms between changing colors
-const int MAX_ANALOG_VAL = 255; // 255 is the max analog val on Arduino Uno, Leonardo, etc.
 
 enum RGB{
   RED,
@@ -52,7 +51,7 @@ void setup() {
 void loop() {
 
   // This fade code partially based on: https://gist.github.com/jamesotron/766994
-  if(_rgbLedValues[_curFadingUp] >= MAX_ANALOG_VAL){
+  if(_rgbLedValues[_curFadingUp] >= 255){
     _curFadingUp = (RGB)((int)_curFadingUp + 1);
 
     if(_curFadingUp > (int)BLUE){
@@ -95,9 +94,9 @@ void setColor(int red, int green, int blue)
 
   // If a common anode LED, invert values
   if(COMMON_ANODE == true){
-    red = MAX_ANALOG_VAL - red;
-    green = MAX_ANALOG_VAL - green;
-    blue = MAX_ANALOG_VAL - blue;
+    red = 255 - red;
+    green = 255 - green;
+    blue = 255 - blue;
   }
   analogWrite(RGB_RED_PIN, red);
   analogWrite(RGB_GREEN_PIN, green);
