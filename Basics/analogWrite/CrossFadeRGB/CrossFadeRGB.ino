@@ -22,7 +22,7 @@ const boolean COMMON_ANODE = false;
 const int RGB_RED_PIN = 6;
 const int RGB_GREEN_PIN  = 5;
 const int RGB_BLUE_PIN  = 3;
-const int DELAY_MS = 200; // delay in ms between changing colors
+const int DELAY_MS = 5; // delay in ms between changing colors
 
 enum RGB{
   RED,
