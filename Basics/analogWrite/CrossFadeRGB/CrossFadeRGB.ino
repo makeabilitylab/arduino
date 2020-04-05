@@ -53,9 +53,15 @@ void setup() {
 }
 
 void loop() {
+
+  // Increment and decrement the RGB LED values for the current
+  // fade up color and the current fade down color
   _rgbLedValues[_curFadingUp] += FADE_STEP;
   _rgbLedValues[_curFadingDown] -= FADE_STEP;
 
+  // Check to see if we've reached our maximum color value for fading up
+  // If so, go to the next fade up color (we go from RED to GREEN to BLUE
+  // as specified by the RGB enum)
   // This fade code partially based on: https://gist.github.com/jamesotron/766994
   if(_rgbLedValues[_curFadingUp] > MAX_COLOR_VALUE){
     _rgbLedValues[_curFadingUp] = MAX_COLOR_VALUE;
@@ -66,6 +72,9 @@ void loop() {
     }
   }
 
+  // Check to see if the current LED we are fading down has gotten to zero
+  // If so, select the next LED to start fading down (again, we go from RED to 
+  // GREEN to BLUE as specified by the RGB enum)
   if(_rgbLedValues[_curFadingDown] < 0){
     _rgbLedValues[_curFadingDown] = 0;
     _curFadingDown = (RGB)((int)_curFadingDown + 1);
@@ -75,6 +84,7 @@ void loop() {
     }
   }
 
+  // Set the color and then delay
   setColor(_rgbLedValues[RED], _rgbLedValues[GREEN], _rgbLedValues[BLUE]);
   delay(DELAY_MS);
 }
