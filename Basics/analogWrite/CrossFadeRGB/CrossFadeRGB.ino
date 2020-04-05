@@ -33,8 +33,8 @@ enum RGB{
 };
 
 int _rgbLedValues[] = {255, 0, 0}; // Red, Green, Blue
-enum RGB _curFadingUp = GREEN;
-enum RGB _curFadingDown = RED;
+enum RGB _curFadingUpColor = GREEN;
+enum RGB _curFadingDownColor = RED;
 const int FADE_STEP = 5;  
 
 void setup() {
@@ -56,31 +56,31 @@ void loop() {
 
   // Increment and decrement the RGB LED values for the current
   // fade up color and the current fade down color
-  _rgbLedValues[_curFadingUp] += FADE_STEP;
-  _rgbLedValues[_curFadingDown] -= FADE_STEP;
+  _rgbLedValues[_curFadingUpColor] += FADE_STEP;
+  _rgbLedValues[_curFadingDownColor] -= FADE_STEP;
 
   // Check to see if we've reached our maximum color value for fading up
   // If so, go to the next fade up color (we go from RED to GREEN to BLUE
   // as specified by the RGB enum)
   // This fade code partially based on: https://gist.github.com/jamesotron/766994
-  if(_rgbLedValues[_curFadingUp] > MAX_COLOR_VALUE){
-    _rgbLedValues[_curFadingUp] = MAX_COLOR_VALUE;
-    _curFadingUp = (RGB)((int)_curFadingUp + 1);
+  if(_rgbLedValues[_curFadingUpColor] > MAX_COLOR_VALUE){
+    _rgbLedValues[_curFadingUpColor] = MAX_COLOR_VALUE;
+    _curFadingUpColor = (RGB)((int)_curFadingUpColor + 1);
 
-    if(_curFadingUp > (int)BLUE){
-      _curFadingUp = RED;
+    if(_curFadingUpColor > (int)BLUE){
+      _curFadingUpColor = RED;
     }
   }
 
   // Check to see if the current LED we are fading down has gotten to zero
   // If so, select the next LED to start fading down (again, we go from RED to 
   // GREEN to BLUE as specified by the RGB enum)
-  if(_rgbLedValues[_curFadingDown] < 0){
-    _rgbLedValues[_curFadingDown] = 0;
-    _curFadingDown = (RGB)((int)_curFadingDown + 1);
+  if(_rgbLedValues[_curFadingDownColor] < 0){
+    _rgbLedValues[_curFadingDownColor] = 0;
+    _curFadingDownColor = (RGB)((int)_curFadingDownColor + 1);
 
-    if(_curFadingDown > (int)BLUE){
-      _curFadingDown = RED;
+    if(_curFadingDownColor > (int)BLUE){
+      _curFadingDownColor = RED;
     }
   }
 
