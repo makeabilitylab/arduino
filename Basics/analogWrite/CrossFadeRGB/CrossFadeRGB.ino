@@ -22,7 +22,8 @@ const boolean COMMON_ANODE = false;
 const int RGB_RED_PIN = 6;
 const int RGB_GREEN_PIN  = 5;
 const int RGB_BLUE_PIN  = 3;
-const int DELAY_MS = 5; // delay in ms between changing colors
+const int DELAY_MS = 20; // delay in ms between changing colors
+const int MAX_COLOR_VALUE = 255;
 
 enum RGB{
   RED,
@@ -34,7 +35,7 @@ enum RGB{
 int _rgbLedValues[] = {255, 0, 0}; // Red, Green, Blue
 enum RGB _curFadingUp = GREEN;
 enum RGB _curFadingDown = RED;
-const int FADE_STEP = 5;          
+const int FADE_STEP = 5;  
 
 void setup() {
   // Set the RGB pins to output
@@ -44,14 +45,20 @@ void setup() {
 
   // Turn on Serial so we can verify expected colors via Serial Monitor
   Serial.begin(9600); 
+  Serial.println("Red, Green, Blue");
 
+  // Set initial color
   setColor(_rgbLedValues[RED], _rgbLedValues[GREEN], _rgbLedValues[BLUE]);
+  delay(DELAY_MS);
 }
 
 void loop() {
+  _rgbLedValues[_curFadingUp] += FADE_STEP;
+  _rgbLedValues[_curFadingDown] -= FADE_STEP;
 
   // This fade code partially based on: https://gist.github.com/jamesotron/766994
-  if(_rgbLedValues[_curFadingUp] >= 255){
+  if(_rgbLedValues[_curFadingUp] > MAX_COLOR_VALUE){
+    _rgbLedValues[_curFadingUp] = MAX_COLOR_VALUE;
     _curFadingUp = (RGB)((int)_curFadingUp + 1);
 
     if(_curFadingUp > (int)BLUE){
@@ -59,7 +66,8 @@ void loop() {
     }
   }
 
-  if(_rgbLedValues[_curFadingDown] <= 0){
+  if(_rgbLedValues[_curFadingDown] < 0){
+    _rgbLedValues[_curFadingDown] = 0;
     _curFadingDown = (RGB)((int)_curFadingDown + 1);
 
     if(_curFadingDown > (int)BLUE){
@@ -67,10 +75,7 @@ void loop() {
     }
   }
 
-  _rgbLedValues[_curFadingUp] += FADE_STEP;
-  _rgbLedValues[_curFadingDown] -= FADE_STEP;
   setColor(_rgbLedValues[RED], _rgbLedValues[GREEN], _rgbLedValues[BLUE]);
-
   delay(DELAY_MS);
 }
 
@@ -84,19 +89,17 @@ void loop() {
  */
 void setColor(int red, int green, int blue)
 {
-  Serial.print("Setting color to");
-  Serial.print(" RED=");
   Serial.print(red);
-  Serial.print(" GREEN=");
+  Serial.print(", ");
   Serial.print(green);
-  Serial.print(" BLUE=");
+  Serial.print(", ");
   Serial.println(blue);
 
   // If a common anode LED, invert values
   if(COMMON_ANODE == true){
-    red = 255 - red;
-    green = 255 - green;
-    blue = 255 - blue;
+    red = MAX_COLOR_VALUE - red;
+    green = MAX_COLOR_VALUE - green;
+    blue = MAX_COLOR_VALUE - blue;
   }
   analogWrite(RGB_RED_PIN, red);
   analogWrite(RGB_GREEN_PIN, green);
