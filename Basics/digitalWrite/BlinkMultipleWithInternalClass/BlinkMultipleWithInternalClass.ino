@@ -62,9 +62,9 @@ class Blinker{
     }
 };
 
-Blinker _led1Blinker(2, 200);
-Blinker _led2Blinker(5, 333);
-Blinker _led3Blinker(9, 1111);
+Blinker _led1Blinker(2, 200);  // specify pin, blink interval
+Blinker _led2Blinker(5, 333);  // specify pin, blink interval
+Blinker _led3Blinker(9, 1111); // specify pin, blink interval
 
 // The setup function runs once when you press reset or power the board
 void setup() {
