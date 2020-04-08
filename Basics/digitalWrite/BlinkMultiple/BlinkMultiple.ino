@@ -9,11 +9,6 @@
  * For a walkthrough and circuit diagram, see:
  * https://makeabilitylab.github.io/physcomp/arduino/led-blink3
  * 
- * Adapted from the official Arduino Blink example:
- *   File -> Examples -> 02. Digital -> BlinkWithoutDelay
- *   
- * Also available here:
- *   http://www.arduino.cc/en/Tutorial/BlinkWithoutDelay
  */
 
 const int LED1_OUTPUT_PIN = 2;
