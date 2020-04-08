@@ -10,6 +10,9 @@
  * @jonfroehlich
  * http://makeabilitylab.io
  * 
+ * For a walkthrough and circuit diagram, see:
+ * https://makeabilitylab.github.io/physcomp/arduino/rgb-led-fade
+ * 
  */
 
 #include "src/RGBConverter/RGBConverter.h"
@@ -17,12 +20,13 @@
 // Change this to based on whether you are using a common anode or common cathode
 // RGB LED. See: https://makeabilitylab.github.io/physcomp/arduino/rgb-led 
 // If you are working with a common cathode RGB LED, set this to false.
-const boolean COMMON_ANODE = true; 
+const boolean COMMON_ANODE = false; 
 
 const int RGB_RED_PIN = 6;
 const int RGB_GREEN_PIN  = 5;
 const int RGB_BLUE_PIN  = 3;
-const int DELAY_INTERVAL = 10; // interval in ms between incrementing hues
+const int DELAY_INTERVAL = 50; // interval in ms between incrementing hues
+const byte MAX_RGB_VALUE = 255;
 
 float _hue = 0; //hue varies between 0 - 1
 float _step = 0.001f;
@@ -42,11 +46,11 @@ void setup() {
 void loop() {
 
   // Convert current hue, saturation, and lightness to RGB
-  // Currently using 1.0 for saturation and 0.5 for lightness
   // The library assumes hue, saturation, and lightness range from 0 - 1
   // and that RGB ranges from 0 - 255
+  // If lightness is equal to 1, then the RGB LED will be white
   byte rgb[3];
-  _rgbConverter.hslToRgb(_hue,1.0,0.5,rgb);
+  _rgbConverter.hslToRgb(_hue, 1, 0.5, rgb);
 
   Serial.print("hue=");
   Serial.print(_hue);
@@ -82,9 +86,9 @@ void setColor(int red, int green, int blue)
 {
   // If a common anode LED, invert values
   if(COMMON_ANODE == true){
-    red = 255 - red;
-    green = 255 - green;
-    blue = 255 - blue;
+    red = MAX_RGB_VALUE - red;
+    green = MAX_RGB_VALUE - green;
+    blue = MAX_RGB_VALUE - blue;
   }
   analogWrite(RGB_RED_PIN, red);
   analogWrite(RGB_GREEN_PIN, green);
