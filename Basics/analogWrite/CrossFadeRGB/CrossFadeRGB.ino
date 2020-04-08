@@ -95,7 +95,6 @@ void loop() {
  * all colors by intermixing different combinations of red, green, and blue
  * 
  * This function is based on https://gist.github.com/jamesotron/766994
- * 
  */
 void setColor(int red, int green, int blue)
 {
