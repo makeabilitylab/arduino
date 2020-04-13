@@ -1,6 +1,7 @@
 /*
  * Demonstrates how to use simple state tracking with timestamps to support
- * blinking multiple LEDs at different rates.
+ * blinking multiple LEDs at different rates and also how to create
+ * and use a class within your .ino sketch.
  * 
  * By Jon E. Froehlich
  * @jonfroehlich
@@ -39,6 +40,7 @@ class Blinker{
 
   public:
 
+    // Constructor
     Blinker(int pin, unsigned long blinkInterval) :
       _pin(pin), _interval(blinkInterval) // initialize const like this in C++
     {

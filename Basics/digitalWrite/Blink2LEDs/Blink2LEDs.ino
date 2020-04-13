@@ -9,7 +9,8 @@
  * anode connected to 5V, cathode towards Pin 4), driving Pin 4 HIGH
  * will turn off the LED.
  * 
- * See lecture slides for details.
+ * Step-by-step tutorial:
+ * https://makeabilitylab.github.io/physcomp/arduino/led-blink2
  *
  * The Tinkercad Circuit:
  * https://www.tinkercad.com/things/dMNGuq4tYeo-led-blink-2

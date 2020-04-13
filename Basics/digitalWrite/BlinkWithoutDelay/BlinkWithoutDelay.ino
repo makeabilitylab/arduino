@@ -2,8 +2,12 @@
  * Simply turns on and off pin 3 once a second without using delay()
  * This is useful because a delay prevents us from reading new input
  * 
- * By Jon Froehlich
+ * By Jon E. Froehlich
+ * @jonfroehlich
  * http://makeabilitylab.io
+ *
+ * For a walkthrough and circuit diagram, see:
+ * https://makeabilitylab.github.io/physcomp/arduino/led-blink
  * 
  * Adapted from the official Arduino Blink example:
  *   File -> Examples -> 02. Digital -> BlinkWithoutDelay
@@ -30,13 +34,15 @@ void setup() {
 
 // The loop function runs over and over again forever
 void loop() {
-
-  unsigned long currentTimestampMs = millis();
-
-  if (currentTimestampMs - _lastToggledTimestampMs >= INTERVAL_IN_MS) {
-    _lastToggledTimestampMs = currentTimestampMs;
-    _ledState = _ledState == HIGH ? LOW : HIGH;
-    digitalWrite(LED_OUTPUT_PIN, _ledState);
-  }
   
+  // Get the current time since the Arduino started our program (in ms)
+  unsigned long currentTimestampMs = millis();
+  
+  // Check to see if the time between now and the last time we toggled
+  // the LED has exceeded our blink interval. If so, toggled the LED
+  if (currentTimestampMs - _lastToggledTimestampMs >= INTERVAL_IN_MS) {
+    _ledState = _ledState == HIGH ? LOW : HIGH; // toggle the LED
+    _lastToggledTimestampMs = currentTimestampMs; // store current time as toggle time
+    digitalWrite(LED_OUTPUT_PIN, _ledState); // output the LED state
+  }  
 }
