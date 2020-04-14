@@ -7,7 +7,7 @@
  * http://makeabilitylab.io
  * 
  * For a walkthrough and circuit diagram, see:
- * TODO
+ * https://makeabilitylab.github.io/physcomp/arduino/piano
  * 
  * Note: Use of the tone() function will interfere with PWM output on pins 3 and 11 
  * (on boards other than the Mega). See:
