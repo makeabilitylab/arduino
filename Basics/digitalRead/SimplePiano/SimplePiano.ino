@@ -31,7 +31,7 @@ const int INPUT_BUTTON_E_PIN = 4;
 const int INPUT_BUTTON_F_PIN = 5;
 const int INPUT_BUTTON_G_PIN = 6;
 
-const int OUTPUT_PIEZO_PIN = 7;
+const int OUTPUT_PIEZO_PIN = 9;
 
 // By default, we assume buttons are in pull-up configurations
 // Switch the following to false and change INPUT_PULLUP belows
@@ -66,11 +66,11 @@ void loop() {
   }else if(isButtonPressed(INPUT_BUTTON_G_PIN)){
     tone(OUTPUT_PIEZO_PIN, KEY_G);
   }else{
-    noTone(); // turn off the waveform
+    noTone(OUTPUT_PIEZO_PIN); // turn off the waveform
   }
 }
 
-void isButtonPressed(int btnPin){
+boolean isButtonPressed(int btnPin){
   int btnVal = digitalRead(btnPin);
   if(_buttonsAreActiveLow && btnVal == LOW){
     // button is hooked up with pull-up resistor
