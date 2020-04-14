@@ -25,6 +25,9 @@
 #define KEY_F 350  // 349.2282 Hz
 #define KEY_G 392  // 391.9954 Hz
 
+// I lay out my buttons like piano keys. So, lower frequencies on left
+// and increasingly higher frequencies to the right
+// Change this depending on how you've laid out your keys
 const int INPUT_BUTTON_C_PIN = 2;
 const int INPUT_BUTTON_D_PIN = 3;
 const int INPUT_BUTTON_E_PIN = 4;
@@ -32,6 +35,7 @@ const int INPUT_BUTTON_F_PIN = 5;
 const int INPUT_BUTTON_G_PIN = 6;
 
 const int OUTPUT_PIEZO_PIN = 9;
+const int OUTPUT_LED_PIN = LED_BUILTIN; // visual feedback on button press
 
 // By default, we assume buttons are in pull-up configurations
 // Switch the following to false and change INPUT_PULLUP belows
@@ -45,6 +49,7 @@ void setup() {
   pinMode(INPUT_BUTTON_F_PIN, INPUT_PULLUP);
   pinMode(INPUT_BUTTON_G_PIN, INPUT_PULLUP);
   pinMode(OUTPUT_PIEZO_PIN, OUTPUT);
+  pinMode(OUTPUT_LED_PIN, OUTPUT);
 }
 
 void loop() {
@@ -67,6 +72,7 @@ void loop() {
     tone(OUTPUT_PIEZO_PIN, KEY_G);
   }else{
     noTone(OUTPUT_PIEZO_PIN); // turn off the waveform
+    digitalWrite(OUTPUT_LED_PIN, LOW);
   }
 }
 
@@ -75,10 +81,12 @@ boolean isButtonPressed(int btnPin){
   if(_buttonsAreActiveLow && btnVal == LOW){
     // button is hooked up with pull-up resistor
     // and is in a pressed state
+    digitalWrite(OUTPUT_LED_PIN, HIGH);
     return true;
   }else if(!_buttonsAreActiveLow && btnVal == HIGH){
     // button is hooked up with a pull-down resistor
     // and is in a pressed state
+    digitalWrite(OUTPUT_LED_PIN, HIGH);
     return true;
   }
 
