@@ -13,9 +13,9 @@
  * https://www.arduino.cc/reference/en/language/functions/advanced-io/tone/
  * 
  */
-const int OUTPUT_PIEZO_PIN = 9;
-const int OUTPUT_LED_PIN = LED_BUILTIN;
-const int SOUND_DURATION_MS = 500;
+const int OUTPUT_PIEZO_PIN = 9; // hook up one piezo leg to GND, other leg to Pin 9
+const int OUTPUT_LED_PIN = LED_BUILTIN; // we'll flash an LED on/off with the sound
+const int SOUND_DURATION_MS = 500; // duration to play each siren part
 
 void setup() {
   pinMode(OUTPUT_PIEZO_PIN, OUTPUT);
