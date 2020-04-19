@@ -27,7 +27,7 @@ void loop() {
   int fsrVal = analogRead(INPUT_FSR_PIN);
 
   // Remap the value for output. 
-  int ledVal = map(sensorVal, 0, 1023, 0, 255);
+  int ledVal = map(fsrVal, 0, 1023, 0, 255);
 
   // Print the raw sensor value and the converted led value (e,g., for Serial Plotter)
   Serial.print(fsrVal);
