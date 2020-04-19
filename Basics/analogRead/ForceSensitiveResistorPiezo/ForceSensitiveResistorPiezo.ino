@@ -31,7 +31,7 @@ void loop() {
 
   // Remap the value for output. 
   int ledVal = map(fsrVal, 0, 1023, 0, 255);
-  int freq = ledVal;
+  int freq = map(fsrVal, 0, 1023, 50, 1500); // change min/max freq here
 
   // only play sound if the user is pressing on the FSR
   if(fsrVal > 0){
@@ -44,6 +44,8 @@ void loop() {
   Serial.print(fsrVal);
   Serial.print(",");
   Serial.println(ledVal);
+  Serial.print(",");
+  Serial.println(freq);
 
   // Write out the LED value. 
   analogWrite(OUTPUT_LED_PIN, ledVal);
