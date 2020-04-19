@@ -6,7 +6,8 @@
  * LOW to HIGH transitions due to the conductive materials vibrating against
  * each other when the button is initially pressed.
  * 
- * By Jon Froehlich
+ * By Jon E. Froehlich
+ * @jonfroehlich
  * http://makeabilitylab.io
  * 
  * This code is partially based on https://www.arduino.cc/en/Tutorial/Debounce
@@ -39,7 +40,7 @@ void loop() {
   int buttonVal = digitalRead(BUTTON_INPUT_PIN);
 
   // Track raw number of button presses. We only track transitions from 
-  // LOW to HIGH (as that's the definition of a button press)
+  // LOW to HIGH (as that's the definition of a button *press*)
   if(buttonVal == HIGH && buttonVal != _prevRawButtonVal){
     _numRawButtonPresses++;
   }
@@ -68,7 +69,6 @@ void loop() {
   Serial.print("\t");
   Serial.println(0); // write zero to force y-axis scale on Serial Plotter
   
-
   // Write out HIGH or LOW
   digitalWrite(LED_OUTPUT_PIN, _ledState);
 
@@ -76,5 +76,5 @@ void loop() {
   
   // We eliminate the delay here so we can investigate debouncing issues
   // We want to read from the buttons as fast as possible
-  // delay(100);
+  // delay(10);
 }
