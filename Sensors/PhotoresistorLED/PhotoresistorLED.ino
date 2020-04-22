@@ -2,12 +2,12 @@
  * This example reads in a photocell value (from A0 using a voltage-divider circuit) and 
  * proportionally sets the brightness of an LED (hooked up to 3).
  * 
- * For tutorials, see:
- *  - https://learn.adafruit.com/photocells/using-a-photocell
- *  - https://learn.adafruit.com/adafruit-arduino-lesson-9-sensing-light/overview
- * 
- * By Jon Froehlich
+ * By Jon E. Froehlich
+ * @jonfroehlich
  * http://makeabilitylab.io
+ * 
+ * For a walkthrough and circuit diagram, see:
+ * https://makeabilitylab.github.io/physcomp/sensors/photoresistors
  * 
  */
 
@@ -19,8 +19,15 @@ const int PHOTOCELL_INPUT_PIN = A0;
 // resistor that you selected). So, the best way to set these values
 // is to view the photocellVal in the Serial Monitor or Serial Plotter
 // under different expected lighting conditions and observe the values
-const int MIN_PHOTOCELL_VAL = 500; // Photocell reading in dark
-const int MAX_PHOTOCELL_VAL = 850; // Photocell reading in ambient light
+// The comments below assume that the photoresistor is in the R2 position
+// in the voltage divider
+
+// light level threshold to begin turning on LED (LED should be off until 200 threshold reached)
+const int MIN_PHOTOCELL_VAL = 200; 
+
+// max darkness level (LED should be fully on for anything 800+)
+const int MAX_PHOTOCELL_VAL = 800; 
+const boolean PHOTOCELL_IS_R2_IN_VOLTAGE_DIVIDER = true; // set false if photocell is R1
 
 void setup() {
   pinMode(LED_OUTPUT_PIN, OUTPUT);
@@ -44,11 +51,14 @@ void loop() {
   // so, we need to make sure that things are within range for the led
   ledVal = constrain(ledVal, 0, 255);
 
-  // We want to invert the LED (it should be brighter when environment is darker)
-  // This assumes the photocell is Rtop in the voltage divider
-  ledVal = 255 - ledVal;
+  if(PHOTOCELL_IS_R2_IN_VOLTAGE_DIVIDER == false){
+    // We need to invert the LED (it should be brighter when environment is darker)
+    // This assumes the photocell is Rtop in the voltage divider
+    ledVal = 255 - ledVal;
+  }
 
-  // Print the raw photocell value and the converted led value (e,g., for Serial Plotter)
+  // Print the raw photocell value and the converted led value (e,g., for Serial 
+  // Console and Serial Plotter)
   Serial.print(photocellVal);
   Serial.print(",");
   Serial.println(ledVal);
