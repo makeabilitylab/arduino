@@ -1,21 +1,25 @@
-// Based in part on https://learn.adafruit.com/adafruit-microphone-amplifier-breakout/measuring-sound-levels
-// TODO: add comments
+
+// This code experiments with FASTADC to speed up analogRead calls; however,
+// FASTADC is disabled by default and the code works fine without it.
 //
 // Some of my experiments on the Arduino Leonardo and using a pocket oscillocope measuring
 // the I/O frequency (square wave) on Pin 2:
-//  With FASTADC 1, 6.5 kHz
-//  With FASTADC 0, 2.93 kHz
+//  With FASTADC 1 and DEBUG 0, 6.5 kHz
+//  With FASTADC 0 and DEBUG 0, 2.93 kHz
 //  With FASTADC 1 and DEBUG 1, 1.53 kHz
 //  With FASTADC 0 and DEBUG 1, 1.19 kHz
 //  With FASTADC 0 and DEBUG 1 and INCLUDE_SAMPLING_RATE 1, 610 Hz
 //
-// FASTADC code from: https://forum.arduino.cc/index.php?topic=6549.0
+// Based in part on:
+//  - https://learn.adafruit.com/adafruit-microphone-amplifier-breakout/measuring-sound-levels
+//  - FASTADC code from: https://forum.arduino.cc/index.php?topic=6549.0
 
 // Set FASTADC to 1 if you want to speed up analogRead
 // Not necessary for a simple volume meter, however.
 #define FASTADC 0 
 
 // defines for setting and clearing register bits
+// This is relevant only if FASTADC is enabled
 #ifndef cbi
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 #endif
