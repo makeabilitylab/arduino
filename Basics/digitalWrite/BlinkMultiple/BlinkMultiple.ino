@@ -9,19 +9,22 @@
  * For a walkthrough and circuit diagram, see:
  * https://makeabilitylab.github.io/physcomp/arduino/led-blink3
  * 
+ * Adapted from the official Arduino Blink example:
+ *   File -> Examples -> 02. Digital -> BlinkWithoutDelay
+ *   
+ * Also available here:
+ *   http://www.arduino.cc/en/Tutorial/BlinkWithoutDelay
  */
 
 const int LED1_OUTPUT_PIN = 2;
-const int LED1_BLINK_INTERVAL_MS = 200; // interval at which to blink (in milliseconds)
+const int LED1_BLINK_INTERVAL_MS = 200; // interval at which to blink LED1 (in milliseconds)
 
 const int LED2_OUTPUT_PIN = 5;
-const int LED2_BLINK_INTERVAL_MS = 333; // interval at which to blink (in milliseconds)
+const int LED2_BLINK_INTERVAL_MS = 333; // interval at which to blink LED2 (in milliseconds)
 
 const int LED3_OUTPUT_PIN = 9;
-const int LED3_BLINK_INTERVAL_MS = 1111; // interval at which to blink (in milliseconds)
+const int LED3_BLINK_INTERVAL_MS = 1111; // interval at which to blink LED3 (in milliseconds)
 
-// Generally, you should use "unsigned long" for variables that hold time
-// The value will quickly become too large for an int to store
 unsigned long _led1LastToggledTimestampMs = 0; // tracks the last time LED1 was updated
 int _led1State = LOW; // will toggle between LOW and HIGH
 
