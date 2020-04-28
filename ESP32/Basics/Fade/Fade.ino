@@ -1,8 +1,8 @@
 /**
- * This example fades on and off all pins simultaneously using the ESP32's PWM functionality
+ * This example fades on and off GPIO Pin 21 using the ESP32's PWM functionality
  * 
  * All GPIO pins can be used for PWM on the ESP32. On the Huzzah32, pins 34 (A2), 39 (A3), 36 (A4) 
- * are not output-capable and should not work by design. We still include them here for completeness
+ * are not output-capable and should not work by design.
  * 
  * By Jon E. Froehlich
  * @jonfroehlich
@@ -30,14 +30,14 @@ const int PWM_FREQ = 500; // Recall that Arduino Uno is ~490 Hz. Official ESP32 
 // See: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html#ledc-api-supported-range-frequency-duty-resolution
 const int PWM_RESOLUTION = 8; 
 
-// Pins start with 26 at A0 and switch to other side of board at 13 (A12)
-// According to the Huzzah32 docs, 34 (A2), 39 (A3), 36 (A4) are not output-capable so should not work by design 
-// See: https://learn.adafruit.com/adafruit-huzzah32-esp32-feather/pinouts
-// But we've included them here anyway for completeness (and to double check!)
-const int GPIO_PINS[] = {26, 25, 34, 39, 36, 4, 5, 18, 19, 16, 17, 21, 13, 12, 27, 33, 15, 32, 14, 22, 23};
+// The max duty cycle value based on PWM resolution (will be 255 if resolution is 8 bits)
+const int MAX_DUTY_CYCLE = (int)(pow(2, PWM_RESOLUTION) - 1);
 
-int _numGpioPins = 0;
-int _ledFadeStep = 5;
+// The pin numbering on the Huzzah32 is a bit strange
+// See pin diagram here: https://makeabilitylab.github.io/physcomp/esp32/
+const int LED_OUTPUT_PIN = 21;
+
+int _ledFadeStep = 5; // amount to fade per loop
 
 void setup() {
   Serial.begin(9600);
@@ -47,48 +47,31 @@ void setup() {
   // we'll attach pins to the PWM channel. The cool side effect here, of course,
   // is that it's easy to control multiple pins at once with the same PWM timer
   ledcSetup(PWM_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
-  _numGpioPins = sizeof(GPIO_PINS) / sizeof(GPIO_PINS[0]);
 
-  Serial.print("Num of GPIO pins: ");
-  Serial.println(_numGpioPins);
   Serial.print("Duty cycle resolution set to: ");
   Serial.print(PWM_RESOLUTION);
   Serial.print(" bits, so duty cycle range: 0 - ");
-  Serial.println(pow(2, PWM_RESOLUTION) - 1);
+  Serial.println(MAX_DUTY_CYCLE);
+
+  // https://github.com/espressif/arduino-esp32/blob/a4305284d085caeddd1190d141710fb6f1c6cbe1/cores/esp32/esp32-hal-ledc.h
+  ledcAttachPin(LED_OUTPUT_PIN, PWM_CHANNEL);
 }
 
 void loop() {
-  // Go through each GPIO pin 
-  for(int i = 0; i < _numGpioPins; i++){
-    int pin = GPIO_PINS[i];
 
-    Serial.print("Pin ");
-    Serial.print(pin);
-    Serial.print(" ");
-    Serial.println("Fading");
-    
-    fadeLedOnAndOff(pin, PWM_CHANNEL, PWM_RESOLUTION);
-  }
-}
-
-/**
- * Sets the given pin HIGH or LOW and prints the value to Serial
- */
-void fadeLedOnAndOff(int pin, int pwmChannel, int pwmResolution){
-  // https://github.com/espressif/arduino-esp32/blob/a4305284d085caeddd1190d141710fb6f1c6cbe1/cores/esp32/esp32-hal-ledc.h
-  ledcAttachPin(pin, pwmChannel);
-
-  int maxDutyCycle = pow(2, pwmResolution) - 1;
-  for(int dutyCycle = 0; dutyCycle <= maxDutyCycle; dutyCycle++){   
-    ledcWrite(pwmChannel, dutyCycle);
+  // fade LED brightness up
+  Serial.print("Fading up channel ");
+  Serial.println(PWM_CHANNEL);
+  for(int dutyCycle = 0; dutyCycle <= MAX_DUTY_CYCLE; dutyCycle++){   
+    ledcWrite(PWM_CHANNEL, dutyCycle);
     delay(DELAY_MS);
   }
 
-  // decrease the LED brightness
-  for(int dutyCycle = maxDutyCycle; dutyCycle >= 0; dutyCycle--){
-    ledcWrite(pwmChannel, dutyCycle);   
+  // fade LED brightness down
+  Serial.print("Fading down channel ");
+  Serial.println(PWM_CHANNEL);
+  for(int dutyCycle = MAX_DUTY_CYCLE; dutyCycle >= 0; dutyCycle--){
+    ledcWrite(PWM_CHANNEL, dutyCycle);   
     delay(DELAY_MS);
   }
-
-  ledcDetachPin(pin);
 }
