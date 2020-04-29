@@ -18,6 +18,9 @@
  * Without Arduino library, a bit more complicated:
  * https://github.com/espressif/esp-idf/tree/741960d/examples/peripherals/ledc
  * 
+ * Walkthrough and circuit diagram here:
+ * https://makeabilitylab.github.io/physcomp/esp32/led-fade
+ * 
  */
 
 
