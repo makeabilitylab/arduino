@@ -1,5 +1,5 @@
 /*
- * This example reads in a photocell value from A6 using a voltage-divider circuit and 
+ * This example reads in a photocell value from A7 using a voltage-divider circuit and 
  * proportionally sets the brightness of an LED (hooked up to GPIO 21).
  * 
  * This example is modified for the ESP32 from the basic Arduino version covered here:
@@ -12,7 +12,7 @@
  */
 
 const int LED_OUTPUT_PIN = 21;
-const int PHOTOCELL_INPUT_PIN = A6;
+const int PHOTOCELL_INPUT_PIN = A7;
 
 // Set the min and max photocell values (this will be based on
 // the brightness of your environment and the size of the voltage-divider
@@ -22,12 +22,6 @@ const int PHOTOCELL_INPUT_PIN = A6;
 // The comments below assume that the photoresistor is in the R2 position
 // in the voltage divider
 
-// light level threshold to begin turning on LED (LED should be off until 200 threshold reached)
-const int MIN_PHOTOCELL_VAL = 200; 
-
-// max darkness level (LED should be fully on for anything 800+)
-const int MAX_PHOTOCELL_VAL = 800; 
-
 // Is the photocell R1 or R2 in the voltage divider?
 // If it's R1, then we using the "lightness" sensor configuration and the voltage will
 // drop with increases in ambient lightness. If the photocell is R2, then we're using the
@@ -35,6 +29,17 @@ const int MAX_PHOTOCELL_VAL = 800;
 // decreases. See: 
 // https://makeabilitylab.github.io/physcomp/sensors/photoresistors.html#using-photoresistors-with-microcontrollers
 const boolean PHOTOCELL_IS_R2_IN_VOLTAGE_DIVIDER = true; // set false if photocell is R1
+
+// If the photocell is R1, then MIN_PHOTOCELL_VAL is the value of analogRead when its darkest
+// If the photocell is R2, then MIN_PHOTOCELL_VAL is the value of analogRead when its lightest
+// Measure this empirically given your deployment environment and then update this value
+// Check the Serial Monitor
+const int MIN_PHOTOCELL_VAL = 200; 
+
+// If the photocell is R1, then MAX_PHOTOCELL_VAL is the value of analogRead when its lightest
+// If the photocell is R2, then MAX_PHOTOCELL_VAL is the value of analogRead when its darkest
+// Measure this empirically given your deployment environment and then update this value
+const int MAX_PHOTOCELL_VAL = 800; 
 
 const int PWM_CHANNEL = 0; // ESP32 has 16 channels which can generate 16 independent waveforms
 const int PWM_FREQ = 500;  // Recall that Arduino Uno is ~490 Hz. Official ESP32 example uses 5,000Hz
