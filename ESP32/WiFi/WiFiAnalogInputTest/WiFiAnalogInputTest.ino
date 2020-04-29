@@ -21,8 +21,8 @@
  
 #include <WiFi.h>
 
-const char* WIFI_SSID = "Hyattsville";
-const char* WIFI_PASSWORD =  "welovevigilantecoffee";
+const char* WIFI_SSID = "ENTER YOUR SSID PASSWORD";
+const char* WIFI_PASSWORD =  "ENTER YOUR WIFI PASSWORD";
 
 const int GPIO_PINS[] = {26, 25, 4, 5, 18, 19, 16, 17, 21, 13, 12, 27, 33, 15, 32, 14, 22, 23};
 
