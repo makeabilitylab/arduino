@@ -5,7 +5,9 @@
  * @jonfroehlich
  * http://makeabilitylab.io
  * 
- * TODO
+ * For a walkthrough and circuit diagram, see:
+ * https://makeabilitylab.github.io/physcomp/esp32/led-blink
+ * 
  */
 
 // The pin numbering on the Huzzah32 is a bit strange
