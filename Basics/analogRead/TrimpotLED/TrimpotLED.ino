@@ -7,8 +7,13 @@
  * are identified with a "~" sign, like ~3, ~5, ~6, ~9, ~10 and ~11. For other Arduino
  * boards, please consult the pin layout data sheet.
  *
- * By Jon Froehlich
+ * By Jon E. Froehlich
+ * @jonfroehlich
  * http://makeabilitylab.io
+ * 
+ * For a walkthrough and circuit diagram, see:
+ * https://makeabilitylab.github.io/physcomp/arduino/potentiometers.html
+ * 
  */
 
 // The Arduino Uno ADC is 10 bits (thus, 0 - 1023 values)
