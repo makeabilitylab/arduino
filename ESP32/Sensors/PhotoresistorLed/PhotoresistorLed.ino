@@ -1,6 +1,9 @@
 /*
- * This example reads in a photocell value (from A0 using a voltage-divider circuit) and 
- * proportionally sets the brightness of an LED (hooked up to 3).
+ * This example reads in a photocell value from A6 using a voltage-divider circuit and 
+ * proportionally sets the brightness of an LED (hooked up to GPIO 21).
+ * 
+ * This example is modified for the ESP32 from the basic Arduino version covered here:
+ * https://makeabilitylab.github.io/physcomp/sensors/photoresistors.html
  * 
  * By Jon E. Froehlich
  * @jonfroehlich
