@@ -3,6 +3,7 @@
  * The ESP32 has 10 capacitive touch pins. We're using T6 (GPIO 14).
  * 
  * When the capacitance value on T6 falls below a set threshold (TOUCH_THRESHOLD), we turn on an LED
+ * and keep it on for LED_ON_MS milliseconds 
  * 
  * Official Espressif ESP32 touch sensing docs:
  * https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/touch_pad.html
