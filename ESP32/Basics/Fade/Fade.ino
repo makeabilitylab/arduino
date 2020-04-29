@@ -20,23 +20,25 @@
  * 
  */
 
-const int DELAY_MS = 4; // delay between fade increments
 
 const int PWM_CHANNEL = 0; // ESP32 has 16 channels which can generate 16 independent waveforms
-const int PWM_FREQ = 500; // Recall that Arduino Uno is ~490 Hz. Official ESP32 example uses 5,000Hz
+const int PWM_FREQ = 500;  // Recall that Arduino Uno is ~490 Hz. Official ESP32 example uses 5,000Hz
 
-// We'll use same resolution as Uno (8 bits, 0-255) but ESP32 can go up to 15 bits (maybe more?)
-// EspressIf docs seem to suggest that 10-15 bits is most common
+// We'll use same resolution as Uno (8 bits, 0-255) but ESP32 can go up to 16 bits 
+// Espressif docs seem to suggest that 10-15 bits is most common
 // See: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html#ledc-api-supported-range-frequency-duty-resolution
+// Determined 1-16 bits for resolution here: 
+// https://github.com/espressif/arduino-esp32/blob/a4305284d085caeddd1190d141710fb6f1c6cbe1/cores/esp32/esp32-hal-ledc.h
 const int PWM_RESOLUTION = 8; 
 
 // The max duty cycle value based on PWM resolution (will be 255 if resolution is 8 bits)
 const int MAX_DUTY_CYCLE = (int)(pow(2, PWM_RESOLUTION) - 1);
 
-// The pin numbering on the Huzzah32 is a bit strange
+// The pin numbering on the Huzzah32 is a bit strange so always helps to consult the pin diagram
 // See pin diagram here: https://makeabilitylab.github.io/physcomp/esp32/
 const int LED_OUTPUT_PIN = 21;
 
+const int DELAY_MS = 4;    // delay between fade increments
 int _ledFadeStep = 5; // amount to fade per loop
 
 void setup() {
@@ -48,13 +50,13 @@ void setup() {
   // is that it's easy to control multiple pins at once with the same PWM timer
   ledcSetup(PWM_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
 
+  // https://github.com/espressif/arduino-esp32/blob/a4305284d085caeddd1190d141710fb6f1c6cbe1/cores/esp32/esp32-hal-ledc.h
+  ledcAttachPin(LED_OUTPUT_PIN, PWM_CHANNEL);
+
   Serial.print("Duty cycle resolution set to: ");
   Serial.print(PWM_RESOLUTION);
   Serial.print(" bits, so duty cycle range: 0 - ");
   Serial.println(MAX_DUTY_CYCLE);
-
-  // https://github.com/espressif/arduino-esp32/blob/a4305284d085caeddd1190d141710fb6f1c6cbe1/cores/esp32/esp32-hal-ledc.h
-  ledcAttachPin(LED_OUTPUT_PIN, PWM_CHANNEL);
 }
 
 void loop() {
