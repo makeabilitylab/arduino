@@ -2,6 +2,8 @@
  * Records accelerometer-based gestures. Works with the Arduino program
  * ADXL335SerialWriter.ino, LISDHSerialWriter.ino (or any program similar that 
  * provides a CSV input stream on the serial port of "timestamp, x, y, z")
+ *
+ * Program assumes integer values coming over Serial
  *   
  * By Jon E. Froehlich
  * @jonfroehlich
@@ -89,7 +91,8 @@ void setup() {
   //_legendRect = new Rectangle(width - legendWidth - legendXBuffer, legendYBuffer, legendWidth, legendHeight); // legend at top-right
   _legendRect = new Rectangle(legendXBuffer, legendYBuffer, legendWidth, legendHeight); // legend at top-left
   
-  File file = new File(FULL_DATASTREAM_RECORDING_FILENAME); 
+  String fileNameWithPath = sketchPath(FULL_DATASTREAM_RECORDING_FILENAME);
+  File file = new File(fileNameWithPath); 
      
   try {
     // We save all incoming sensor data to a file (by appending)
@@ -177,12 +180,15 @@ void drawLegend(Rectangle legendRect) {
   }
   
   color textColor = color(255, 255, 255, 128);
+  
+  // draw outline of legend box
   stroke(textColor);
   strokeWeight(1);
   noFill();
   rect(legendRect.x, legendRect.y, legendRect.width, legendRect.height);
 
-  // Setup dimension calculations for legend times
+  
+  // Setup dimension calculations for legend
   int yBuffer = 4;
   int xBuffer = 4;
   int numLegendItems = 3;
@@ -190,29 +196,69 @@ void drawLegend(Rectangle legendRect) {
   String [] legendStrs = { "X", "Y", "Z" };
   textSize(legendItemHeight);
   float strHeight = textAscent() + textDescent();
-  float xLegendItemPos = legendRect.x + xBuffer;
   float yLegendItemPos = legendRect.y + strHeight - textDescent();
   AccelSensorData accelSensorData = _displaySensorData.get(_displaySensorData.size() - 1);
   int [] accelSensorVals = accelSensorData.getSensorValues();
-  float strWidth = textWidth("X");
-  float maxValStrWidth = textWidth(Integer.toString(_maxSensorVal));
-  float xBar = xLegendItemPos + strWidth + xBuffer;
-  float maxBarSize = legendRect.width - (xBuffer + strWidth + 3 * xBuffer + maxValStrWidth);
   
-  // Draw each legend item
-  for (int i = 0; i < legendStrs.length; i++) {
-    String legendStr = legendStrs[i];
-    fill(textColor);
-    text(legendStr, xLegendItemPos, yLegendItemPos);
-
-    // draw dynamic legend values
-    float barWidth = map(accelSensorVals[i], _minSensorVal, _maxSensorVal, 0, maxBarSize);
-    fill(SENSOR_VALUE_COLORS[i]);
-    noStroke();
-    rect(xBar, yLegendItemPos - strHeight + textDescent() + yBuffer, barWidth, legendItemHeight - yBuffer);
-    float xSensorTextLoc = xBar + barWidth + xBuffer;
-    text(Integer.toString(accelSensorVals[i]), xSensorTextLoc, yLegendItemPos);
-    yLegendItemPos += legendItemHeight + yBuffer;
+  float titleWidth = textWidth("X");
+  float maxValStrWidth = textWidth(Integer.toString(_maxSensorVal));
+  float minValStrWidth = textWidth(Integer.toString(_minSensorVal));
+  
+  float largestValStrWidth = max(minValStrWidth, maxValStrWidth);
+    
+  if(_minSensorVal < 0){
+    float xMidLegend = legendRect.x + legendRect.width / 2.0;
+    float xTitleStart = xMidLegend - titleWidth / 2.0;
+    float maxBarSize = legendRect.width / 2.0 - (2 * xBuffer + titleWidth + 3 * xBuffer + largestValStrWidth);
+    
+    for (int i = 0; i < legendStrs.length; i++) {
+      String legendStr = legendStrs[i];
+      fill(textColor);
+      text(legendStr, xTitleStart, yLegendItemPos);
+      
+      
+      // draw the bar
+      fill(SENSOR_VALUE_COLORS[i]);
+      noStroke();
+      float barWidth = map(accelSensorVals[i], _minSensorVal, 0, 0, maxBarSize);
+      float xBar = xTitleStart - xBuffer - barWidth;
+      String strSensorVal = Integer.toString(accelSensorVals[i]);
+      float xSensorTextLoc = xBar - largestValStrWidth;
+      if(accelSensorVals[i] > 0){
+        barWidth = map(accelSensorVals[i], 0, _maxSensorVal, 0, maxBarSize);
+        xBar = xMidLegend + titleWidth / 2.0 + xBuffer;
+        xSensorTextLoc = xBar + barWidth + xBuffer;
+      }
+      rect(xBar, yLegendItemPos - strHeight + textDescent() + yBuffer, barWidth, legendItemHeight - yBuffer); 
+      
+      // draw the sensor val
+      text(strSensorVal, xSensorTextLoc, yLegendItemPos);
+      yLegendItemPos += legendItemHeight + yBuffer;
+    }
+    
+    
+  }else{
+  
+    float xLegendItemPos = legendRect.x + xBuffer;
+    
+    float xBar = xLegendItemPos + titleWidth + xBuffer;
+    float maxBarSize = legendRect.width - (xBuffer + titleWidth + 3 * xBuffer + maxValStrWidth);
+    
+    // Draw each legend item
+    for (int i = 0; i < legendStrs.length; i++) {
+      String legendStr = legendStrs[i];
+      fill(textColor);
+      text(legendStr, xLegendItemPos, yLegendItemPos);
+  
+      // draw dynamic legend values
+      float barWidth = map(accelSensorVals[i], _minSensorVal, _maxSensorVal, 0, maxBarSize);
+      fill(SENSOR_VALUE_COLORS[i]);
+      noStroke();
+      rect(xBar, yLegendItemPos - strHeight + textDescent() + yBuffer, barWidth, legendItemHeight - yBuffer);
+      float xSensorTextLoc = xBar + barWidth + xBuffer;
+      text(Integer.toString(accelSensorVals[i]), xSensorTextLoc, yLegendItemPos);
+      yLegendItemPos += legendItemHeight + yBuffer;
+    }
   }
 }
  //<>//
@@ -228,7 +274,7 @@ void serialEvent (Serial myPort) {
     // Grab the data off the serial port. See: 
     // https://processing.org/reference/libraries/serial/index.html
     String inString = trim(_serialPort.readStringUntil('\n'));
-    println(inString);
+    // println(inString);
 
     if (inString != null) {
       int [] data;
@@ -236,15 +282,14 @@ void serialEvent (Serial myPort) {
       // Our parser can handle either csv strings or just one float per line
       if (inString.contains(",")) {
         String [] strData = split(inString, ',');
-        data = new data[strData.length];
+        data = new int[strData.length];
         for(int i=0; i<strData.length; i++){
-          data[i] = int(strData[i]); 
+          data[i] = int(strData[i].trim()); 
         }
       } else {
         data = new int[] { int(inString) };
       }
 
-      printArray(data);
       AccelSensorData accelSensorData = new AccelSensorData(currentTimestampMs, data[0], data[1], data[2], data[3]);
       checkAndSetNewMinMaxSensorValues(accelSensorData);
       
@@ -254,7 +299,7 @@ void serialEvent (Serial myPort) {
       while(_displaySensorData.get(0).timestamp < _currentXMin){
         _displaySensorData.remove(0);
       }
-      println("_displaySensorData.length: " + _displaySensorData.size());
+
       _printWriterAllData.println(accelSensorData.toCsvString());
       
       redraw();
@@ -270,15 +315,11 @@ void checkAndSetNewMinMaxSensorValues(AccelSensorData accelSensorData){
   int max = max(accelSensorData.x, accelSensorData.y, accelSensorData.z);
   if(min < _minSensorVal){
     _minSensorVal = min; 
-  }else{
-    println("Min: " + min + " _minSensorVal: " + _minSensorVal);
   }
   
   if(max > _maxSensorVal){
     _maxSensorVal = max; 
   }
-  
-  println("Min: " + _minSensorVal + " max: " + _maxSensorVal);
 }
 
 // Class for the accelerometer data
