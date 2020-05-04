@@ -1,5 +1,21 @@
-//For scrolling:
-// - https://forums.adafruit.com/viewtopic.php?f=25&t=112175
+
+/**
+ * This example prints out a LIS3DH accel values to an OLED screen
+ * 
+ * Adafruit Gfx Library:
+ * https://learn.adafruit.com/adafruit-gfx-graphics-library/overview
+ * 
+ * Adafruit OLED tutorials:
+ * https://learn.adafruit.com/monochrome-oled-breakouts
+ * 
+ * Adafruit LIS3DH tutorial:
+ * https://learn.adafruit.com/adafruit-lis3dh-triple-axis-accelerometer-breakout
+ * 
+ * By Jon E. Froehlich
+ * @jonfroehlich
+ * http://makeabilitylab.io
+ * 
+ */
 
 #include <Wire.h>
 #include <SPI.h>
@@ -41,7 +57,7 @@ void setup() {
 
   display.println("Initializing accelerometer...");
   if (! lis.begin(0x18)) {   // change this to 0x19 for alternative i2c address
-    Serial.println("Couldnt start");
+    Serial.println("Couldn't start");
     while (1) yield();
   }
   Serial.println("LIS3DH found!");
