@@ -1,10 +1,19 @@
 
 /**
- *  TODO
+ * Graphs a single analog input value to an OLED display. The graph is 
+ * cleared each time SCREEN_WIDTH is reached. For a scrolling version,
+ * see AnalogGraphScrolling.ino:
+ * https://github.com/makeabilitylab/arduino/blob/master/OLED/AnalogGraphScrolling/AnalogGraphScrolling.ino
  *
- *  By Jon E. Froehlich
- *  @jonfroehlich
- *  http://makeabilitylab.io
+ * Very similar to the Processing sketch by Tom Igoe:
+ * https://www.arduino.cc/en/tutorial/graph
+ * 
+ * And many of my previous Processing graphs:
+ * https://github.com/jonfroehlich/ArduinoGraphTutorials
+ * 
+ * By Jon E. Froehlich
+ * @jonfroehlich
+ * http://makeabilitylab.io
  *
  */
 

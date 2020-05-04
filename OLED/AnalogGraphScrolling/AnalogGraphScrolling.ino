@@ -54,7 +54,7 @@ void setup() {
   display.setCursor(0, 0);
   display.println("Screen initialized!");
   display.display();
-  delay(50);
+  delay(500);
   display.clearDisplay();
 
   if(_drawStatusBar){
@@ -68,6 +68,7 @@ void loop() {
   }
   
   int analogVal = analogRead(ANALOG_INPUT_PIN);
+  Serial.println(analogVal);
   _circularBuffer[_curWriteIndex++] = analogVal;
       
   if(_curWriteIndex >= display.width()){
