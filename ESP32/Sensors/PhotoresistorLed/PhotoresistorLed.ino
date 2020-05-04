@@ -30,14 +30,14 @@ const int PHOTOCELL_INPUT_PIN = A7;
 // https://makeabilitylab.github.io/physcomp/sensors/photoresistors.html#using-photoresistors-with-microcontrollers
 const boolean PHOTOCELL_IS_R2_IN_VOLTAGE_DIVIDER = true; // set false if photocell is R1
 
-// If the photocell is R1, then MIN_PHOTOCELL_VAL is the value of analogRead when its darkest
-// If the photocell is R2, then MIN_PHOTOCELL_VAL is the value of analogRead when its lightest
+// If the photocell is R1, then MIN_PHOTOCELL_VAL is the value of analogRead when it's darkest
+// If the photocell is R2, then MIN_PHOTOCELL_VAL is the value of analogRead when it's lightest
 // Measure this empirically given your deployment environment and then update this value
 // Check the Serial Monitor
 const int MIN_PHOTOCELL_VAL = 200; 
 
-// If the photocell is R1, then MAX_PHOTOCELL_VAL is the value of analogRead when its lightest
-// If the photocell is R2, then MAX_PHOTOCELL_VAL is the value of analogRead when its darkest
+// If the photocell is R1, then MAX_PHOTOCELL_VAL is the value of analogRead when it's lightest
+// If the photocell is R2, then MAX_PHOTOCELL_VAL is the value of analogRead when it's darkest
 // Measure this empirically given your deployment environment and then update this value
 const int MAX_PHOTOCELL_VAL = 800; 
 
