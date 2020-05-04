@@ -1,4 +1,20 @@
 
+/**
+ * This program simply tests out the rendering speed of the OLED with
+ * the Adafruit Gfx Library
+ * 
+ * Adafruit Gfx Library:
+ * https://learn.adafruit.com/adafruit-gfx-graphics-library/overview
+ * 
+ * Adafruit OLED tutorials:
+ * https://learn.adafruit.com/monochrome-oled-breakouts
+ * 
+ * By Jon E. Froehlich
+ * @jonfroehlich
+ * http://makeabilitylab.io
+ * 
+ */
+
 #include <Wire.h>
 #include <SPI.h>
 #include <Adafruit_LIS3DH.h>
