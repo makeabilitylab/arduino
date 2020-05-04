@@ -69,11 +69,13 @@ void printAccel() {
   Serial.print(lis.z);
   Serial.println();
 
-  display.print(lis.x);
-  display.print(", ");
-  display.print(lis.y);
-  display.print(", ");
-  display.print(lis.z);
-  display.println();
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.print("X: ");
+  display.println(lis.x);
+  display.print("Y: ");
+  display.println(lis.y);
+  display.print("Z: ");
+  display.println(lis.z);
   display.display();
 }
