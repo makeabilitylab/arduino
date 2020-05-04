@@ -1,5 +1,12 @@
-//For scrolling:
-// - https://forums.adafruit.com/viewtopic.php?f=25&t=112175
+/*
+ * Reads in the x, y, and z accelerometer values from the LIS3DH and prints the following CSV
+ * to serial: timestamp, x, y, z.
+ * 
+ * By Jon E. Froehlich
+ * @jonfroehlich
+ * http://makeabilitylab.io
+ * 
+ */
 
 #include <Wire.h>
 #include <SPI.h>
