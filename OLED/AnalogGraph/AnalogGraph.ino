@@ -67,6 +67,7 @@ void loop() {
   }
   
   int analogVal = analogRead(ANALOG_INPUT_PIN);
+  // Serial.println(analogVal);
 
   if(_drawStatusBar){
     // erase status bar by drawing all black
