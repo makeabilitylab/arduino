@@ -20,6 +20,8 @@ Adafruit_LIS3DH lis = Adafruit_LIS3DH();
 const boolean INCLUDE_TIMESTAMP = true;
 
 void setup() {
+
+  // To increase speed, can change this to Serial.begin(115200);
   Serial.begin(9600);
   Serial.println("Initializing accelerometer...");
   if (! lis.begin(0x18)) {   // change this to 0x19 for alternative i2c address
@@ -51,5 +53,7 @@ void loop() {
   Serial.print(", ");
   Serial.print(lis.z);
   Serial.println();
-  delay(10);
+
+  // the delay here will obviously affect the sampling rate of our accel sensor
+  delay(10);  
 }

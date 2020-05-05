@@ -8,7 +8,8 @@
  * To calibrate the ADXL335, read this tutorial:
  * https://learn.adafruit.com/adafruit-analog-accelerometer-breakouts/calibration-and-programming
  * 
- * By Jon Froehlich
+ * By Jon E. Froehlich
+ * @jonfroehlich
  * http://makeabilitylab.io
  */
 
