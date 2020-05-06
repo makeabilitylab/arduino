@@ -25,7 +25,7 @@ final color YCOLOR = color(73, 164, 239, 200);
 final color ZCOLOR = color(255, 183, 0, 200);
 final color [] SENSOR_VALUE_COLORS = { XCOLOR, YCOLOR, ZCOLOR };
 final color DEFAULT_BACKGROUND_COLOR = color(44, 42, 41);
-final int DISPLAY_TIMEWINDOW_MS = 1000 * 30; // 30 secs. You can change this to view more data
+final int DISPLAY_TIMEWINDOW_MS = 1000 * 20; // 20 secs. You can change this to view more/less data
 
 // Make sure to change this! If you're not sure what port your Arduino is using
 // Run this Processing sketch and look in the console, then change the number accordingly
@@ -45,6 +45,8 @@ Rectangle _legendRect; // location and drawing area of the legend
 boolean _dynamicYAxis = true;
 int _minSensorVal = 0;
 int _maxSensorVal = 1023;
+long _serialLinesRcvd = 0;
+long _firstSerialValRcvdTimestamp = -1;
 
 void setup() {
   size(1024, 576);
@@ -141,7 +143,8 @@ void draw() {
     String strInstructions = "Waiting for Serial data...";
     float strWidth = textWidth(strInstructions);
     float strHeight = textAscent() + textDescent();
-
+    
+    noStroke();
     fill(255);
     text(strInstructions, width / 2.0 - strWidth / 2.0, height / 4.0 + strHeight / 2.0 - textDescent());
   }
@@ -159,6 +162,24 @@ void draw() {
   }
 
   drawLegend(_legendRect);
+  drawDebugInfo();
+}
+
+void drawDebugInfo(){
+  if(_firstSerialValRcvdTimestamp != -1){
+    long timeElapsedMs = System.currentTimeMillis() - _firstSerialValRcvdTimestamp;
+    float samplingRate = _serialLinesRcvd / (timeElapsedMs / 1000.0);
+    noStroke();
+    fill(255);
+    
+    String strSamplingRate = nf(samplingRate, 3, 1) + " Hz";
+    float strWidth = textWidth(strSamplingRate) + 10;
+    float strHeight = textAscent() + textDescent();
+    text(strSamplingRate, width - strWidth, strHeight);
+    
+    String strFrameRate = nf(frameRate, 3, 1) + " fps";
+    text(strFrameRate, width - strWidth, strHeight * 2);
+  }
 }
 
 void drawYAxis(){
@@ -174,6 +195,7 @@ void drawYAxis(){
     float yVal = map(yTickMark, 0, numYTickMarks, _minSensorVal + yRange * 0.10, _maxSensorVal - yRange * 0.10);
     float yCurPixelVal = getYPixelFromSensorVal(yVal);
     line(0, yCurPixelVal, 10, yCurPixelVal);
+    text(yVal, 10, yCurPixelVal);
   }
 }
 
@@ -206,14 +228,14 @@ String[] getAndPrintSerialPortInfo(){
  * Converts a sensor value to a y-pixel value and returns the y-pixel value
  */
 float getYPixelFromSensorVal(int sensorVal) {
-  return map(sensorVal, _minSensorVal, _maxSensorVal, 0, height);
+  return map(sensorVal, _minSensorVal, _maxSensorVal, height, 0);
 }
 
 /**
  * Converts a sensor value to a y-pixel value and returns the y-pixel value
  */
 float getYPixelFromSensorVal(float sensorVal) {
-  return map(sensorVal, _minSensorVal, _maxSensorVal, 0, height);
+  return map(sensorVal, _minSensorVal, _maxSensorVal, height, 0);
 }
 
 /**
@@ -382,6 +404,12 @@ void serialEvent (Serial myPort) {
 
       synchronized (_printWriterAllData) {
         _printWriterAllData.println(accelSensorData.toCsvString());
+      }
+      
+      _serialLinesRcvd++;
+      
+      if(_firstSerialValRcvdTimestamp == -1){
+        _firstSerialValRcvdTimestamp = currentTimestampMs;
       }
       
       // force the redraw

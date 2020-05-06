@@ -19,7 +19,7 @@ Adafruit_LIS3DH lis = Adafruit_LIS3DH();
 
 const boolean INCLUDE_TIMESTAMP = true;
 const int SERIAL_BAUD_RATE = 115200; // make sure this matches the value in AccelRecorder.pde
-const int DELAY_MS = 0; // the loop delay
+const int DELAY_MS = 10; // the loop delay
 
 void setup() {
   Serial.begin(SERIAL_BAUD_RATE);
