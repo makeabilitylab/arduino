@@ -18,11 +18,11 @@
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();
 
 const boolean INCLUDE_TIMESTAMP = true;
+const int SERIAL_BAUD_RATE = 9600; //115200; // make sure this matches the value in AccelRecorder.pde
+const int DELAY_MS = 0; // the loop delay
 
 void setup() {
-
-  // To increase speed, can change this to Serial.begin(115200);
-  Serial.begin(9600);
+  Serial.begin(SERIAL_BAUD_RATE);
   Serial.println("Initializing accelerometer...");
   if (! lis.begin(0x18)) {   // change this to 0x19 for alternative i2c address
     Serial.println("Couldnt start");
@@ -38,9 +38,9 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  lis.read();      // get X Y and Z data at once
-   // Then print out the raw data
+
+  // Read accel data
+  lis.read();      
 
   if(INCLUDE_TIMESTAMP){
     Serial.print(millis());
@@ -54,6 +54,7 @@ void loop() {
   Serial.print(lis.z);
   Serial.println();
 
-  // the delay here will obviously affect the sampling rate of our accel sensor
-  delay(10);  
+  if(DELAY_MS > 0){
+    delay(DELAY_MS);
+  }
 }

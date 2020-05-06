@@ -29,7 +29,12 @@ final int DISPLAY_TIMEWINDOW_MS = 1000 * 30; // 30 secs. You can change this to 
 
 // Make sure to change this! If you're not sure what port your Arduino is using
 // Run this Processing sketch and look in the console, then change the number accordingly
-final int ARDUINO_SERIAL_PORT_INDEX = 0; 
+final int ARDUINO_SERIAL_PORT_INDEX = 2; 
+
+// Set the baud rate to same as Arduino (e.g., 9600 or 115200)
+// Note: with 115200, data seems to occasionally be written out of order
+// (we can tell this because of the Arduino time stamp column in the saved file). 
+final int SERIAL_BAUD_RATE = 9600; 
 
 ArrayList<AccelSensorData> _displaySensorData =  new ArrayList<AccelSensorData>(); // sensor data displayed to screen
 PrintWriter _printWriterAllData;
@@ -45,6 +50,21 @@ int _maxSensorVal = 1023;
 
 void setup() {
   size(1024, 576);
+  
+  String fileNameWithPath = sketchPath(FULL_DATASTREAM_RECORDING_FILENAME);
+  File file = new File(fileNameWithPath); 
+  println("Saving accel data to: " + fileNameWithPath);
+     
+  try {
+    // We save all incoming sensor data to a file (by appending)
+    // Appending text to a file: 
+    //  - https://stackoverflow.com/questions/17010222/how-do-i-append-text-to-a-csv-txt-file-in-processing
+    //  - https://docs.oracle.com/javase/7/docs/api/java/io/FileWriter.html
+    //  - Use sketchPath(string) to store in local sketch folder: https://stackoverflow.com/a/36531925
+    _printWriterAllData = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
+  }catch (IOException e){
+    e.printStackTrace();
+  }
 
   // Print to console all the available serial ports
   String [] serialPorts = getAndPrintSerialPortInfo();
@@ -63,9 +83,9 @@ void setup() {
   
   // Open the serial port
   try{
-    println("Attempting to initialize the serial port at index " + ARDUINO_SERIAL_PORT_INDEX);
+    println("Attempting to initialize the serial port at index " + ARDUINO_SERIAL_PORT_INDEX + " with baud rate = " + SERIAL_BAUD_RATE);
     println("This index corresponds to serial port " + serialPorts[ARDUINO_SERIAL_PORT_INDEX]);
-    _serialPort = new Serial(this, serialPorts[ARDUINO_SERIAL_PORT_INDEX], 9600);
+    _serialPort = new Serial(this, serialPorts[ARDUINO_SERIAL_PORT_INDEX], SERIAL_BAUD_RATE);
   }catch(Exception e){
     println("Serial port exception: " + e);
     e.printStackTrace();
@@ -91,27 +111,13 @@ void setup() {
   
   //_legendRect = new Rectangle(width - legendWidth - legendXBuffer, legendYBuffer, legendWidth, legendHeight); // legend at top-right
   _legendRect = new Rectangle(legendXBuffer, legendYBuffer, legendWidth, legendHeight); // legend at top-left
-  
-  String fileNameWithPath = sketchPath(FULL_DATASTREAM_RECORDING_FILENAME);
-  File file = new File(fileNameWithPath); 
-  println("Saving accel data to: " + fileNameWithPath);
-     
-  try {
-    // We save all incoming sensor data to a file (by appending)
-    // Appending text to a file: 
-    //  - https://stackoverflow.com/questions/17010222/how-do-i-append-text-to-a-csv-txt-file-in-processing
-    //  - https://docs.oracle.com/javase/7/docs/api/java/io/FileWriter.html
-    //  - Use sketchPath(string) to store in local sketch folder: https://stackoverflow.com/a/36531925
-    _printWriterAllData = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
-  }catch (IOException e){
-    e.printStackTrace();
-  }
 
   // disable automatically looping over draw()
   // instead, only redraw when we have new data...
   noLoop(); 
   
   println("Waiting for Serial data...");
+  // println(Thread.currentThread());
 }
 
 void draw() {
@@ -313,10 +319,16 @@ void drawLegend(Rectangle legendRect) {
 /**
  * Called automatically when there is data on the serial port
  * See: https://processing.org/reference/libraries/serial/serialEvent_.html
+ * Serial source code in github: 
+ * https://github.com/processing/processing/blob/master/java/libraries/serial/src/processing/serial/Serial.java
+ * 
+ * Note: this method is called by a different thread (EventThread) than the draw() method (Animation Thread)
  */
 void serialEvent (Serial myPort) {
   long currentTimestampMs = System.currentTimeMillis();
   _currentXMin = currentTimestampMs - DISPLAY_TIMEWINDOW_MS;
+  
+  //println(Thread.currentThread());
 
   String inString = "";
   try {
@@ -357,7 +369,9 @@ void serialEvent (Serial myPort) {
         _displaySensorData.remove(0);
       }
 
-      _printWriterAllData.println(accelSensorData.toCsvString());
+      synchronized (_printWriterAllData) {
+        _printWriterAllData.println(accelSensorData.toCsvString());
+      }
       
       // force the redraw
       redraw();
@@ -382,6 +396,27 @@ void checkAndSetNewMinMaxSensorValues(AccelSensorData accelSensorData){
   if(max > _maxSensorVal){
     _maxSensorVal = max; 
   }
+}
+
+/**
+ * Override exist to flush buffer
+ */
+void exit() {
+  println("Flushing PrintWriter, exiting...");
+  
+  if(_printWriterAllData != null){
+    // We need to synchronize _printWriterAllData because the serial event
+    // where we use _printWriterAllData occurs in a different thread
+    //
+    // If we don't synchronize here, occassionally data gets written out of
+    // order on exit. We can tell this because the Arduino is transmitting
+    // timestamps (so when analyzing the data, it's clear)
+    synchronized(_printWriterAllData){
+      _printWriterAllData.flush();
+      _printWriterAllData.close();
+    }
+  }
+  super.exit();
 }
 
 // Class for the accelerometer data
