@@ -32,8 +32,6 @@ final int DISPLAY_TIMEWINDOW_MS = 1000 * 30; // 30 secs. You can change this to 
 final int ARDUINO_SERIAL_PORT_INDEX = 2; 
 
 // Set the baud rate to same as Arduino (e.g., 9600 or 115200)
-// Note: with 115200, data seems to occasionally be written out of order
-// (we can tell this because of the Arduino time stamp column in the saved file). 
 final int SERIAL_BAUD_RATE = 115200; 
 
 ArrayList<AccelSensorData> _displaySensorData =  new ArrayList<AccelSensorData>(); // sensor data displayed to screen
@@ -93,6 +91,12 @@ void setup() {
     println("Attempting to initialize the serial port at index " + ARDUINO_SERIAL_PORT_INDEX + " with baud rate = " + SERIAL_BAUD_RATE);
     println("This index corresponds to serial port " + serialPorts[ARDUINO_SERIAL_PORT_INDEX]);
     _serialPort = new Serial(this, serialPorts[ARDUINO_SERIAL_PORT_INDEX], SERIAL_BAUD_RATE);
+    
+    // We need to clear the port (or sometimes there is leftover data)
+    // (Yes, this is strange, but once we implemented this clear,
+    // we were no longer seeing garbage data in the beginning of our printwriter
+    // strea,)
+    _serialPort.clear();
   }catch(Exception e){
     println("Serial port exception: " + e);
     e.printStackTrace();
@@ -406,7 +410,7 @@ void checkAndSetNewMinMaxSensorValues(AccelSensorData accelSensorData){
 }
 
 /**
- * Override exist to flush buffer
+ * Override exit to flush buffer
  */
 void exit() {
   println("Flushing PrintWriter, exiting...");
@@ -417,10 +421,6 @@ void exit() {
   if(_printWriterAllData != null){
     // We need to synchronize _printWriterAllData because the serial event
     // where we use _printWriterAllData occurs in a different thread
-    //
-    // If we don't synchronize here, occassionally data gets written out of
-    // order on exit. We can tell this because the Arduino is transmitting
-    // timestamps (so when analyzing the data, it's clear)
     synchronized(_printWriterAllData){
       _printWriterAllData.flush();
       _printWriterAllData.close();
