@@ -17,6 +17,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 
 final String FULL_DATASTREAM_RECORDING_FILENAME = "arduino_accel.csv";
+final boolean _createNewFileOnEveryExecution = false;
 
 final color GRID_COLOR = color(128, 128, 128);
 final color XCOLOR = color(255, 61, 0, 200);
@@ -26,7 +27,6 @@ final color [] SENSOR_VALUE_COLORS = { XCOLOR, YCOLOR, ZCOLOR };
 final color DEFAULT_BACKGROUND_COLOR = color(44, 42, 41);
 final int DISPLAY_TIMEWINDOW_MS = 1000 * 30; // 30 secs. You can change this to view more data
 
-
 // Make sure to change this! If you're not sure what port your Arduino is using
 // Run this Processing sketch and look in the console, then change the number accordingly
 final int ARDUINO_SERIAL_PORT_INDEX = 2; 
@@ -34,7 +34,7 @@ final int ARDUINO_SERIAL_PORT_INDEX = 2;
 // Set the baud rate to same as Arduino (e.g., 9600 or 115200)
 // Note: with 115200, data seems to occasionally be written out of order
 // (we can tell this because of the Arduino time stamp column in the saved file). 
-final int SERIAL_BAUD_RATE = 9600; 
+final int SERIAL_BAUD_RATE = 115200; 
 
 ArrayList<AccelSensorData> _displaySensorData =  new ArrayList<AccelSensorData>(); // sensor data displayed to screen
 PrintWriter _printWriterAllData;
@@ -51,7 +51,14 @@ int _maxSensorVal = 1023;
 void setup() {
   size(1024, 576);
   
-  String fileNameWithPath = sketchPath(FULL_DATASTREAM_RECORDING_FILENAME);
+  String fileNameWithPath  = sketchPath(FULL_DATASTREAM_RECORDING_FILENAME);
+  if(_createNewFileOnEveryExecution){
+    String filenameWithoutExt = FULL_DATASTREAM_RECORDING_FILENAME.substring(0, FULL_DATASTREAM_RECORDING_FILENAME.length()-4);
+    String filenameExt = FULL_DATASTREAM_RECORDING_FILENAME.substring(FULL_DATASTREAM_RECORDING_FILENAME.length()-4, FULL_DATASTREAM_RECORDING_FILENAME.length());
+    String filename = filenameWithoutExt + System.currentTimeMillis() + filenameExt;
+    fileNameWithPath = sketchPath(filename);
+  }
+  
   File file = new File(fileNameWithPath); 
   println("Saving accel data to: " + fileNameWithPath);
      
@@ -403,6 +410,9 @@ void checkAndSetNewMinMaxSensorValues(AccelSensorData accelSensorData){
  */
 void exit() {
   println("Flushing PrintWriter, exiting...");
+  
+  _serialPort.clear();
+  _serialPort.stop();
   
   if(_printWriterAllData != null){
     // We need to synchronize _printWriterAllData because the serial event
