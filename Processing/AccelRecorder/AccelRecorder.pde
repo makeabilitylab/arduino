@@ -18,8 +18,9 @@ import java.io.FileWriter;
 
 final String FULL_DATASTREAM_RECORDING_FILENAME = "arduino_accel.csv";
 final boolean _createNewFileOnEveryExecution = false;
+String _filenameWithPath;
 
-final color GRID_COLOR = color(128, 128, 128);
+final color GRID_COLOR = color(160, 160, 160);
 final color XCOLOR = color(255, 61, 0, 200);
 final color YCOLOR = color(73, 164, 239, 200);
 final color ZCOLOR = color(255, 183, 0, 200);
@@ -59,16 +60,16 @@ long _firstSerialValRcvdTimestamp = -1;
 void setup() {
   size(1024, 576);
   
-  String fileNameWithPath  = sketchPath(FULL_DATASTREAM_RECORDING_FILENAME);
+  _filenameWithPath  = sketchPath(FULL_DATASTREAM_RECORDING_FILENAME);
   if(_createNewFileOnEveryExecution){
     String filenameWithoutExt = FULL_DATASTREAM_RECORDING_FILENAME.substring(0, FULL_DATASTREAM_RECORDING_FILENAME.length()-4);
     String filenameExt = FULL_DATASTREAM_RECORDING_FILENAME.substring(FULL_DATASTREAM_RECORDING_FILENAME.length()-4, FULL_DATASTREAM_RECORDING_FILENAME.length());
     String filename = filenameWithoutExt + System.currentTimeMillis() + filenameExt;
-    fileNameWithPath = sketchPath(filename);
+    _filenameWithPath = sketchPath(filename);
   }
   
-  File file = new File(fileNameWithPath); 
-  println("Saving accel data to: " + fileNameWithPath);
+  File file = new File(_filenameWithPath); 
+  println("Saving accel data to: " + _filenameWithPath);
      
   try {
     // We save all incoming sensor data to a file (by appending)
@@ -191,26 +192,43 @@ void draw() {
 
 void drawDebugInfo(){
   if(_firstSerialValRcvdTimestamp != -1){
-    long timeElapsedMs = System.currentTimeMillis() - _firstSerialValRcvdTimestamp;
-    float samplingRate = _serialLinesRcvd / (timeElapsedMs / 1000.0);
     noStroke();
     fill(255);
+    textSize(11);
+    
+    float strHeight = textAscent() + textDescent();
+    
+    String strSavingTo = "Saving to: " + _filenameWithPath;
+    float strWidth = textWidth(strSavingTo) + 10;
+    float yTextLoc = strHeight;
+    text(strSavingTo, width - strWidth, yTextLoc);
+    
+    String strDisplayAmt = "Displaying " + nf((DISPLAY_TIMEWINDOW_MS / 1000.0), 2, 1) + " secs";
+    strDisplayAmt += " (" + _displaySensorData.size() + " values)";
+    strWidth = textWidth(strDisplayAmt) + 10;
+    yTextLoc += strHeight;
+    text(strDisplayAmt, width - strWidth, yTextLoc);
+    
+    long timeElapsedMs = System.currentTimeMillis() - _firstSerialValRcvdTimestamp;
+    float samplingRate = _serialLinesRcvd / (timeElapsedMs / 1000.0);
+    
     
     String strSamplingRate = nf(samplingRate, 3, 1) + " Hz";
-    float strWidth = textWidth(strSamplingRate) + 10;
-    float strHeight = textAscent() + textDescent();
-    text(strSamplingRate, width - strWidth, strHeight);
+    strWidth = textWidth(strSamplingRate) + 10;
+    
+    yTextLoc += strHeight;
+    text(strSamplingRate, width - strWidth, yTextLoc);
     
     String strFrameRate = nf(frameRate, 3, 1) + " fps";
-    text(strFrameRate, width - strWidth, strHeight * 2);
+    yTextLoc += strHeight;
+    text(strFrameRate, width - strWidth, yTextLoc);
   }
 }
 
 void drawYAxis(){
-  int numYTickMarks = 5; 
+  final int numYTickMarks = 5; 
+  final int tickMarkWidth = 6;
   
-  noFill();
-  stroke(GRID_COLOR);
   textSize(10);
   float strHeight = textAscent() + textDescent();
   float yRange = getYRange();
@@ -218,9 +236,26 @@ void drawYAxis(){
   for(int yTickMark = 0; yTickMark < numYTickMarks; yTickMark++){
     float yVal = map(yTickMark, 0, numYTickMarks, _minSensorVal + yRange * 0.10, _maxSensorVal - yRange * 0.10);
     float yCurPixelVal = getYPixelFromSensorVal(yVal);
-    line(0, yCurPixelVal, 10, yCurPixelVal);
-    text(yVal, 10, yCurPixelVal);
+    noFill();
+    stroke(GRID_COLOR);
+    line(0, yCurPixelVal, tickMarkWidth, yCurPixelVal);
+    
+    fill(GRID_COLOR);
+    noStroke();
+    text(nfs(yVal, 3, 1), tickMarkWidth + 2, yCurPixelVal + (strHeight / 2.0) * 0.7);
   }
+  
+  color zeroColor = color(255, 255, 255, 50);
+  stroke(zeroColor);
+  float yVal = 0;
+  float yCurPixelVal = getYPixelFromSensorVal(yVal);
+  line(0, yCurPixelVal, width, yCurPixelVal);
+  
+  noStroke();
+  fill(zeroColor);
+  String strZero = "0";
+  float strWidth = textWidth(strZero);
+  text(0, width - strWidth - 2, yCurPixelVal - 2);
 }
 
 /**
