@@ -330,7 +330,8 @@ void drawLegend(Rectangle legendRect) {
   // draw outline of legend box
   stroke(textColor);
   strokeWeight(1);
-  noFill();
+  //noFill();
+  fill(0, 0, 0, 50);
   rect(legendRect.x, legendRect.y, legendRect.width, legendRect.height);
 
   // Setup dimension calculations for legend
