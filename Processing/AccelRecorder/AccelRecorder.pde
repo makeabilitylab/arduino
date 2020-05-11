@@ -29,12 +29,20 @@ final int DISPLAY_TIMEWINDOW_MS = 1000 * 20; // 20 secs. You can change this to 
 
 // Make sure to change this! If you're not sure what port your Arduino is using
 // Run this Processing sketch and look in the console, then change the number accordingly
-final int ARDUINO_SERIAL_PORT_INDEX = 2; 
+final int ARDUINO_SERIAL_PORT_INDEX = 0; // CHANGE THIS! 
 
 // Set the baud rate to same as Arduino (e.g., 9600 or 115200)
-final int SERIAL_BAUD_RATE = 115200; 
+final int SERIAL_BAUD_RATE = 115200; // POSSIBLY CHANGE THIS :)
 
-ArrayList<AccelSensorData> _displaySensorData =  new ArrayList<AccelSensorData>(); // sensor data displayed to screen
+// Data buffer shared between the event thread and UI thread. Must use synchronized
+// to access and manipulate
+ArrayList<AccelSensorData> _sensorBuffer = new ArrayList<AccelSensorData>();
+
+// Buffer to display values to the screen
+ArrayList<AccelSensorData> _displaySensorData = new ArrayList<AccelSensorData>();
+
+// Writes accelerometer data to the file system. Because this PrintWriter is shared
+// between the event thread and UI thread, must use synchronized to access
 PrintWriter _printWriterAllData;
 
 // The serial port is necessary to read data in from the Arduino
@@ -45,7 +53,7 @@ Rectangle _legendRect; // location and drawing area of the legend
 boolean _dynamicYAxis = true;
 int _minSensorVal = 0;
 int _maxSensorVal = 1023;
-long _serialLinesRcvd = 0;
+long _serialLinesRcvd = 0; // for coarse grain sampling rate calc
 long _firstSerialValRcvdTimestamp = -1;
 
 void setup() {
@@ -125,10 +133,6 @@ void setup() {
   //_legendRect = new Rectangle(width - legendWidth - legendXBuffer, legendYBuffer, legendWidth, legendHeight); // legend at top-right
   _legendRect = new Rectangle(legendXBuffer, legendYBuffer, legendWidth, legendHeight); // legend at top-left
 
-  // disable automatically looping over draw()
-  // instead, only redraw when we have new data...
-  noLoop(); 
-  
   println("Waiting for Serial data...");
   // println(Thread.currentThread());
 }
@@ -136,7 +140,27 @@ void setup() {
 void draw() {
   
   background(DEFAULT_BACKGROUND_COLOR);
- 
+  
+  // Check for new sensor data
+  ArrayList<AccelSensorData> newData = null;
+  synchronized(_sensorBuffer){
+    newData = new ArrayList<AccelSensorData>(_sensorBuffer);
+    _sensorBuffer.clear();
+  }
+  
+  // Dump new data into _displaySensorData
+  for(int i = 0; i < newData.size(); i++){
+    AccelSensorData accelSensorData = newData.get(i);
+    checkAndSetNewMinMaxSensorValues(accelSensorData);
+    _displaySensorData.add(accelSensorData);
+  }  
+  
+  // Remove data that is no longer relevant to be displayed
+  while(_displaySensorData.size() > 0 && 
+        _displaySensorData.get(0).timestamp < _currentXMin){
+    _displaySensorData.remove(0);
+  }
+  
   if(_displaySensorData.size() <= 0){
     textSize(50);
     
@@ -391,17 +415,12 @@ void serialEvent (Serial myPort) {
         data = new int[] { int(inString) };
       }
 
-      AccelSensorData accelSensorData = new AccelSensorData(currentTimestampMs, data[0], data[1], data[2], data[3]);
-      checkAndSetNewMinMaxSensorValues(accelSensorData);
-      
-      _displaySensorData.add(accelSensorData);
-
-      // Remove data that is no longer relevant to be displayed
-      while(_displaySensorData.size() > 0 && 
-            _displaySensorData.get(0).timestamp < _currentXMin){
-        _displaySensorData.remove(0);
+       AccelSensorData accelSensorData = new AccelSensorData(currentTimestampMs, data[0], data[1], data[2], data[3]);
+      synchronized(_sensorBuffer){
+        _sensorBuffer.add(accelSensorData);
       }
-
+      
+      // We share the print writer with the UI thread in the exit function
       synchronized (_printWriterAllData) {
         _printWriterAllData.println(accelSensorData.toCsvString());
       }
@@ -413,7 +432,7 @@ void serialEvent (Serial myPort) {
       }
       
       // force the redraw
-      redraw();
+      //redraw();
     }
   }
   catch(Exception e) {
