@@ -9,6 +9,20 @@
  * @jonfroehlich
  * http://makeabilitylab.io
  * 
+ * TODO:
+ * - [done] Hit space to start and stop. When starting, counts down from 3, 2, 1
+ * - [done] Support hardware button press to start
+ * - [done] Status is shown in big letters
+ * - [done] Saves both full sensor stream plus presegmented?
+ * - [done] Maybe save Arduino time, Processing timestamp too?
+ * - [done] Draw axes? 
+ * - [done] Write out save file name after gesture finished recording? Maybe put in GestureAnnotation overlay
+ * - [done] When the window is closed (or closing), flush the printwriter and close it (to ensure all of the fulldata.csv is saved)?
+ *
+ * Future ideas:
+ * - Shows capture snapshot?
+ * - GUI to select which gesture to record
+ * 
  */
  
 import processing.serial.*;
@@ -17,7 +31,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 
 final String GESTURE_DIR_NAME = "Gestures";
-final String FULL_DATASTREAM_RECORDING_FILENAME = "arduino_accel.csv";
+final String FULL_DATASTREAM_RECORDING_FILENAME = "full_arduino_accel.csv";
 final boolean _createNewFileOnEveryExecution = false;
 String _filenameWithPath;
 
@@ -219,11 +233,20 @@ void draw() {
 void drawRecordingStatus(){
   textSize(10);
   float strHeight = textAscent() + textDescent();
-  float yText = height - (strHeight + 1) * GESTURES.length;
+  float yText = height - (strHeight * GESTURES.length) - 3;
+  noStroke();
+  
   for(int i = 0; i < GESTURES.length; i++){
-    int sampleNum = getNumGesturesRecordedWithName(GESTURES[i]) + 1;
+    int sampleNum = min(getNumGesturesRecordedWithName(GESTURES[i]) + 1, NUM_SAMPLES_TO_RECORD_PER_GESTURE);
     String str = GESTURES[i] + " (" + sampleNum + "/" + NUM_SAMPLES_TO_RECORD_PER_GESTURE + ")";
     float strWidth = textWidth(str) + 10;
+    
+    if(_curGestureIndex == i){
+      fill(0, 240, 0, 230);
+    }else{
+      fill(255, 255, 255, 200);
+    }
+    
     text(str, width- strWidth, yText);
     yText += strHeight;
   }
@@ -256,7 +279,7 @@ void drawInstructions(int countdownTimeSecs){
       float yText = height / 4.0 + strHeight / 2.0 - textDescent();
       text(str, width / 2.0 - strWidth / 2.0, yText);
       
-       textSize(20);
+      textSize(20);
       str = "Hit SPACEBAR or BUTTON to stop recording.";
       strWidth = textWidth(str);
       
@@ -281,6 +304,7 @@ void drawInstructions(int countdownTimeSecs){
   }
   else if(_curGestureIndex < GESTURES.length){
     textSize(30);
+    fill(255, 255, 255);
     int sampleNum = getNumGesturesRecordedWithName(GESTURES[_curGestureIndex]) + 1;
     strInstructions = "Hit SPACEBAR or BUTTON to record sample " + sampleNum + "/" + NUM_SAMPLES_TO_RECORD_PER_GESTURE 
                               + " of gesture:\n'" + GESTURES[_curGestureIndex] + "'";
@@ -312,7 +336,7 @@ void toggleGestureRecording(){
   if(elapsedTime > MIN_TIME_BETWEEN_GESTURE_TOGGLE_MS){
     _timestampSinceLastGestureRecordToggle = currentTimestampMs;
     if (_recordingGesture) {
-      // if the spacebar was prssed and we're currently recording a gesture
+      // if the spacebar was pressed and we're currently recording a gesture
       // then the spacebar just ended the gesture
       _recordingGesture = false;
       _timestampStartCountdownMs = -1;
@@ -793,6 +817,8 @@ class GestureRecording{
     }
     File file = new File(fDir, filenameNoPath); 
     
+    println("Attempting to save '" + this.name + "' to " + file.getAbsolutePath());
+    
     try {
       PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter(file, false)));
       printWriter.println(AccelSensorData.CSV_HEADER);
@@ -801,6 +827,7 @@ class GestureRecording{
       }
       printWriter.flush();
       printWriter.close();
+      println("Wrote " + listSensorData.size() " lines to " + file.getAbsolutePath());
       this.savedAbsolutePath = file.getAbsolutePath();
       this.savedFilename = file.getName();
     }catch (IOException e){
