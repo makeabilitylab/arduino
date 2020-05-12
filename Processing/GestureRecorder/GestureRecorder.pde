@@ -72,6 +72,8 @@ ArrayList<GestureRecording> _gestureRecordings = new ArrayList<GestureRecording>
 final int COUNTDOWN_TIME_MS = 4 * 1000; // how long to show a countdown timer before recording a gesture
 long _timestampStartCountdownMs = -1; // timestamp of when the countdown timer was started
 boolean _recordingGesture = false; // true if we are currently recording a gesture, false otherwise
+long _timestampSinceLastGestureRecordToggle = -1;
+final int MIN_TIME_BETWEEN_GESTURE_TOGGLE_MS = 500;
 
 void setup() {
   size(1024, 576);
@@ -208,6 +210,23 @@ void draw() {
   drawGestureRecordingAnnotations();
   drawLegend(_legendRect);
   drawDebugInfo();
+  drawRecordingStatus();
+}
+
+/**
+ * Writes out recording status to the screen
+ */ 
+void drawRecordingStatus(){
+  textSize(10);
+  float strHeight = textAscent() + textDescent();
+  float yText = height - (strHeight + 1) * GESTURES.length;
+  for(int i = 0; i < GESTURES.length; i++){
+    int sampleNum = getNumGesturesRecordedWithName(GESTURES[i]) + 1;
+    String str = GESTURES[i] + " (" + sampleNum + "/" + NUM_SAMPLES_TO_RECORD_PER_GESTURE + ")";
+    float strWidth = textWidth(str) + 10;
+    text(str, width- strWidth, yText);
+    yText += strHeight;
+  }
 }
 
 /**
@@ -217,7 +236,7 @@ void drawInstructions(int countdownTimeSecs){
   
   
   String strInstructions = "";
-  textSize(35);
+  textSize(30);
   noStroke();
   fill(255, 255, 255, 200);
   if(_displaySensorData.size() <= 0){
@@ -232,13 +251,13 @@ void drawInstructions(int countdownTimeSecs){
       float strHeight = textAscent() + textDescent();
       int sampleNum = getNumGesturesRecordedWithName(GESTURES[_curGestureIndex]) + 1;
       //str = "Recording Sample " + sampleNum + "/" + NUM_SAMPLES_TO_RECORD_PER_GESTURE + " of '" + GESTURES[_curGestureIndex]  + "'!";
-      str = "Now recording '" + GESTURES[_curGestureIndex]  + "'";
+      str = "Now recording '" + GESTURES[_curGestureIndex]  + "' (" + sampleNum + "/" + NUM_SAMPLES_TO_RECORD_PER_GESTURE + ")";
       float strWidth = textWidth(str);
       float yText = height / 4.0 + strHeight / 2.0 - textDescent();
       text(str, width / 2.0 - strWidth / 2.0, yText);
       
        textSize(20);
-      str = "Hit SPACEBAR to stop recording.";
+      str = "Hit SPACEBAR or BUTTON to stop recording.";
       strWidth = textWidth(str);
       
       yText += strHeight + 2;
@@ -261,8 +280,9 @@ void drawInstructions(int countdownTimeSecs){
     }
   }
   else if(_curGestureIndex < GESTURES.length){
+    textSize(30);
     int sampleNum = getNumGesturesRecordedWithName(GESTURES[_curGestureIndex]) + 1;
-    strInstructions = "Hit SPACEBAR to record Sample " + sampleNum + "/" + NUM_SAMPLES_TO_RECORD_PER_GESTURE 
+    strInstructions = "Hit SPACEBAR or BUTTON to record sample " + sampleNum + "/" + NUM_SAMPLES_TO_RECORD_PER_GESTURE 
                               + " of gesture:\n'" + GESTURES[_curGestureIndex] + "'";
   }else{
     strInstructions = "You did it! Gesture recording completed!";
@@ -281,11 +301,22 @@ void drawInstructions(int countdownTimeSecs){
  */
 void keyPressed() {
   if (key == ' ') { 
+    toggleGestureRecording();
+  }
+}
+
+void toggleGestureRecording(){
+  long currentTimestampMs = System.currentTimeMillis();  
+  long elapsedTime = currentTimestampMs - _timestampSinceLastGestureRecordToggle;
+  
+  if(elapsedTime > MIN_TIME_BETWEEN_GESTURE_TOGGLE_MS){
+    _timestampSinceLastGestureRecordToggle = currentTimestampMs;
     if (_recordingGesture) {
-      // save gesture!
+      // if the spacebar was prssed and we're currently recording a gesture
+      // then the spacebar just ended the gesture
       _recordingGesture = false;
       _timestampStartCountdownMs = -1;
-      long currentTimestampMs = System.currentTimeMillis();
+     
       GestureRecording curGestureRecording = _gestureRecordings.get(_gestureRecordings.size() - 1);
       curGestureRecording.endTimestamp = currentTimestampMs;
       curGestureRecording.save();
@@ -327,7 +358,7 @@ void drawDebugInfo(){
     
     float strHeight = textAscent() + textDescent();
     
-    String strSavingTo = "Saving to: " + _filenameWithPath;
+    String strSavingTo = "Saving full stream to: " + _filenameWithPath;
     float strWidth = textWidth(strSavingTo) + 10;
     float yTextLoc = strHeight;
     text(strSavingTo, width - strWidth, yTextLoc);
@@ -629,7 +660,7 @@ void serialEvent (Serial myPort) {
         data = new int[] { int(inString) };
       }
 
-       AccelSensorData accelSensorData = new AccelSensorData(currentTimestampMs, data[0], data[1], data[2], data[3]);
+      AccelSensorData accelSensorData = new AccelSensorData(currentTimestampMs, data[0], data[1], data[2], data[3]);
       synchronized(_sensorBuffer){
         _sensorBuffer.add(accelSensorData);
       }
@@ -643,6 +674,13 @@ void serialEvent (Serial myPort) {
       
       if(_firstSerialValRcvdTimestamp == -1){
         _firstSerialValRcvdTimestamp = currentTimestampMs;
+      }
+      
+      if(data.length >= 4){
+        int gestureRecordButtonPressed = data[4];
+        if(gestureRecordButtonPressed == 1){
+          toggleGestureRecording(); 
+        }
       }
       
       // force the redraw
