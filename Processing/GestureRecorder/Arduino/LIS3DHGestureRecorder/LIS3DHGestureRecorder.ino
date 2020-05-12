@@ -19,7 +19,7 @@ Adafruit_LIS3DH lis = Adafruit_LIS3DH();
 
 const boolean INCLUDE_TIMESTAMP = true; // print out timestamp to serial
 const int BUTTON_INPUT_PIN = 21; // hooked up with pull-up configuration
-const int SERIAL_BAUD_RATE = 115200; // make sure this matches the value in AccelRecorder.pde
+const int SERIAL_BAUD_RATE = 115200; // make sure this matches the value in GestureRecorder.pde
 const int DELAY_MS = 10; // the loop delay
 
 void setup() {

@@ -31,7 +31,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 
 final String GESTURE_DIR_NAME = "Gestures";
-final String FULL_DATASTREAM_RECORDING_FILENAME = "full_arduino_accel.csv";
+final String FULL_DATASTREAM_RECORDING_FILENAME = "full_accel_datastream.csv";
 final boolean _createNewFileOnEveryExecution = false;
 String _filenameWithPath;
 
@@ -45,10 +45,10 @@ final int DISPLAY_TIMEWINDOW_MS = 1000 * 20; // 20 secs. You can change this to 
 
 // Make sure to change this! If you're not sure what port your Arduino is using
 // Run this Processing sketch and look in the console, then change the number accordingly
-final int ARDUINO_SERIAL_PORT_INDEX = 0; // CHANGE THIS! 
+final int ARDUINO_SERIAL_PORT_INDEX = 0; // CHANGE THIS TO APPROPRIATE PORT! 
 
 // Set the baud rate to same as Arduino (e.g., 9600 or 115200)
-final int SERIAL_BAUD_RATE = 115200; // POSSIBLY CHANGE THIS :)
+final int SERIAL_BAUD_RATE = 115200; // CHANGE THIS TO MATCH BAUD RATE ON ARDUINO
 
 // Data buffer shared between the event thread and UI thread. Must use synchronized
 // to access and manipulate
@@ -185,11 +185,16 @@ void draw() {
     _sensorBuffer.clear();
   }
   
-  // Dump new data into _displaySensorData
+  // Dump new data into _displaySensorData and curGestureRecording
   for(int i = 0; i < newData.size(); i++){
     AccelSensorData accelSensorData = newData.get(i);
     checkAndSetNewMinMaxSensorValues(accelSensorData);
     _displaySensorData.add(accelSensorData);
+    
+    if(_recordingGesture){
+      GestureRecording curGestureRecording = _gestureRecordings.get(_gestureRecordings.size() - 1);
+      curGestureRecording.listSensorData.add(accelSensorData);
+    }
   }  
   
   // Remove data that is no longer relevant to be displayed
@@ -738,8 +743,10 @@ void checkAndSetNewMinMaxSensorValues(AccelSensorData accelSensorData){
 void exit() {
   println("Flushing PrintWriter, exiting...");
   
-  _serialPort.clear();
-  _serialPort.stop();
+  if(_serialPort != null){
+    _serialPort.clear();
+    _serialPort.stop();
+  }
   
   if(_printWriterAllData != null){
     // We need to synchronize _printWriterAllData because the serial event
@@ -827,7 +834,7 @@ class GestureRecording{
       }
       printWriter.flush();
       printWriter.close();
-      println("Wrote " + listSensorData.size() " lines to " + file.getAbsolutePath());
+      println("Wrote " + listSensorData.size() + " lines to " + file.getAbsolutePath());
       this.savedAbsolutePath = file.getAbsolutePath();
       this.savedFilename = file.getName();
     }catch (IOException e){
