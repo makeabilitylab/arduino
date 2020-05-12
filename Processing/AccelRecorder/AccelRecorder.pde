@@ -1,5 +1,5 @@
 /**
- * Records accelerometer-based gestures. Works with the Arduino program
+ * Records the accelerometer stream to file. Works with the Arduino program
  * ADXL335SerialWriter.ino, LISDHSerialWriter.ino or any program that 
  * provides a CSV input stream on the serial port of "timestamp, x, y, z"
  *
