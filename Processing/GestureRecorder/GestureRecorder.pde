@@ -193,15 +193,19 @@ void draw() {
     drawSensorLine(YCOLOR, lastAccelSensorData.timestamp, lastAccelSensorData.y, curAccelSensorData.timestamp, curAccelSensorData.y);
     drawSensorLine(ZCOLOR, lastAccelSensorData.timestamp, lastAccelSensorData.z, curAccelSensorData.timestamp, curAccelSensorData.z);
   }
-
-  if (_timestampStartCountdownMs != -1) {
-    updateAndDrawCountdownTimer();
-  }else{
-    drawInstructions(); 
+  
+  long curTimestampMs = System.currentTimeMillis();
+  long elapsedTimeMs = curTimestampMs - _timestampStartCountdownMs;
+  int countdownTimeSecs = (int)((COUNTDOWN_TIME_MS - elapsedTimeMs) / 1000.0);
+  
+  if (_timestampStartCountdownMs != -1 && countdownTimeSecs <= 0 && !_recordingGesture) {
+    _recordingGesture = true;
+    GestureRecording gestureRecording = new GestureRecording(GESTURE_DIR_NAME, GESTURES[_curGestureIndex], curTimestampMs);
+    _gestureRecordings.add(gestureRecording);
   }
-
+  
+  drawInstructions(countdownTimeSecs); 
   drawGestureRecordingAnnotations();
-
   drawLegend(_legendRect);
   drawDebugInfo();
 }
@@ -209,65 +213,66 @@ void draw() {
 /**
  * Writes out basic instructions for the user
  */
-void drawInstructions(){
+void drawInstructions(int countdownTimeSecs){
   
   
   String strInstructions = "";
   textSize(35);
+  noStroke();
+  fill(255, 255, 255, 200);
   if(_displaySensorData.size() <= 0){
     textSize(50);
     strInstructions = "Waiting for Serial data...";
   }
+  else if(_timestampStartCountdownMs != -1){
+    // if we're here, the user hit the spacebar and we're either ready to record or recording
+    // draw center of screen
+    String str = ""; 
+    if (_recordingGesture) {
+      float strHeight = textAscent() + textDescent();
+      int sampleNum = getNumGesturesRecordedWithName(GESTURES[_curGestureIndex]) + 1;
+      //str = "Recording Sample " + sampleNum + "/" + NUM_SAMPLES_TO_RECORD_PER_GESTURE + " of '" + GESTURES[_curGestureIndex]  + "'!";
+      str = "Now recording '" + GESTURES[_curGestureIndex]  + "'";
+      float strWidth = textWidth(str);
+      float yText = height / 4.0 + strHeight / 2.0 - textDescent();
+      text(str, width / 2.0 - strWidth / 2.0, yText);
+      
+       textSize(20);
+      str = "Hit SPACEBAR to stop recording.";
+      strWidth = textWidth(str);
+      
+      yText += strHeight + 2;
+     
+      text(str, width / 2.0 - strWidth / 2.0, yText);
+      
+    } else {
+      // counting down
+      textSize(35);
+      str = "Recording '" + GESTURES[_curGestureIndex]  + "' in...";
+      float strWidth = textWidth(str);
+      float strHeight = textAscent() + textDescent();
+      text(str, width / 2.0 - strWidth / 2.0, height / 4.0 + strHeight / 2.0 - textDescent());
+      
+      textSize(80);
+      str = String.format("%d", countdownTimeSecs);
+      strHeight = textAscent() + textDescent();
+      strWidth = textWidth(str);
+      text(str, width / 2.0 - strWidth / 2.0, height / 2.0 + strHeight / 2.0 - textDescent());
+    }
+  }
   else if(_curGestureIndex < GESTURES.length){
     int sampleNum = getNumGesturesRecordedWithName(GESTURES[_curGestureIndex]) + 1;
-    strInstructions = "Hit spacebar to record Sample " + sampleNum + "/" + NUM_SAMPLES_TO_RECORD_PER_GESTURE 
+    strInstructions = "Hit SPACEBAR to record Sample " + sampleNum + "/" + NUM_SAMPLES_TO_RECORD_PER_GESTURE 
                               + " of gesture:\n'" + GESTURES[_curGestureIndex] + "'";
   }else{
     strInstructions = "You did it! Gesture recording completed!";
   }
   
-  float strWidth = textWidth(strInstructions);
-  float strHeight = textAscent() + textDescent();
-  
-  noStroke();
-  fill(255, 255, 255, 200);
-  text(strInstructions, width / 2.0 - strWidth / 2.0, height / 4.0 + strHeight / 2.0 - textDescent());
-}
-
-/**
- * Controls the gesture recording timer and recording logic (i.e., sets recording flag)
- */
-void updateAndDrawCountdownTimer() {
-  
-  fill(255);
-  
-  long curTimestampMs = System.currentTimeMillis();
-  long elapsedTimeMs = curTimestampMs - _timestampStartCountdownMs;
-  int countdownTimeSecs = (int)((COUNTDOWN_TIME_MS - elapsedTimeMs) / 1000.0);
-
-
-
-  // draw center of screen
-  String str = ""; 
-  if (countdownTimeSecs <= 0) {
-    textSize(40);
+  if(strInstructions.length() > 0){
+    float strWidth = textWidth(strInstructions);
     float strHeight = textAscent() + textDescent();
-    int sampleNum = getNumGesturesRecordedWithName(GESTURES[_curGestureIndex]) + 1;
-    str = "Recording Sample " + sampleNum + "/" + NUM_SAMPLES_TO_RECORD_PER_GESTURE + " of '" + GESTURES[_curGestureIndex]  + "'!";
-
-    if (!_recordingGesture) {
-      _recordingGesture = true;
-      GestureRecording gestureRecording = new GestureRecording(GESTURE_DIR_NAME, GESTURES[_curGestureIndex], curTimestampMs);
-      _gestureRecordings.add(gestureRecording);
-    }
-    float strWidth = textWidth(str);
-    text(str, width / 2.0 - strWidth / 2.0, height * 0.75 + strHeight / 2.0 - textDescent());
-  } else {
-    textSize(80);
-    float strHeight = textAscent() + textDescent();
-    str = String.format("%d", countdownTimeSecs);
-    float strWidth = textWidth(str);
-    text(str, width / 2.0 - strWidth / 2.0, height / 2.0 + strHeight / 2.0 - textDescent());
+  
+    text(strInstructions, width / 2.0 - strWidth / 2.0, height / 4.0 + strHeight / 2.0 - textDescent());
   }
 }
 
