@@ -31,7 +31,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 
 final String GESTURE_DIR_NAME = "Gestures";
-final String FULL_DATASTREAM_RECORDING_FILENAME = "full_accel_datastream.csv";
+final String FULL_DATASTREAM_RECORDING_FILENAME = "fulldatastream.csv";
 final boolean _createNewFileOnEveryExecution = false;
 String _filenameWithPath;
 
