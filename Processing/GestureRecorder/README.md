@@ -1,3 +1,5 @@
+![GestureRecorder animated gif showing a sample data collection](https://raw.githubusercontent.com/makeabilitylab/physcomp/master/signals/assets/movies/GestureRecorder_Trim_800_5fps_compressed90.gif)
+
 To run the GestureRecorder, you must:
 1. Download and install [Processing 3](https://processing.org/download/)
 2. Run the [LIS3DHGestureRecorder.ino](https://github.com/makeabilitylab/arduino/tree/master/Processing/GestureRecorder/Arduino/LIS3DHGestureRecorder) code on your Arduino
