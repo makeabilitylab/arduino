@@ -4,3 +4,5 @@ To run the GestureRecorder, you must:
 3. Run [GestureRecorder.pde](https://github.com/makeabilitylab/arduino/blob/master/Processing/GestureRecorder/GestureRecorder.pde). Make sure to update the `ARDUINO_SERIAL_PORT_INDEX` and `SERIAL_BAUD_RATE` to match your Arduino.
 
 Your recorded gestures will be stored in a folder called `Gestures`, which will be a sub-directory in the root `.pde`.
+
+Here's a silly video demonstration: https://youtu.be/z9OeVyGdbVY
