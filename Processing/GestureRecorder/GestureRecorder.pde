@@ -32,8 +32,8 @@ import java.io.FileWriter;
 
 final String GESTURE_DIR_NAME = "Gestures";
 final String FULL_DATASTREAM_RECORDING_FILENAME = "fulldatastream.csv";
-final boolean _createNewFileOnEveryExecution = false;
-String _filenameWithPath;
+final boolean _createNewFullDatastreamFileOnEveryExecution = false;
+String _fullDataStreamFilenameWithPath;
 
 final color GRID_COLOR = color(160, 160, 160);
 final color XCOLOR = color(255, 61, 0, 200);
@@ -76,6 +76,8 @@ long _firstSerialValRcvdTimestamp = -1;
 final color RECORDING_BACKGROUND_COLOR = color(80, 0, 0);
 final int NUM_SAMPLES_TO_RECORD_PER_GESTURE = 5;
 
+// Feel free to rename "Custom" to something that is more semantically meaningful describing your custom gesture
+// For example, I did "Bunny Hops"
 final String [] GESTURES = { "Backhand Tennis", "Forehand Tennis", "Underhand Bowling", 
                              "Baseball Throw", "Midair Clockwise 'O'", "At Rest", "Midair Counter-clockwise 'O'",
                              "Midair Zorro 'Z'", "Midair 'S'", "Shake", "Custom" };
@@ -92,16 +94,22 @@ final int MIN_TIME_BETWEEN_GESTURE_TOGGLE_MS = 500;
 void setup() {
   size(1024, 576);
   
-  _filenameWithPath  = sketchPath(FULL_DATASTREAM_RECORDING_FILENAME);
-  if(_createNewFileOnEveryExecution){
-    String filenameWithoutExt = FULL_DATASTREAM_RECORDING_FILENAME.substring(0, FULL_DATASTREAM_RECORDING_FILENAME.length()-4);
-    String filenameExt = FULL_DATASTREAM_RECORDING_FILENAME.substring(FULL_DATASTREAM_RECORDING_FILENAME.length()-4, FULL_DATASTREAM_RECORDING_FILENAME.length());
-    String filename = filenameWithoutExt + System.currentTimeMillis() + filenameExt;
-    _filenameWithPath = sketchPath(filename);
+  String filenameNoPath = FULL_DATASTREAM_RECORDING_FILENAME;
+  
+  if(_createNewFullDatastreamFileOnEveryExecution){
+    String filenameWithoutExt = filenameNoPath.substring(0, filenameNoPath.length()-4);
+    String filenameExt = filenameNoPath.substring(filenameNoPath.length()-4, filenameNoPath.length());
+    filenameNoPath = filenameWithoutExt + System.currentTimeMillis() + filenameExt;
   }
   
-  File file = new File(_filenameWithPath); 
-  println("Saving accel data to: " + _filenameWithPath);
+  File fDir = new File(sketchPath(GESTURE_DIR_NAME));
+  if(!fDir.exists()){
+    fDir.mkdirs(); 
+  }
+  File file = new File(fDir, filenameNoPath); 
+  
+  _fullDataStreamFilenameWithPath = file.getAbsolutePath();
+  println("Saving accel data to: " + _fullDataStreamFilenameWithPath);
      
   try {
     // We save all incoming sensor data to a file (by appending)
@@ -387,7 +395,7 @@ void drawDebugInfo(){
     
     float strHeight = textAscent() + textDescent();
     
-    String strSavingTo = "Saving full stream to: " + _filenameWithPath;
+    String strSavingTo = "Saving full stream to: " + _fullDataStreamFilenameWithPath;
     float strWidth = textWidth(strSavingTo) + 10;
     float yTextLoc = strHeight;
     text(strSavingTo, width - strWidth, yTextLoc);
