@@ -722,7 +722,7 @@ void processServer() {
     if (whatClientSaid != null) {
       processInputFromClient(whatClientSaid);
       println(thisClient.ip() + "t" + whatClientSaid);
-    } 
+    }
   } 
   delay(10);
 }
