@@ -7,6 +7,7 @@
    http://makeabilitylab.io
 
 */
+
 #include <WiFi.h>
 #include <Wire.h>
 #include <SPI.h>
@@ -52,7 +53,6 @@ const int DELAY_MS = 10;                // the loop delay
 BluetoothSerial ESP_BT; //Object for Bluetooth
 // Use WiFiClient class to create TCP connections
 WiFiClient ESP_WIFI;
-
 
 void setup()
 {
