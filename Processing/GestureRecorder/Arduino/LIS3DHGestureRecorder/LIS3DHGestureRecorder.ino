@@ -136,13 +136,13 @@ void loop()
     stream->print(", ");
   }
   stream->print(lis.x);
-  stream.print(", ");
-  stream.print(lis.y);
-  stream.print(", ");
-  stream.print(lis.z);
-  stream.print(", ");
-  stream.print(!buttonVal); // because pull-up
-  stream.println();
+  stream->print(", ");
+  stream->print(lis.y);
+  stream->print(", ");
+  stream->print(lis.z);
+  stream->print(", ");
+  stream->print(!buttonVal); // because pull-up
+  stream->println();
 
   while (!lis.haveNewData())
   {
