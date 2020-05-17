@@ -13,6 +13,7 @@
 #include <SPI.h>
 #include <Adafruit_LIS3DH.h>
 #include <Adafruit_Sensor.h>
+#include "Stream.h"
 #include "BluetoothSerial.h" //Header File for Serial Bluetooth, will be added by default into Arduino
 
 // Settings
@@ -47,7 +48,7 @@ Adafruit_LIS3DH lis = Adafruit_LIS3DH();
 
 const boolean INCLUDE_TIMESTAMP = true; // print out timestamp to serial
 const int BUTTON_INPUT_PIN = 21;        // hooked up with pull-up configuration
-const int DELAY_MS = 10;                // the loop delay
+const int DELAY_MS = 2;                // the loop delay
 
 // Common data objects
 BluetoothSerial ESP_BT; //Object for Bluetooth
@@ -93,77 +94,30 @@ void setup()
     }
     Serial.print("WiFi connected - IP address: ");
     Serial.println(WiFi.localIP());
-    if (!ESP_WIFI.connect(WIFI_HOST_IP_ADDRESS, WIFI_HOST_PORT)) {
+    while (!ESP_WIFI.connect(WIFI_HOST_IP_ADDRESS, WIFI_HOST_PORT)) {
       Serial.print("Failed to connect to ");
       Serial.print(WIFI_HOST_IP_ADDRESS);
       Serial.print(":");
       Serial.print(WIFI_HOST_PORT);
       Serial.println();
-      while(1) vTaskDelay(5000);
+      vTaskDelay(5000); // wait 5 seconds
     }
     Serial.println("Connected to host");
-    ESP_WIFI.println("Hello");
   }
-
   pinMode(BUTTON_INPUT_PIN, INPUT_PULLUP);
 }
 
-void serial_output()
-{
-  int buttonVal = digitalRead(BUTTON_INPUT_PIN);
-
-  if (INCLUDE_TIMESTAMP)
+// We return a pointer to the object since we can't return an abstract class
+Stream* getCommProtocol() {
+  switch (CURRENT_MODE)
   {
-    Serial.print(millis());
-    Serial.print(", ");
+    case RECORDER_SERIAL:
+      return &Serial;
+    case RECORDER_BLUETOOTH:
+      return &ESP_BT;
+    case RECORDER_WIFI:
+      return &ESP_WIFI;
   }
-
-  Serial.print(lis.x);
-  Serial.print(", ");
-  Serial.print(lis.y);
-  Serial.print(", ");
-  Serial.print(lis.z);
-  Serial.print(", ");
-  Serial.print(!buttonVal); // because pull-up
-  Serial.println();
-}
-
-void bluetooth_output()
-{
-  int buttonVal = digitalRead(BUTTON_INPUT_PIN);
-
-  if (INCLUDE_TIMESTAMP)
-  {
-    ESP_BT.print(millis());
-    ESP_BT.print(", ");
-  }
-  ESP_BT.print(lis.x);
-  ESP_BT.print(", ");
-  ESP_BT.print(lis.y);
-  ESP_BT.print(", ");
-  ESP_BT.print(lis.z);
-  ESP_BT.print(", ");
-  ESP_BT.print(!buttonVal); // because pull-up
-  ESP_BT.println();
-}
-
-void wifi_output()
-{
-  int buttonVal = digitalRead(BUTTON_INPUT_PIN);
-
-  if (INCLUDE_TIMESTAMP)
-  {
-    ESP_WIFI.print(millis());
-    ESP_WIFI.print(", ");
-  }
-  ESP_WIFI.print(lis.x);
-  ESP_WIFI.print(", ");
-  ESP_WIFI.print(lis.y);
-  ESP_WIFI.print(", ");
-  ESP_WIFI.print(lis.z);
-  ESP_WIFI.print(", ");
-  ESP_WIFI.print(!buttonVal); // because pull-up
-  ESP_WIFI.println();
 }
 
 void loop()
@@ -172,21 +126,25 @@ void loop()
   // Read accel data
   lis.read();
 
-  // Then output our stuff
-  switch (CURRENT_MODE)
-  {
-    case RECORDER_SERIAL:
-      serial_output();
-      break;
-    case RECORDER_BLUETOOTH:
-      bluetooth_output();
-      break;
-    case RECORDER_WIFI:
-      wifi_output();
-      break;
-  }
+  int buttonVal = digitalRead(BUTTON_INPUT_PIN);
 
-  if (DELAY_MS > 0)
+  Stream* stream = getCommProtocol();
+
+  if (INCLUDE_TIMESTAMP)
+  {
+    stream->print(millis());
+    stream->print(", ");
+  }
+  stream->print(lis.x);
+  stream.print(", ");
+  stream.print(lis.y);
+  stream.print(", ");
+  stream.print(lis.z);
+  stream.print(", ");
+  stream.print(!buttonVal); // because pull-up
+  stream.println();
+
+  while (!lis.haveNewData())
   {
     delay(DELAY_MS);
   }
