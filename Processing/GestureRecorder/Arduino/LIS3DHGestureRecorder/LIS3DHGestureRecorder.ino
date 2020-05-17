@@ -16,13 +16,13 @@
 #include "BluetoothSerial.h" //Header File for Serial Bluetooth, will be added by default into Arduino
 
 // Settings
-enum RecoderMode {
+enum CommunicationMode {
   RECORDER_SERIAL,
   RECORDER_BLUETOOTH,
   RECORDER_WIFI
 };
 // By default we use serial
-const RecoderMode CURRENT_MODE = RECORDER_SERIAL; // CHANGE THIS IF YOU WANT A DIFFERENT MODE
+const CommunicationMode CURRENT_MODE = RECORDER_SERIAL; // CHANGE THIS IF YOU WANT A DIFFERENT MODE
 
 // -------------------------------------------
 // Serial info

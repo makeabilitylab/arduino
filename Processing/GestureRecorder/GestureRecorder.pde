@@ -22,6 +22,7 @@
  * Future ideas:
  * - Shows capture snapshot?
  * - GUI to select which gesture to record
+ * - Print out which mode we are using for comm (BLUETOOTH, Serial, WiFi)
  * 
  */
 
@@ -48,6 +49,7 @@ final int DISPLAY_TIMEWINDOW_MS = 1000 * 20; // 20 secs. You can change this to 
 // Run this Processing sketch and look in the console, then change the number accordingly
 
 final String ARDUINO_SERIAL_PORT_NAME = "COM3"; // CHANGE THIS TO APPROPRIATE PORT! 
+
 // WIFI SETTINGS
 // This should be false even in bluetooth mode since that just emulates a com port
 final boolean ARDUINO_WIFI_MODE = false; // CHANGE THIS TO TRUE IF AND ONLY IF YOU ARE USING WIFI MODE
@@ -72,7 +74,7 @@ PrintWriter _printWriterAllData;
 Serial _serialPort;
 
 // Wifi server
-Server myServer;
+Server _wifiServer;
 
 long _currentXMin; // the far left x-axis value on the graph
 Rectangle _legendRect; // location and drawing area of the legend
@@ -122,7 +124,7 @@ void setup() {
   println("Saving accel data to: " + _fullDataStreamFilenameWithPath);
 
   try {
-    // We save all incoming sensor data to a file (by appending`)
+    // We save all incoming sensor data to a file (by appending)
     // Appending text to a file: 
     //  - https://stackoverflow.com/questions/17010222/how-do-i-append-text-to-a-csv-txt-file-in-processing
     //  - https://docs.oracle.com/javase/7/docs/api/java/io/FileWriter.html
@@ -134,10 +136,10 @@ void setup() {
   }
 
   if (ARDUINO_WIFI_MODE) {
-    //https://www.processing.org/reference/libraries/net/Server.html
-    myServer = new Server(this, ARDUINO_WIFI_PORT);
+    // https://www.processing.org/reference/libraries/net/Server.html
+    _wifiServer = new Server(this, ARDUINO_WIFI_PORT);
     print("Starting server");
-    while (!myServer.active()) {
+    while (!_wifiServer.active()) {
       print(".");
       delay(50);
     }
@@ -151,13 +153,15 @@ void setup() {
     if (serialPorts.length <= 0) {
       println("You appear to have *ZERO* active serial ports. Make sure your Arduino is plugged in. Exiting...");
       exit();
+      return;
     }
 
-    int ARDUINO_SERIAL_PORT_INDEX = getIndexOfArduinoSerialPort();
+    int ARDUINO_SERIAL_PORT_INDEX = getIndexOfArduinoSerialPort(ARDUINO_SERIAL_PORT_NAME);
 
     if (ARDUINO_SERIAL_PORT_INDEX == -1) {
       println("Could not find the serial port: " + ARDUINO_SERIAL_PORT_NAME + ". Exiting...");
       exit();
+      return;
     }
 
     // Open the serial port
@@ -168,8 +172,7 @@ void setup() {
 
       // We need to clear the port (or sometimes there is leftover data)
       // (Yes, this is strange, but once we implemented this clear,
-      // we were no longer seeing garbage data in the beginning of our printwriter
-      // strea,)
+      // we were no longer seeing garbage data in the beginning of our printwriter stream)
       _serialPort.clear();
     }
     catch(Exception e) {
@@ -399,7 +402,7 @@ void toggleGestureRecording(){
 }
 
 /**
- * Convenience method that returns the number of gestures recoreded with the given name
+ * Convenience method that returns the number of gestures recorded with the given name
  */
 int getNumGesturesRecordedWithName(String name){
   return _mapGestureNameToRecordedCount.containsKey(name) ? (int)_mapGestureNameToRecordedCount.get(name) : 0;
@@ -441,6 +444,9 @@ void drawDebugInfo(){
   }
 }
 
+/**
+ * Draws the y-axis ticks and labels
+ */ 
 void drawYAxis(){
   final int numYTickMarks = 5; 
   final int tickMarkWidth = 6;
@@ -498,10 +504,15 @@ String[] getAndPrintSerialPortInfo(){
   return listOfSerialPorts;
 }
 
-int getIndexOfArduinoSerialPort() {
+/**
+ * Convenience method that returns index of serialPortName or -1 if not found 
+ */
+int getIndexOfArduinoSerialPort(String serialPortName) {
   String[] listOfSerialPorts = Serial.list();
   for (int i=0; i< listOfSerialPorts.length; i++) {
-    if (listOfSerialPorts[i].equals(ARDUINO_SERIAL_PORT_NAME)) return i;
+    if (listOfSerialPorts[i].equals(serialPortName)){
+      return i;
+    }
   }
   return -1;
 }
@@ -709,8 +720,12 @@ void serialEvent (Serial myPort) {
 }
 
 void processServer() {
-  if (myServer == null) return;
-  Client thisClient = myServer.available();
+  if (_wifiServer == null){
+    return;
+  }
+  
+  Client thisClient = _wifiServer.available();
+  
   // If the client is not null, and says something, display what it said
   if (thisClient !=null) {
     String whatClientSaid = thisClient.readString();
@@ -818,8 +833,8 @@ void exit() {
     }
   }
 
-  if (myServer != null) {
-    myServer.stop();
+  if (_wifiServer != null) {
+    _wifiServer.stop();
   }
 
   super.exit();
