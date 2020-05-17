@@ -1,4 +1,4 @@
-/**
+/** //<>//
  * Records accelerometer-based gestures. Works with the Arduino program
  * ADXL335SerialWriter.ino, LISDHSerialWriter.ino or any program that 
  * provides a CSV input stream on the serial port of "timestamp, x, y, z"
@@ -24,7 +24,7 @@
  * - GUI to select which gesture to record
  * 
  */
- 
+
 import processing.serial.*;
 import java.awt.Rectangle;
 import java.io.BufferedWriter;
@@ -79,8 +79,8 @@ final int NUM_SAMPLES_TO_RECORD_PER_GESTURE = 5;
 // Feel free to rename "Custom" to something that is more semantically meaningful describing your custom gesture
 // For example, I did "Bunny Hops"
 final String [] GESTURES = { "Backhand Tennis", "Forehand Tennis", "Underhand Bowling", 
-                             "Baseball Throw", "Midair Clockwise 'O'", "At Rest", "Midair Counter-clockwise 'O'",
-                             "Midair Zorro 'Z'", "Midair 'S'", "Shake", "Custom" };
+  "Baseball Throw", "Midair Clockwise 'O'", "At Rest", "Midair Counter-clockwise 'O'", 
+  "Midair Zorro 'Z'", "Midair 'S'", "Shake", "Custom" };
 int _curGestureIndex = 0;
 HashMap<String, Integer> _mapGestureNameToRecordedCount = new HashMap<String, Integer>(); // tracks recorded gesture counts
 ArrayList<GestureRecording> _gestureRecordings = new ArrayList<GestureRecording>(); // sensor data to dump to file
@@ -93,24 +93,24 @@ final int MIN_TIME_BETWEEN_GESTURE_TOGGLE_MS = 500;
 
 void setup() {
   size(1024, 576);
-  
+
   String filenameNoPath = FULL_DATASTREAM_RECORDING_FILENAME;
-  
-  if(_createNewFullDatastreamFileOnEveryExecution){
+
+  if (_createNewFullDatastreamFileOnEveryExecution) {
     String filenameWithoutExt = filenameNoPath.substring(0, filenameNoPath.length()-4);
     String filenameExt = filenameNoPath.substring(filenameNoPath.length()-4, filenameNoPath.length());
     filenameNoPath = filenameWithoutExt + System.currentTimeMillis() + filenameExt;
   }
-  
+
   File fDir = new File(sketchPath(GESTURE_DIR_NAME));
-  if(!fDir.exists()){
-    fDir.mkdirs(); 
+  if (!fDir.exists()) {
+    fDir.mkdirs();
   }
   File file = new File(fDir, filenameNoPath); 
-  
+
   _fullDataStreamFilenameWithPath = file.getAbsolutePath();
   println("Saving accel data to: " + _fullDataStreamFilenameWithPath);
-     
+
   try {
     // We save all incoming sensor data to a file (by appending)
     // Appending text to a file: 
@@ -118,49 +118,51 @@ void setup() {
     //  - https://docs.oracle.com/javase/7/docs/api/java/io/FileWriter.html
     //  - Use sketchPath(string) to store in local sketch folder: https://stackoverflow.com/a/36531925
     _printWriterAllData = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
-  }catch (IOException e){
+  }
+  catch (IOException e) {
     e.printStackTrace();
   }
 
   // Print to console all the available serial ports
   String [] serialPorts = getAndPrintSerialPortInfo();
-  
-  if(serialPorts.length <= 0){
+
+  if (serialPorts.length <= 0) {
     println("You appear to have *ZERO* active serial ports. Make sure your Arduino is plugged in. Exiting...");
     exit();
-  }else if(ARDUINO_SERIAL_PORT_INDEX > serialPorts.length){
+  } else if (ARDUINO_SERIAL_PORT_INDEX > serialPorts.length) {
     println("You set ARDUINO_SERIAL_PORT_INDEX = " + ARDUINO_SERIAL_PORT_INDEX + "; however, you only have " +
-            serialPorts.length + " total serial ports.");
+      serialPorts.length + " total serial ports.");
     println("Please make sure your Arduino is plugged in. Then update ARDUINO_SERIAL_PORT_INDEX to the appropriate index.");
     println("Exiting...");
     exit();
     return;
   }
-  
+
   // Open the serial port
-  try{
+  try {
     println("Attempting to initialize the serial port at index " + ARDUINO_SERIAL_PORT_INDEX + " with baud rate = " + SERIAL_BAUD_RATE);
     println("This index corresponds to serial port " + serialPorts[ARDUINO_SERIAL_PORT_INDEX]);
     _serialPort = new Serial(this, serialPorts[ARDUINO_SERIAL_PORT_INDEX], SERIAL_BAUD_RATE);
-    
+
     // We need to clear the port (or sometimes there is leftover data)
     // (Yes, this is strange, but once we implemented this clear,
     // we were no longer seeing garbage data in the beginning of our printwriter
     // strea,)
     _serialPort.clear();
-  }catch(Exception e){
+  }
+  catch(Exception e) {
     println("Serial port exception: " + e);
     e.printStackTrace();
     exit();
     return;
   }
 
-  if(_serialPort == null){
+  if (_serialPort == null) {
     println("Could not initialize the serial port at " + ARDUINO_SERIAL_PORT_INDEX + ". Exiting...");
     exit();
     return;
   }
-  
+
   // Don't generate a serialEvent() unless you get a newline character:
   _serialPort.bufferUntil('\n');
 
@@ -170,7 +172,7 @@ void setup() {
   int legendWidth = 200;
   int legendXBuffer = 60;
   int legendYBuffer = 5;
-  
+
   //_legendRect = new Rectangle(width - legendWidth - legendXBuffer, legendYBuffer, legendWidth, legendHeight); // legend at top-right
   _legendRect = new Rectangle(legendXBuffer, legendYBuffer, legendWidth, legendHeight); // legend at top-left
 
@@ -179,40 +181,40 @@ void setup() {
 }
 
 void draw() {
-  
+
   if (_recordingGesture) {
     background(RECORDING_BACKGROUND_COLOR);
   } else {
     background(DEFAULT_BACKGROUND_COLOR);
   }
-  
+
   // Check for new sensor data
   ArrayList<AccelSensorData> newData = null;
-  synchronized(_sensorBuffer){
+  synchronized(_sensorBuffer) {
     newData = new ArrayList<AccelSensorData>(_sensorBuffer);
     _sensorBuffer.clear();
   }
-  
+
   // Dump new data into _displaySensorData and curGestureRecording
-  for(int i = 0; i < newData.size(); i++){
+  for (int i = 0; i < newData.size(); i++) {
     AccelSensorData accelSensorData = newData.get(i);
     checkAndSetNewMinMaxSensorValues(accelSensorData);
     _displaySensorData.add(accelSensorData);
-    
-    if(_recordingGesture){
+
+    if (_recordingGesture) {
       GestureRecording curGestureRecording = _gestureRecordings.get(_gestureRecordings.size() - 1);
       curGestureRecording.listSensorData.add(accelSensorData);
     }
   }  
-  
+
   // Remove data that is no longer relevant to be displayed
-  while(_displaySensorData.size() > 0 && 
-        _displaySensorData.get(0).timestamp < _currentXMin){
+  while (_displaySensorData.size() > 0 && 
+    _displaySensorData.get(0).timestamp < _currentXMin) {
     _displaySensorData.remove(0);
   }
- 
+
   drawYAxis();
-  
+
   //println("Drawing! _displaySensorData.size()=" + _displaySensorData.size() + " _timeWindowMs=" + _timeWindowMs);
   for (int i = 1; i < _displaySensorData.size(); i++) {
     AccelSensorData lastAccelSensorData = _displaySensorData.get(i - 1);
@@ -222,17 +224,17 @@ void draw() {
     drawSensorLine(YCOLOR, lastAccelSensorData.timestamp, lastAccelSensorData.y, curAccelSensorData.timestamp, curAccelSensorData.y);
     drawSensorLine(ZCOLOR, lastAccelSensorData.timestamp, lastAccelSensorData.z, curAccelSensorData.timestamp, curAccelSensorData.z);
   }
-  
+
   long curTimestampMs = System.currentTimeMillis();
   long elapsedTimeMs = curTimestampMs - _timestampStartCountdownMs;
   int countdownTimeSecs = (int)((COUNTDOWN_TIME_MS - elapsedTimeMs) / 1000.0);
-  
+
   if (_timestampStartCountdownMs != -1 && countdownTimeSecs <= 0 && !_recordingGesture) {
     _recordingGesture = true;
     GestureRecording gestureRecording = new GestureRecording(GESTURE_DIR_NAME, GESTURES[_curGestureIndex], curTimestampMs);
     _gestureRecordings.add(gestureRecording);
   }
-  
+
   drawInstructions(countdownTimeSecs); 
   drawGestureRecordingAnnotations();
   drawLegend(_legendRect);
@@ -242,24 +244,24 @@ void draw() {
 
 /**
  * Writes out recording status to the screen
- */ 
-void drawRecordingStatus(){
+ */
+void drawRecordingStatus() {
   textSize(10);
   float strHeight = textAscent() + textDescent();
   float yText = height - (strHeight * GESTURES.length) - 3;
   noStroke();
-  
-  for(int i = 0; i < GESTURES.length; i++){
+
+  for (int i = 0; i < GESTURES.length; i++) {
     int sampleNum = min(getNumGesturesRecordedWithName(GESTURES[i]) + 1, NUM_SAMPLES_TO_RECORD_PER_GESTURE);
     String str = GESTURES[i] + " (" + sampleNum + "/" + NUM_SAMPLES_TO_RECORD_PER_GESTURE + ")";
     float strWidth = textWidth(str) + 10;
-    
-    if(_curGestureIndex == i){
+
+    if (_curGestureIndex == i) {
       fill(0, 240, 0, 230);
-    }else{
+    } else {
       fill(255, 255, 255, 200);
     }
-    
+
     text(str, width- strWidth, yText);
     yText += strHeight;
   }
@@ -268,18 +270,17 @@ void drawRecordingStatus(){
 /**
  * Writes out basic instructions for the user
  */
-void drawInstructions(int countdownTimeSecs){
-  
-  
+void drawInstructions(int countdownTimeSecs) {
+
+
   String strInstructions = "";
   textSize(30);
   noStroke();
   fill(255, 255, 255, 200);
-  if(_displaySensorData.size() <= 0){
+  if (_displaySensorData.size() <= 0) {
     textSize(50);
     strInstructions = "Waiting for Serial data...";
-  }
-  else if(_timestampStartCountdownMs != -1){
+  } else if (_timestampStartCountdownMs != -1) {
     // if we're here, the user hit the spacebar and we're either ready to record or recording
     // draw center of screen
     String str = ""; 
@@ -291,15 +292,14 @@ void drawInstructions(int countdownTimeSecs){
       float strWidth = textWidth(str);
       float yText = height / 4.0 + strHeight / 2.0 - textDescent();
       text(str, width / 2.0 - strWidth / 2.0, yText);
-      
+
       textSize(20);
       str = "Hit SPACEBAR or BUTTON to stop recording.";
       strWidth = textWidth(str);
-      
+
       yText += strHeight + 2;
-     
+
       text(str, width / 2.0 - strWidth / 2.0, yText);
-      
     } else {
       // counting down
       textSize(35);
@@ -307,28 +307,27 @@ void drawInstructions(int countdownTimeSecs){
       float strWidth = textWidth(str);
       float strHeight = textAscent() + textDescent();
       text(str, width / 2.0 - strWidth / 2.0, height / 4.0 + strHeight / 2.0 - textDescent());
-      
+
       textSize(80);
       str = String.format("%d", countdownTimeSecs);
       strHeight = textAscent() + textDescent();
       strWidth = textWidth(str);
       text(str, width / 2.0 - strWidth / 2.0, height / 2.0 + strHeight / 2.0 - textDescent());
     }
-  }
-  else if(_curGestureIndex < GESTURES.length){
+  } else if (_curGestureIndex < GESTURES.length) {
     textSize(30);
     fill(255, 255, 255);
     int sampleNum = getNumGesturesRecordedWithName(GESTURES[_curGestureIndex]) + 1;
     strInstructions = "Hit SPACEBAR or BUTTON to record sample " + sampleNum + "/" + NUM_SAMPLES_TO_RECORD_PER_GESTURE 
-                              + " of gesture:\n'" + GESTURES[_curGestureIndex] + "'";
-  }else{
+      + " of gesture:\n'" + GESTURES[_curGestureIndex] + "'";
+  } else {
     strInstructions = "You did it! Gesture recording completed!";
   }
-  
-  if(strInstructions.length() > 0){
+
+  if (strInstructions.length() > 0) {
     float strWidth = textWidth(strInstructions);
     float strHeight = textAscent() + textDescent();
-  
+
     text(strInstructions, width / 2.0 - strWidth / 2.0, height / 4.0 + strHeight / 2.0 - textDescent());
   }
 }
@@ -342,36 +341,35 @@ void keyPressed() {
   }
 }
 
-void toggleGestureRecording(){
+void toggleGestureRecording() {
   long currentTimestampMs = System.currentTimeMillis();  
   long elapsedTime = currentTimestampMs - _timestampSinceLastGestureRecordToggle;
-  
-  if(elapsedTime > MIN_TIME_BETWEEN_GESTURE_TOGGLE_MS){
+
+  if (elapsedTime > MIN_TIME_BETWEEN_GESTURE_TOGGLE_MS) {
     _timestampSinceLastGestureRecordToggle = currentTimestampMs;
     if (_recordingGesture) {
       // if the spacebar was pressed and we're currently recording a gesture
       // then the spacebar just ended the gesture
       _recordingGesture = false;
       _timestampStartCountdownMs = -1;
-     
+
       GestureRecording curGestureRecording = _gestureRecordings.get(_gestureRecordings.size() - 1);
       curGestureRecording.endTimestamp = currentTimestampMs;
       curGestureRecording.save();
-      
-      if(!_mapGestureNameToRecordedCount.containsKey(curGestureRecording.name)){
+
+      if (!_mapGestureNameToRecordedCount.containsKey(curGestureRecording.name)) {
         _mapGestureNameToRecordedCount.put(curGestureRecording.name, 1);
-      }else{
+      } else {
         int curRecordingCntForGesture = (int)_mapGestureNameToRecordedCount.get(curGestureRecording.name);
         int newRecordingCntForGesture = curRecordingCntForGesture + 1;
         _mapGestureNameToRecordedCount.put(curGestureRecording.name, newRecordingCntForGesture);
-        
-        if(newRecordingCntForGesture >= NUM_SAMPLES_TO_RECORD_PER_GESTURE){
-           _curGestureIndex++; 
+
+        if (newRecordingCntForGesture >= NUM_SAMPLES_TO_RECORD_PER_GESTURE) {
+          _curGestureIndex++;
         }
       }
-       
     } else {
-      if(_curGestureIndex < GESTURES.length){
+      if (_curGestureIndex < GESTURES.length) {
         // if there are still gestures left to record, start countdown timer
         _timestampStartCountdownMs = System.currentTimeMillis();
       }
@@ -382,72 +380,72 @@ void toggleGestureRecording(){
 /**
  * Convenience method that returns the number of gestures recoreded with the given name
  */
-int getNumGesturesRecordedWithName(String name){
+int getNumGesturesRecordedWithName(String name) {
   return _mapGestureNameToRecordedCount.containsKey(name) ? (int)_mapGestureNameToRecordedCount.get(name) : 0;
 }
 
 
-void drawDebugInfo(){
-  if(_firstSerialValRcvdTimestamp != -1){
+void drawDebugInfo() {
+  if (_firstSerialValRcvdTimestamp != -1) {
     noStroke();
     fill(255);
     textSize(11);
-    
+
     float strHeight = textAscent() + textDescent();
-    
+
     String strSavingTo = "Saving full stream to: " + _fullDataStreamFilenameWithPath;
     float strWidth = textWidth(strSavingTo) + 10;
     float yTextLoc = strHeight;
     text(strSavingTo, width - strWidth, yTextLoc);
-    
+
     String strDisplayAmt = "Displaying " + nf((DISPLAY_TIMEWINDOW_MS / 1000.0), 2, 1) + " secs";
     strDisplayAmt += " (" + _displaySensorData.size() + " values)";
     strWidth = textWidth(strDisplayAmt) + 10;
     yTextLoc += strHeight;
     text(strDisplayAmt, width - strWidth, yTextLoc);
-    
+
     long timeElapsedMs = System.currentTimeMillis() - _firstSerialValRcvdTimestamp;
     float samplingRate = _serialLinesRcvd / (timeElapsedMs / 1000.0);
-    
-    
+
+
     String strSamplingRate = nf(samplingRate, 3, 1) + " Hz";
     strWidth = textWidth(strSamplingRate) + 10;
-    
+
     yTextLoc += strHeight;
     text(strSamplingRate, width - strWidth, yTextLoc);
-    
+
     String strFrameRate = nf(frameRate, 3, 1) + " fps";
     yTextLoc += strHeight;
     text(strFrameRate, width - strWidth, yTextLoc);
   }
 }
 
-void drawYAxis(){
+void drawYAxis() {
   final int numYTickMarks = 5; 
   final int tickMarkWidth = 6;
-  
+
   textSize(10);
   float strHeight = textAscent() + textDescent();
   float yRange = getYRange();
   float yTickStep = yRange / numYTickMarks;
-  for(int yTickMark = 0; yTickMark < numYTickMarks; yTickMark++){
+  for (int yTickMark = 0; yTickMark < numYTickMarks; yTickMark++) {
     float yVal = map(yTickMark, 0, numYTickMarks, _minSensorVal + yRange * 0.10, _maxSensorVal - yRange * 0.10);
     float yCurPixelVal = getYPixelFromSensorVal(yVal);
     noFill();
     stroke(GRID_COLOR);
     line(0, yCurPixelVal, tickMarkWidth, yCurPixelVal);
-    
+
     fill(GRID_COLOR);
     noStroke();
     text(nfs(yVal, 3, 1), tickMarkWidth + 2, yCurPixelVal + (strHeight / 2.0) * 0.7);
   }
-  
+
   color zeroColor = color(255, 255, 255, 50);
   stroke(zeroColor);
   float yVal = 0;
   float yCurPixelVal = getYPixelFromSensorVal(yVal);
   line(0, yCurPixelVal, width, yCurPixelVal);
-  
+
   noStroke();
   fill(zeroColor);
   String strZero = "0";
@@ -458,24 +456,24 @@ void drawYAxis(){
 /**
  * Get full yrange
  */
-float getYRange(){
-  return _maxSensorVal - _minSensorVal; 
+float getYRange() {
+  return _maxSensorVal - _minSensorVal;
 }
 
 /**
  * Prints information about the serial port and returns a list of all available serial ports
  */
-String[] getAndPrintSerialPortInfo(){
+String[] getAndPrintSerialPortInfo() {
   println("** All Available Serial Ports **");
   String[] listOfSerialPorts = Serial.list();
   printArray(listOfSerialPorts);
   println("** END SERIAL PORT LIST**");
   println("Make sure to change ARDUINO_SERIAL_PORT_INDEX to the correct port number!");
-  
-  if(listOfSerialPorts.length > 0){
+
+  if (listOfSerialPorts.length > 0) {
     String firstPortName = listOfSerialPorts[0];
     println("For example, if your Arduino is on port " + firstPortName + 
-            " then you would set ARDUINO_SERIAL_PORT_INDEX = " + 0);
+      " then you would set ARDUINO_SERIAL_PORT_INDEX = " + 0);
   }
   return listOfSerialPorts;
 }
@@ -518,12 +516,12 @@ void drawSensorLine(color col, long timestamp1, int sensorVal1, long timestamp2,
  * Draws the graph legend, which is dynamic based on the current sensor values
  */
 void drawLegend(Rectangle legendRect) {
-  if(_displaySensorData.size() <= 0){
+  if (_displaySensorData.size() <= 0) {
     return;
   }
-  
+
   color textColor = color(255, 255, 255, 128);
-  
+
   // draw outline of legend box
   stroke(textColor);
   strokeWeight(1);
@@ -542,27 +540,27 @@ void drawLegend(Rectangle legendRect) {
   float yLegendItemPos = legendRect.y + strHeight - textDescent();
   AccelSensorData accelSensorData = _displaySensorData.get(_displaySensorData.size() - 1);
   int [] accelSensorVals = accelSensorData.getSensorValues();
-  
+
   float titleWidth = textWidth("X");
   float maxValStrWidth = textWidth(Integer.toString(_maxSensorVal));
   float minValStrWidth = textWidth(Integer.toString(_minSensorVal));
-  
+
   float largestValStrWidth = max(minValStrWidth, maxValStrWidth);
-    
-  if(_minSensorVal < 0){
+
+  if (_minSensorVal < 0) {
     // if we have values less than zero, then we split the legend in half
     // and draw the < 0 values to the left of the titles and the > 0
     // to the right of the values
-    
+
     float xMidLegend = legendRect.x + legendRect.width / 2.0;
     float xTitleStart = xMidLegend - titleWidth / 2.0;
     float maxBarSize = legendRect.width / 2.0 - (2 * xBuffer + titleWidth + 3 * xBuffer + largestValStrWidth);
-    
+
     for (int i = 0; i < legendStrs.length; i++) {
       String legendStr = legendStrs[i];
       fill(textColor);
       text(legendStr, xTitleStart, yLegendItemPos);
-      
+
       // draw the bar
       fill(SENSOR_VALUE_COLORS[i]);
       noStroke();
@@ -570,30 +568,30 @@ void drawLegend(Rectangle legendRect) {
       float xBar = xTitleStart - xBuffer - barWidth;
       String strSensorVal = Integer.toString(accelSensorVals[i]);
       float xSensorTextLoc = xBar - largestValStrWidth;
-      if(accelSensorVals[i] > 0){
+      if (accelSensorVals[i] > 0) {
         barWidth = map(accelSensorVals[i], 0, _maxSensorVal, 0, maxBarSize);
         xBar = xMidLegend + titleWidth / 2.0 + xBuffer;
         xSensorTextLoc = xBar + barWidth + xBuffer;
       }
       rect(xBar, yLegendItemPos - strHeight + textDescent() + yBuffer, barWidth, legendItemHeight - yBuffer); 
-      
+
       // draw the sensor val
       text(strSensorVal, xSensorTextLoc, yLegendItemPos);
       yLegendItemPos += legendItemHeight + yBuffer;
-    }  
-  }else{
+    }
+  } else {
     // no values < 0, so draw legend normally
-    
+
     float xLegendItemPos = legendRect.x + xBuffer;
     float xBar = xLegendItemPos + titleWidth + xBuffer;
     float maxBarSize = legendRect.width - (xBuffer + titleWidth + 3 * xBuffer + maxValStrWidth);
-    
+
     // Draw each legend item
     for (int i = 0; i < legendStrs.length; i++) {
       String legendStr = legendStrs[i];
       fill(textColor);
       text(legendStr, xLegendItemPos, yLegendItemPos);
-  
+
       // draw dynamic legend values
       float barWidth = map(accelSensorVals[i], _minSensorVal, _maxSensorVal, 0, maxBarSize);
       fill(SENSOR_VALUE_COLORS[i]);
@@ -610,51 +608,53 @@ void drawLegend(Rectangle legendRect) {
  * Draws an on-screen annotation for recently recorded annotations
  */
 void drawGestureRecordingAnnotations() {
-  
-  while(_gestureRecordings.size() > 0 && 
-        _gestureRecordings.get(0).hasGestureCompleted() &&
-        _gestureRecordings.get(0).endTimestamp < _currentXMin){
+
+  while (_gestureRecordings.size() > 0 && 
+    _gestureRecordings.get(0).hasGestureCompleted() &&
+    _gestureRecordings.get(0).endTimestamp < _currentXMin) {
     _gestureRecordings.remove(0);
   }
-  
-  if(_gestureRecordings.size() <= 0) { return; }
-  
-  for(GestureRecording gestureRecording : _gestureRecordings){
+
+  if (_gestureRecordings.size() <= 0) { 
+    return;
+  }
+
+  for (GestureRecording gestureRecording : _gestureRecordings) {
     textSize(10);
     fill(255);
     stroke(255);
     strokeWeight(1);
-    
+
     String strGesture = "Gesture " + (gestureRecording.hasGestureCompleted() ? "Completed:" : "Active:") 
-                        + "\n" + gestureRecording.name;
+      + "\n" + gestureRecording.name;
     float xPixelStartGesture = getXPixelFromTimestamp(gestureRecording.startTimestamp);
     line(xPixelStartGesture, 0, xPixelStartGesture, height);
     text(strGesture, xPixelStartGesture + 2, 20);  
-    
-    if(gestureRecording.hasGestureCompleted()){
+
+    if (gestureRecording.hasGestureCompleted()) {
       String strEndGesture = "Gesture End: \n" + gestureRecording.name;
       float xPixelEndGesture = getXPixelFromTimestamp(gestureRecording.endTimestamp);
-      
+
       noStroke();
       fill(255, 255, 255, 30);
       rect(xPixelStartGesture, 0, xPixelEndGesture - xPixelStartGesture, height);
-      
+
       stroke(255);
       line(xPixelEndGesture, 0, xPixelEndGesture, height);
-      
+
       textSize(10);
       fill(255);
-      
+
       // null check on savedfilename
       // this is because a gesture might be completed but the save to file might not be done
       // see: https://github.com/jonfroehlich/CSE599Sp2019/issues/1
-      if(gestureRecording.savedFilename != null){
-        text(gestureRecording.savedFilename, xPixelStartGesture + 2, 50); 
+      if (gestureRecording.savedFilename != null) {
+        text(gestureRecording.savedFilename, xPixelStartGesture + 2, 50);
       }
     }
-  } 
+  }
 }
- //<>//
+
 /**
  * Called automatically when there is data on the serial port
  * See: https://processing.org/reference/libraries/serial/serialEvent_.html
@@ -666,7 +666,7 @@ void drawGestureRecordingAnnotations() {
 void serialEvent (Serial myPort) {
   long currentTimestampMs = System.currentTimeMillis();
   _currentXMin = currentTimestampMs - DISPLAY_TIMEWINDOW_MS;
-  
+
   //println(Thread.currentThread());
 
   String inString = "";
@@ -676,13 +676,13 @@ void serialEvent (Serial myPort) {
     inString = trim(_serialPort.readStringUntil('\n'));
     // println(inString);
   }
-  catch(Exception e){
+  catch(Exception e) {
     println("Failed to read serial port. Exception below: ");
     println(e);
     return;
   }
-  
-  try{
+
+  try {
     if (inString != null) {
       int [] data;
 
@@ -690,36 +690,36 @@ void serialEvent (Serial myPort) {
       if (inString.contains(",")) {
         String [] strData = split(inString, ',');
         data = new int[strData.length];
-        for(int i=0; i<strData.length; i++){
-          data[i] = int(strData[i].trim()); 
+        for (int i=0; i<strData.length; i++) {
+          data[i] = int(strData[i].trim());
         }
       } else {
         data = new int[] { int(inString) };
       }
 
       AccelSensorData accelSensorData = new AccelSensorData(currentTimestampMs, data[0], data[1], data[2], data[3]);
-      synchronized(_sensorBuffer){
+      synchronized(_sensorBuffer) {
         _sensorBuffer.add(accelSensorData);
       }
-      
+
       // We share the print writer with the UI thread in the exit function
       synchronized (_printWriterAllData) {
         _printWriterAllData.println(accelSensorData.toCsvString());
       }
-      
+
       _serialLinesRcvd++;
-      
-      if(_firstSerialValRcvdTimestamp == -1){
+
+      if (_firstSerialValRcvdTimestamp == -1) {
         _firstSerialValRcvdTimestamp = currentTimestampMs;
       }
-      
-      if(data.length >= 4){
+
+      if (data.length >= 4) {
         int gestureRecordButtonPressed = data[4];
-        if(gestureRecordButtonPressed == 1){
-          toggleGestureRecording(); 
+        if (gestureRecordButtonPressed == 1) {
+          toggleGestureRecording();
         }
       }
-      
+
       // force the redraw
       //redraw();
     }
@@ -733,15 +733,15 @@ void serialEvent (Serial myPort) {
 /**
  * Checks for new global min and max data in our sensor values
  */
-void checkAndSetNewMinMaxSensorValues(AccelSensorData accelSensorData){
+void checkAndSetNewMinMaxSensorValues(AccelSensorData accelSensorData) {
   int min = min(accelSensorData.x, accelSensorData.y, accelSensorData.z);
   int max = max(accelSensorData.x, accelSensorData.y, accelSensorData.z);
-  if(min < _minSensorVal){
-    _minSensorVal = min; 
+  if (min < _minSensorVal) {
+    _minSensorVal = min;
   }
-  
-  if(max > _maxSensorVal){
-    _maxSensorVal = max; 
+
+  if (max > _maxSensorVal) {
+    _maxSensorVal = max;
   }
 }
 
@@ -750,16 +750,16 @@ void checkAndSetNewMinMaxSensorValues(AccelSensorData accelSensorData){
  */
 void exit() {
   println("Flushing PrintWriter, exiting...");
-  
-  if(_serialPort != null){
+
+  if (_serialPort != null) {
     _serialPort.clear();
     _serialPort.stop();
   }
-  
-  if(_printWriterAllData != null){
+
+  if (_printWriterAllData != null) {
     // We need to synchronize _printWriterAllData because the serial event
     // where we use _printWriterAllData occurs in a different thread
-    synchronized(_printWriterAllData){
+    synchronized(_printWriterAllData) {
       _printWriterAllData.flush();
       _printWriterAllData.close();
     }
@@ -770,7 +770,7 @@ void exit() {
 // Class for the accelerometer data
 class AccelSensorData {
   public final static String CSV_HEADER = "Processing Timestamp (ms), Arduino Timestamp (ms), X, Y, Z";
-  
+
   public int x;
   public int y;
   public int z;
@@ -784,17 +784,17 @@ class AccelSensorData {
     this.y = y;
     this.z = z;
   }
-  
+
   // Creates a dynamic array on every call
-  public int[] getSensorValues(){
+  public int[] getSensorValues() {
     return new int[] { this.x, this.y, this.z };
   }
-  
-  public String toCsvHeaderString(){
+
+  public String toCsvHeaderString() {
     return CSV_HEADER;
   }
-  
-  public String toCsvString(){
+
+  public String toCsvString() {
     return String.format("%d, %d, %d, %d, %d", this.timestamp, this.arduinoTimestamp, this.x, this.y, this.z);
   }
 
@@ -803,41 +803,41 @@ class AccelSensorData {
   }
 }
 
-class GestureRecording{
+class GestureRecording {
   public long startTimestamp;
   public long endTimestamp = -1;
   public String name;
   public String savedAbsolutePath;
   public String savedFilename;
   public String gestureDir;
-  
+
   ArrayList<AccelSensorData> listSensorData =  new ArrayList<AccelSensorData>();
-  
-  public GestureRecording(String gestureDir, String gestureName, long startTimestamp){
+
+  public GestureRecording(String gestureDir, String gestureName, long startTimestamp) {
     this.name = gestureName;
     this.startTimestamp = startTimestamp;
     this.gestureDir = gestureDir;
   }
-  
-  public boolean hasGestureCompleted(){
+
+  public boolean hasGestureCompleted() {
     return this.endTimestamp != -1;
   }
-  
-  public void save(){
+
+  public void save() {
     long currentTimestampMs = System.currentTimeMillis();
     String filenameNoPath = this.name + "_" + currentTimestampMs + "_" +  this.listSensorData.size() +  ".csv";
     File fDir = new File(sketchPath(this.gestureDir));
-    if(!fDir.exists()){
-      fDir.mkdirs(); 
+    if (!fDir.exists()) {
+      fDir.mkdirs();
     }
     File file = new File(fDir, filenameNoPath); 
-    
+
     println("Attempting to save '" + this.name + "' to " + file.getAbsolutePath());
-    
+
     try {
       PrintWriter printWriter = new PrintWriter(new BufferedWriter(new FileWriter(file, false)));
       printWriter.println(AccelSensorData.CSV_HEADER);
-      for(AccelSensorData accelSensorData : listSensorData){
+      for (AccelSensorData accelSensorData : listSensorData) {
         printWriter.println(accelSensorData.toCsvString());
       }
       printWriter.flush();
@@ -845,7 +845,8 @@ class GestureRecording{
       println("Wrote " + listSensorData.size() + " lines to " + file.getAbsolutePath());
       this.savedAbsolutePath = file.getAbsolutePath();
       this.savedFilename = file.getName();
-    }catch (IOException e){
+    }
+    catch (IOException e) {
       e.printStackTrace();
     }
   }
