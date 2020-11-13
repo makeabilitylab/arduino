@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Simple Local Client for Arduino</title>
+</head>
+
+<body>
+    <button id="connect-button" onclick="onConnectButtonClick()">Connect via Serial Port</button>
+    <div id="target"></div>
+
+    <input id="slider" type="range" min="1" max="255" value="50" onchange="onSliderValueChanged(this, event)" />
+
+    <!-- 
+        Resources:
+        - https://web.dev/serial/
+        - https://whatwebcando.today/serial.html
+
+    -->
+    <script>
+        var port;
+        var writer;
+
+        async function onSliderValueChanged(src, event) {
+            console.log("Writing to serial: ", src.value.toString());
+            let rv = await writer.write(src.value.toString() + "\n");
+            console.log("Writing finished.");
+        }
+
+        function onConnectButtonClick() {
+            if (navigator.serial) {
+                connectSerial();
+            } else {
+                alert('Web Serial API not supported.');
+            }
+        }
+
+        async function connectSerial() {
+            const log = document.getElementById('target');
+
+            try {
+                // Prompt user to select any serial port.
+                port = await navigator.serial.requestPort();
+
+                // Get all serial ports the user has previously granted the website access to.
+                const ports = await navigator.serial.getPorts();
+
+                console.log("Approved ports:");
+                console.log(ports);
+
+                console.log("Selected port:");
+                console.log(port);
+
+                await port.open({ baudRate: 9600 });
+
+                const textEncoder = new TextEncoderStream();
+                const writableStreamClosed = textEncoder.readable.pipeTo(port.writable);
+                writer = textEncoder.writable.getWriter();
+
+                while (port.readable) {
+                    // We are going to communicate with the Arduino using text for now
+                    const textDecoder = new TextDecoderStream();
+                    const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+                    const reader = textDecoder.readable
+                        .pipeThrough(new TransformStream(new LineBreakTransformer()))
+                        .getReader();
+
+                    try {
+                        while (true) {
+                            const { value, done } = await reader.read();
+                            if (done) {
+                                // Allow the serial port to be closed later.
+                                reader.releaseLock();
+                                break;
+                            }
+                            if (value) {
+                                console.log("Received:", value);
+
+                                if(value > 255){
+                                    let rgbArray = convert24BitColorToRgb(value);
+                                    console.log("Converted: ", convert24BitColorToRgb(value));
+
+                                    let fullHexString = "#" + convertRgbToHex(rgbArray[0], rgbArray[1], rgbArray[2]);
+       
+                                    console.log("fullHexString:" + fullHexString);
+                                    document.body.style.background = fullHexString;
+                                }
+                                
+                            }
+                        }
+                    } catch (error) {
+                        // TODO: Handle non-fatal read error.
+                        console.error(error);
+                    }
+                }
+
+            } catch (error) {
+                log.innerHTML = error;
+            }
+        }
+
+        // convert a 24 bit binary color to 0..255 R,G,B    
+        function convert24BitColorToRgb(bin) {
+            let pbin = parseInt(bin);
+            let r = pbin >> 16;
+            let g = pbin >> 8 & 0xFF;
+            let b = pbin & 0xFF;
+            return [r, g, b];
+        }
+
+        // convert 0..255 R,G,B values to a hexidecimal color string
+        function convertRgbToHex(r, g, b) {
+            var bin = (r << 16) | (g << 8) | b;
+            return (function(h) {
+            return new Array(7 - h.length).join("0") + h;
+            })(bin.toString(16).toUpperCase());
+        }
+
+        class LineBreakTransformer {
+            constructor() {
+                // A container for holding stream data until a new line.
+                this.chunks = "";
+            }
+
+            transform(chunk, controller) {
+                // Append new chunks to existing chunks.
+                this.chunks += chunk;
+                // For each line breaks in chunks, send the parsed lines out.
+                const lines = this.chunks.split("\r\n");
+                this.chunks = lines.pop();
+                lines.forEach((line) => controller.enqueue(line));
+            }
+
+            flush(controller) {
+                // When the stream is closed, flush any remaining chunks out.
+                controller.enqueue(this.chunks);
+            }
+        }
+    </script>
+</body>
+
+</html>
