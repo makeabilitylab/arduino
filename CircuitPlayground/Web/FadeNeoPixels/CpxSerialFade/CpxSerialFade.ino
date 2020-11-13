@@ -29,10 +29,20 @@ void setup() {
 }
 
 void loop() {
+  // Check to see if there is any incoming serial data
   if(Serial.available() > 0){
-    String s1 = Serial.readStringUntil('\n');// s1 is String type variable.
-    Serial.println(s1);//display same received Data back in serial monitor.
-    int val = s1.toInt();
+    // If we're here, then serial data has been received
+    // Read data off the serial port until we get to the endline delimeter ('\n')
+    // Store all of this data into a string
+    String rcvdSerialData = Serial.readStringUntil('\n'); 
+
+    // Send this data right back out on the serial port for debugging purposes
+    Serial.println(rcvdSerialData);
+
+    // Convert the data into an integer
+    int val = rcvdSerialData.toInt();
+
+    // Iterate through all NeoPixel LEDs and set the red brightness level
     for(int i = 0; i < NUM_NEO_PIXELS; i++){
       CircuitPlayground.setPixelColor(i, val, 0, 0);
     }

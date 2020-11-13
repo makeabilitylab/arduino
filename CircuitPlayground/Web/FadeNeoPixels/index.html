@@ -1,3 +1,28 @@
+<!--
+This code demonstrate how to use the new web Serial API that lets you receive/send
+data over the local machine's serial port. Here, we use a simple slider control to 
+send a integer value (between 0 and 255) as a text string delimited by '\n' over serial.
+
+We also receive serial data for debugging purposes.
+
+To use this code, you must use Chrome and enable “enable-experimental-web-platform-features”.
+1. Open Chrome and type the following in the address bar:
+chrome://flags/#enable-experimental-web-platform-features
+2. Select Enabled
+3. Restart your browser
+4. Test to see if it worked by opening a webpage (any webpage) and then the dev console, and typing:
+> navigator.serial
+5. If you see something like "Serial {onconnect:null, ondisconnect: null}" then it worked!
+6. Now you can run this webpage. For a full demo, run CpxSerialFade.ino on your CPX
+
+Web Serial API:
+https://web.dev/serial/
+  
+By Jon E. Froehlich
+@jonfroehlich
+http://makeabilitylab.io
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -17,6 +42,7 @@
     
     <!-- 
         Resources:
+        - https://create.arduino.cc/projecthub/lemio/let-arduino-control-your-browser-ac76f4
         - https://web.dev/serial/
         - https://whatwebcando.today/serial.html
 
