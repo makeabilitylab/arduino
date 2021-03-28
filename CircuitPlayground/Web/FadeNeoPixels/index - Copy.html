@@ -29,7 +29,10 @@ http://makeabilitylab.io
 <head>
     <meta charset="utf-8">
     <title>Simple Local Client for Arduino</title>
-    
+    <script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script>
+    <script>
+        const socket = io('https://simple-arduino-node-example.glitch.me', { transport : ['websocket'] });
+    </script>
 </head>
 
 <body>
@@ -40,7 +43,7 @@ http://makeabilitylab.io
     </div>
     <div id="target"></div>
 
-
+    
     <!-- 
         Resources:
         - https://create.arduino.cc/projecthub/lemio/let-arduino-control-your-browser-ac76f4
@@ -113,7 +116,7 @@ http://makeabilitylab.io
                                 break;
                             }
                             if (value) {
-                                console.log("Serial received:", value);
+                                console.log("Serial received:", value);    
                             }
                         }
                     } catch (error) {
