@@ -13,8 +13,8 @@
  * This code is partially based on https://www.arduino.cc/en/Tutorial/Debounce
  */
 
-const int LED_OUTPUT_PIN = 3;
 const int BUTTON_INPUT_PIN = 2;
+const int LED_OUTPUT_PIN = 3;
 
 int _numRawButtonPresses = 0; //tracks raw num of button presses
 int _numDebouncedButtonPresses = 0; //tracks debounced num of button presses
@@ -63,11 +63,10 @@ void loop() {
   }
 
   // Write out tracking vals
+  Serial.print("Raw:");
   Serial.print(_numRawButtonPresses);
-  Serial.print("\t");
-  Serial.print(_numDebouncedButtonPresses);
-  Serial.print("\t");
-  Serial.println(0); // write zero to force y-axis scale on Serial Plotter
+  Serial.print(", Debounced:");
+  Serial.println(_numDebouncedButtonPresses);
   
   // Write out HIGH or LOW
   digitalWrite(LED_OUTPUT_PIN, _ledState);
