@@ -5,6 +5,7 @@
  * 
  * See:
  *  - https://youtu.be/CRJUdf5TTQQ
+ *  - https://electronics.stackexchange.com/questions/165044/understanding-interrupts-and-software-button-debounce
  * 
  * By Jon E. Froehlich
  * @jonfroehlich
