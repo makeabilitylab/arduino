@@ -6,6 +6,9 @@
  * LOW to HIGH transitions due to the conductive materials vibrating against
  * each other when the button is initially pressed.
  * 
+ * For more information, see:
+ * https://makeabilitylab.github.io/physcomp/arduino/debouncing.html
+ * 
  * By Jon E. Froehlich
  * @jonfroehlich
  * http://makeabilitylab.io
@@ -24,7 +27,7 @@ int _ledState = LOW; //current state of LED
 
 // the following variables are unsigned longs because the time, measured in
 // milliseconds, will quickly become a bigger number than can be stored in an int.
-unsigned long _buttonStateChangeTimestamp = 0;  // the last time the output pin was toggled
+unsigned long _buttonStateChangeTimestamp = 0;  // the last time the input pin was toggled
 unsigned long _debounceDelayMs = 50;    // the debounce time; increase if the output flickers
 
 void setup() {

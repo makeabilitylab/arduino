@@ -51,7 +51,7 @@ void loop() {
 
   // write out the LED value. This value is translated to voltage by: 
   // voltageVal = max_voltage * val/255 or voltageVal = 3.3V * val/255 in 
-  // the case of the RedBear Duo
+  // the case of a 3.3V board
   analogWrite(LED_OUTPUT_PIN, ledVal);
 
   delay(10);
