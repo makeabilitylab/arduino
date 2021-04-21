@@ -84,10 +84,10 @@ class Ball : public Shape {
         _ySpeed = random(1, 4);
     }
   
-    void draw(Adafruit_SSD1306 display) {
+    void draw(const Adafruit_SSD1306& disp) {
       // Draw circle takes in (xCenter, yCenter, radius)
       // https://learn.adafruit.com/adafruit-gfx-graphics-library/graphics-primitives#circles-2002788-14
-      display.drawCircle(_x + _radius, _y + _radius, _radius, SSD1306_WHITE);
+      disp.drawCircle(_x + _radius, _y + _radius, _radius, SSD1306_WHITE);
     }
 
     void update(){

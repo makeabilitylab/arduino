@@ -17,8 +17,14 @@ const int JOYSTICK_LEFTRIGHT_PIN = A0;
 const int MAX_ANALOG_VAL = 1023;
 const enum JoystickYDirection JOYSTICK_Y_DIR = RIGHT;
 
-ParallaxJoystick _joystick(JOYSTICK_UPDOWN_PIN, JOYSTICK_LEFTRIGHT_PIN, MAX_ANALOG_VAL, JOYSTICK_Y_DIR);
-Ball _ball(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 5);
+ParallaxJoystick _analogJoystick(JOYSTICK_UPDOWN_PIN, JOYSTICK_LEFTRIGHT_PIN, MAX_ANALOG_VAL, JOYSTICK_Y_DIR);
+Ball _analogBall(20, SCREEN_HEIGHT / 2, 5);
+Ball _digitalBall(SCREEN_WIDTH - 20, SCREEN_HEIGHT / 2, 5);
+
+const int UP_BUTTON_INPUT_PIN = 6;
+const int DOWN_BUTTON_INPUT_PIN =7;
+const int LEFT_BUTTON_INPUT_PIN = 5;
+const int RIGHT_BUTTON_INPUT_PIN = 4;
 
 // for tracking fps
 unsigned long _totalFrameCount = 0;
@@ -29,6 +35,11 @@ const boolean _drawStatusBar = true; // change to show/hide status bar
 
 void setup() {
   Serial.begin(9600);
+
+  pinMode(UP_BUTTON_INPUT_PIN, INPUT_PULLUP);
+  pinMode(DOWN_BUTTON_INPUT_PIN, INPUT_PULLUP);
+  pinMode(LEFT_BUTTON_INPUT_PIN, INPUT_PULLUP);
+  pinMode(RIGHT_BUTTON_INPUT_PIN, INPUT_PULLUP);
 
   // SSD1306_SWITCHCAPVCC = generate _display voltage from 3.3V internally
   if (!_display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
@@ -47,7 +58,9 @@ void setup() {
   delay(500);
   _display.clearDisplay();
 
-  _ball.setSpeed(0, 0);
+  _analogBall.setSpeed(0, 0);
+  _digitalBall.setSpeed(0, 0);
+  _digitalBall.setDrawFill(true);
 }
 
 void loop() {
@@ -68,22 +81,47 @@ void loop() {
     _display.print(" fps");
   }
 
-  // Read new data
-  _joystick.read();
+  // Read new digital joystick data
+  int upButtonVal = digitalRead(UP_BUTTON_INPUT_PIN);
+  int downButtonVal = digitalRead(DOWN_BUTTON_INPUT_PIN);
+  int leftButtonVal = digitalRead(LEFT_BUTTON_INPUT_PIN);
+  int rightButtonVal = digitalRead(RIGHT_BUTTON_INPUT_PIN);
 
-  // Update ball based on speed location
-  int upDownVal = _joystick.getUpDownVal();
-  int leftRightVal = _joystick.getLeftRightVal();
+  // Buttons are setup with internal pullups, so go low when pressed
+  if(upButtonVal == LOW){
+    _digitalBall.setY(_digitalBall.getY() - 1);
+  }
 
-  int yMovementPixels = map(upDownVal, 0, _joystick.getMaxAnalogValue() + 1, -1, 2);
-  int xMovementPixels = map(leftRightVal, 0, _joystick.getMaxAnalogValue() + 1, -1, 2);
+  if(downButtonVal == LOW){
+    _digitalBall.setY(_digitalBall.getY() + 1);
+  }
+
+  if(leftButtonVal == LOW){
+    _digitalBall.setX(_digitalBall.getX() - 1);
+  }
+
+  if(rightButtonVal == LOW){
+    _digitalBall.setX(_digitalBall.getX() + 1);
+  }
+  _digitalBall.forceInside(0, 0, _display.width(), _display.height());
+  _digitalBall.draw(_display);
+
+  // Read new analog joystick data
+  _analogJoystick.read();
+
+  // Update ball based on joystick location
+  int upDownVal = _analogJoystick.getUpDownVal();
+  int leftRightVal = _analogJoystick.getLeftRightVal();
+
+  int yMovementPixels = map(upDownVal, 0, _analogJoystick.getMaxAnalogValue() + 1, -1, 2);
+  int xMovementPixels = map(leftRightVal, 0, _analogJoystick.getMaxAnalogValue() + 1, -1, 2);
 
   Serial.println((String)"upDownVal:" + upDownVal + " leftRightVal:" + leftRightVal + " xMovementPixels:" + xMovementPixels + " yMovementPixels:" + yMovementPixels);
 
-  _ball.setLocation(_ball.getX() + xMovementPixels, _ball.getY() - yMovementPixels);
-  _ball.forceInside(0, 0, _display.width(), _display.height());
+  _analogBall.setLocation(_analogBall.getX() + xMovementPixels, _analogBall.getY() - yMovementPixels);
+  _analogBall.forceInside(0, 0, _display.width(), _display.height());
 
-  _ball.draw(_display);
+  _analogBall.draw(_display);
 
   // Render buffer to screen
   _display.display();
