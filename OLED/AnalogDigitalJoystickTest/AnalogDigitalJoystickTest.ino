@@ -18,7 +18,7 @@ const int MAX_ANALOG_VAL = 1023;
 const enum JoystickYDirection JOYSTICK_Y_DIR = RIGHT;
 
 ParallaxJoystick _analogJoystick(JOYSTICK_UPDOWN_PIN, JOYSTICK_LEFTRIGHT_PIN, MAX_ANALOG_VAL, JOYSTICK_Y_DIR);
-Ball _analogBall(20, SCREEN_HEIGHT / 2, 5);
+Ball _analogBall(20, SCREEN_HEIGHT / 2, 8);
 Ball _digitalBall(SCREEN_WIDTH - 20, SCREEN_HEIGHT / 2, 5);
 
 const int UP_BUTTON_INPUT_PIN = 6;
@@ -104,7 +104,7 @@ void loop() {
     _digitalBall.setX(_digitalBall.getX() + 1);
   }
   _digitalBall.forceInside(0, 0, _display.width(), _display.height());
-  _digitalBall.draw(_display);
+  
 
   // Read new analog joystick data
   _analogJoystick.read();
@@ -116,11 +116,28 @@ void loop() {
   int yMovementPixels = map(upDownVal, 0, _analogJoystick.getMaxAnalogValue() + 1, -1, 2);
   int xMovementPixels = map(leftRightVal, 0, _analogJoystick.getMaxAnalogValue() + 1, -1, 2);
 
-  Serial.println((String)"upDownVal:" + upDownVal + " leftRightVal:" + leftRightVal + " xMovementPixels:" + xMovementPixels + " yMovementPixels:" + yMovementPixels);
+  // Serial.println((String)"upDownVal:" + upDownVal + " leftRightVal:" + leftRightVal + " xMovementPixels:" + xMovementPixels + " yMovementPixels:" + yMovementPixels);
 
   _analogBall.setLocation(_analogBall.getX() + xMovementPixels, _analogBall.getY() - yMovementPixels);
   _analogBall.forceInside(0, 0, _display.width(), _display.height());
 
+  int distanceBetweenBallCenterPts = Shape::distance(_digitalBall.getCenterX(), _digitalBall.getCenterY(), _analogBall.getCenterX(), _analogBall.getCenterY());
+  // Serial.print((String)"digitalBall.CenterPt: (" + _digitalBall.getCenterX() + ", " + _digitalBall.getCenterY() + ")");
+  // Serial.print((String)" analogBall.CenterPt: (" + _analogBall.getCenterX() + ", " + _analogBall.getCenterY() + ")");
+  // Serial.println((String)" Distance: " + distanceBetweenBallCenterPts);
+  _display.setCursor(0, 0);
+  _display.print(distanceBetweenBallCenterPts);
+  _display.print(" px");
+
+  // If the balls touch, draw them both filled
+  if(_digitalBall.overlaps(_analogBall)){
+    _analogBall.setDrawFill(true);
+  }else{
+    _analogBall.setDrawFill(false);
+  }
+
+  // Draw the balls
+  _digitalBall.draw(_display);
   _analogBall.draw(_display);
 
   // Render buffer to screen

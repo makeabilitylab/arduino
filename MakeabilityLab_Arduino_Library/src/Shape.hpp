@@ -8,6 +8,7 @@ class Shape {
     int _y;
     int _width;
     int _height;
+    bool _drawFill = false;
 
   public:
     Shape(int x, int y, int width, int height) {
@@ -20,6 +21,10 @@ class Shape {
 //    void update(){
 //
 //    }
+
+    void setDrawFill(bool drawFill){
+      _drawFill = drawFill;
+    }
 
     void setLocation(int x, int y){
       setX(x);
@@ -74,29 +79,33 @@ class Shape {
       if(getTop() <= y){
         setY(y);
       }else if(getBottom() >= y + height){
-        setY((y + height) - getHeight());
+        setY((y + height) - getHeight() - 1);
       }
 
       if(getLeft() <= x){
         setX(x);
       }else if(getRight() >= x + width){
-        setX((x + width) - getWidth());
+        setX((x + width) - getWidth() - 1);
       }
     }
 
-    boolean overlaps(Shape shape) {
+    bool overlaps(const Shape& shape) {
       // based on https://stackoverflow.com/a/4098512
-      return !(this->getRight() < shape._x ||
-               this->getBottom() < shape._y ||
-               this->_x > shape.getRight() ||
-               this->_y > shape.getBottom());
+      return !(getRight() < shape._x ||
+               getBottom() < shape._y ||
+               _x > shape.getRight() ||
+               _y > shape.getBottom());
     }
 
-    boolean contains(int x, int y) {
+    bool contains(int x, int y) {
       return x >= _x && // check within left edge
              x <= (_x + _width) && // check within right edge
              y >= _y && // check within top edge
              y <= (_y + _height); // check within bottom edge
+    }
+
+    static float distance(int x1, int y1, int x2, int y2){
+      return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
     }
 };
 
@@ -107,7 +116,6 @@ class Ball : public Shape {
     int _radius;
     int _xSpeed;
     int _ySpeed;
-    bool _drawFill = false;
   
   public:
     Ball(int xCenter, int yCenter, int radius) : Shape(xCenter - radius, yCenter - radius, radius * 2, radius * 2)    
@@ -118,10 +126,6 @@ class Ball : public Shape {
         // https://www.arduino.cc/reference/en/language/functions/random-numbers/random/
         _xSpeed = random(1, 4);
         _ySpeed = random(1, 4);
-    }
-  
-    void setDrawFill(bool drawFill){
-      _drawFill = drawFill;
     }
 
     /**
@@ -137,6 +141,23 @@ class Ball : public Shape {
       }else{
         disp.drawCircle(_x + _radius, _y + _radius, _radius, SSD1306_WHITE);
       }
+    }
+
+    bool overlaps(const Ball& ball) {
+      int distanceFromCenterPoints = Shape::distance(getCenterX(), getCenterY(), ball.getCenterX(), ball.getCenterY());
+      return distanceFromCenterPoints <= getRadius() + ball.getRadius();
+    }
+
+    int getCenterX(){
+      return _x + _radius;
+    }
+
+    int getCenterY(){
+      return _y + _radius;
+    }
+
+    int getRadius(){
+      return _radius;
     }
 
     void setRadius(int radius){
