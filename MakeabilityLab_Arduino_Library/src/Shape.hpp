@@ -54,6 +54,11 @@ class Shape {
       }
     }
 
+    virtual void setDimensions(int width, int height){
+      _width = width;
+      _height = height;
+    }
+
     int getWidth(){
       return _width;
     }
@@ -93,7 +98,7 @@ class Shape {
     }
 
     virtual bool overlaps(const Shape& shape) {
-      Serial.println("We are in overlaps shape!");
+      //Serial.println("We are in overlaps shape!");
 
       // based on https://stackoverflow.com/a/4098512
       return !(getRight() < shape._x ||
@@ -145,22 +150,12 @@ class Rectangle : public Shape {
 };
 
 // Derived class
-class Ball : public Shape {
+class Circle : public Shape {
 
-  protected:
-    int _radius;
-    int _xSpeed = 0;
-    int _ySpeed = 0;
-  
   public:
-    Ball(int xCenter, int yCenter, int radius) : Shape(xCenter - radius, yCenter - radius, (radius * 2) + 1, (radius * 2) + 1)    
+    Circle(int xCenter, int yCenter, int radius) : Shape(xCenter - radius, yCenter - radius, (radius * 2) + 1, (radius * 2) + 1)    
     {
-        _radius = radius;
 
-        // Gets a random long between min and max - 1
-        // https://www.arduino.cc/reference/en/language/functions/random-numbers/random/
-        //_xSpeed = random(1, 4);
-        //_ySpeed = random(1, 4);
     }
 
     /**
@@ -171,54 +166,85 @@ class Ball : public Shape {
     void draw(const Adafruit_SSD1306& disp) override{
       // Draw circle takes in (xCenter, yCenter, radius)
       // https://learn.adafruit.com/adafruit-gfx-graphics-library/graphics-primitives#circles-2002788-14
+      int radius = getRadius();
       if(_drawFill){
-        disp.fillCircle(_x + _radius, _y + _radius, _radius, SSD1306_WHITE);
+        disp.fillCircle(_x + radius, _y + radius, radius, SSD1306_WHITE);
       }else{
-        disp.drawCircle(_x + _radius, _y + _radius, _radius, SSD1306_WHITE);
+        disp.drawCircle(_x + radius, _y + radius, radius, SSD1306_WHITE);
       }
 
       // Call super method
       Shape::draw(disp);
     }
 
-    bool overlaps(const Ball& ball) {
-      int distanceFromCenterPoints = Shape::distance(getCenterX(), getCenterY(), ball.getCenterX(), ball.getCenterY());
-      return distanceFromCenterPoints <= getRadius() + ball.getRadius();
+    bool overlaps(const Circle& circle) {
+      int distanceFromCenterPoints = Shape::distance(getCenterX(), getCenterY(), circle.getCenterX(), circle.getCenterY());
+      return distanceFromCenterPoints <= getRadius() + circle.getRadius();
     }
 
     bool overlaps(const Shape& shape) override{
       if(getName().equals(shape.getName())){
-        const Ball* ball = (Ball*)&shape;
-        return this->overlaps((Ball&)shape);
+        return this->overlaps((Circle&)shape);
       }
       
       // Default to parent overlaps function
       return Shape::overlaps(shape);
     }
 
+    /**
+     * @brief Uses the width value to set the circle diameter. The height parameter is ignored.
+     * 
+     * @param width sets the circle diameter
+     * @param height ignored
+     */
+    void setDimensions(int width, int height) override{
+      Shape::setDimensions(width, width);
+    }
+
     int getCenterX(){
-      return _x + _radius;
+      return _x + getWidth() / 2;
     }
 
     int getCenterY(){
-      return _y + _radius;
+      return _y + getWidth() / 2;
     }
 
     int setCenter(int x, int y){
-      setLocation(x - _radius, y - _radius);
+      int radius = getRadius();
+      setLocation(x - radius, y - radius);
     }
 
     int getRadius(){
-      return _radius;
+      return getWidth() / 2;
     }
 
     void setRadius(int radius){
-      _radius = radius;
-      _width = 2 * _radius;
-      _height = 2 * _radius;
+      int size = 2 * radius;
+      setDimensions(size, size);
+    }
+};
+
+class Ball : public Circle{
+
+  protected:
+    int _xSpeed = 0;
+    int _ySpeed = 0;
+  
+  public:
+    Ball(int xCenter, int yCenter, int radius) : Circle(xCenter, yCenter, radius)    
+    {
+
     }
 
-    void setSpeed(int xSpeed, int ySpeed){
+    boolean checkYBounce(int yMin, int yMax){
+      return getTop() <= yMin || getBottom() >= yMax;
+    }
+
+    boolean checkXBounce(int xMin, int xMax){
+      return getLeft() <= xMin || getRight() >= xMax;
+    }
+
+     void setSpeed(int xSpeed, int ySpeed){
       _xSpeed = xSpeed;
       _ySpeed = ySpeed;
     }
@@ -244,14 +270,6 @@ class Ball : public Shape {
     int reverseXSpeed(){
       _xSpeed = _xSpeed * -1;
       return _xSpeed;
-    }
-
-    boolean checkYBounce(int yMin, int yMax){
-      return getTop() <= yMin || getBottom() >= yMax;
-    }
-
-    boolean checkXBounce(int xMin, int xMax){
-      return getLeft() <= xMin || getRight() >= xMax;
     }
 
     String getName() override{
