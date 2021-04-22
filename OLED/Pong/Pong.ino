@@ -33,7 +33,7 @@
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-const int DELAY_LOOP_MS = 200; 
+const int DELAY_LOOP_MS = 5; 
 const int JOYSTICK_UPDOWN_PIN = A1;
 const int JOYSTICK_LEFTRIGHT_PIN = A0;
 const int SERVE_BUTTON_INPUT_PIN = 5;
@@ -134,10 +134,10 @@ void setup() {
   _display.clearDisplay();
   _display.setTextSize(1);
 
-  _ball.setDrawBoundingBox(true);
+  _ball.setDrawBoundingBox(false);
   _ball.setDrawFill(true);
-  _leftPaddle.setDrawFill(false);
-  _rightPaddle.setDrawFill(false);
+  _leftPaddle.setDrawFill(true);
+  _rightPaddle.setDrawFill(true);
   //Serial.println((String)"_xBall:" + _xBall + " _xBall:" + _xBall + " _xSpeed:" + _xSpeed + " _ySpeed:" + _ySpeed);
 
   // Randomly select who starts with ball
@@ -185,12 +185,12 @@ void loop() {
   // draw scores
   //_display.getTextBounds((String)("" + _leftPlayerScore), 0, 0, &x1, &y1, &w, &h);
   //_display.setCursor(_display.width() / 4 - w / 2, 0);
-//  _display.setCursor(_display.width() / 4, 0);
-//  _display.print(_leftPlayerScore);
-//
-//  //_display.getTextBounds((String)("" + _rightPlayerScore), 0, 0, &x1, &y1, &w, &h);
-//  _display.setCursor((int)(_display.width() * 0.75), 0);
-//  _display.print(_rightPlayerScore);
+  _display.setCursor(_display.width() / 4, 0);
+  _display.print(_leftPlayerScore);
+
+  //_display.getTextBounds((String)("" + _rightPlayerScore), 0, 0, &x1, &y1, &w, &h);
+  _display.setCursor((int)(_display.width() * 0.75), 0);
+  _display.print(_rightPlayerScore);
   
 
   // draw center line dotted
@@ -231,10 +231,10 @@ void loop() {
   _leftPaddle.setY(_leftPaddle.getY() - yMovementPixels);
   _leftPaddle.forceInside(0, 0, _display.width(), _display.height());
 
-  _display.setCursor(0, 0);
-  _display.print((String)"LP.R="+_leftPaddle.getRight() + " Ball.L=" + _ball.getLeft());
-  _display.setCursor(0, 10);
-  _display.print((String)"RP.L="+_rightPaddle.getLeft() + " Ball.R=" + _ball.getRight());
+//  _display.setCursor(0, 0);
+//  _display.print((String)"LP.R="+_leftPaddle.getRight() + " Ball.L=" + _ball.getLeft());
+//  _display.setCursor(0, 10);
+//  _display.print((String)"RP.L="+_rightPaddle.getLeft() + " Ball.R=" + _ball.getRight());
     
   if(_curGameState == PLAYING){
     if(_ball.checkYBounce(0, _display.height() - 1)){
@@ -242,21 +242,23 @@ void loop() {
       _ball.forceInside(0, 0, _display.width(), _display.height());
     }
     
-    // Check ball hit paddle
-    //TODO FIX LOGIC HERE: the problem is that the ball can move more than a few pixels
-    // per frame, so collision checking needs to be smarter
-    // Collision code here: https://codeincomplete.com/articles/javascript-pong/part4/
-    if(_leftPaddle.getRight() <= _ball.getLeft() && _leftPaddle.overlaps(_ball)){
-      _display.setCursor(0, 20);
-      _display.print((String)"LP.R="+_leftPaddle.getRight() + "<= Ball.L=" + _ball.getLeft());
+    // Check for ball-paddle collision. We could be far smarter here and actually 
+    // calculate the trajectory of the ball, etc. See:
+    // https://codeincomplete.com/articles/javascript-pong/part4/
+    // This would be important if the ball could go large distances across
+    // each frame calculation. But we're limiting ball speed and this is a simple demo
+    // so good enough for now!
+    if( _leftPaddle.overlaps(_ball)){
+      //_display.setCursor(0, 20);
+      //_display.print((String)"LP.R="+_leftPaddle.getRight() + "<= Ball.L=" + _ball.getLeft());
       
       _ball.setX(_leftPaddle.getRight());
       _ball.reverseXSpeed();
      
     }
-    else if(_rightPaddle.getLeft() >= _ball.getRight() && _rightPaddle.overlaps(_ball)){
-      _display.setCursor(0, 20);
-      _display.print((String)"RP.L="+_rightPaddle.getLeft() + ">= Ball.R=" + _ball.getRight());
+    else if(_rightPaddle.overlaps(_ball)){
+      //_display.setCursor(0, 20);
+      //_display.print((String)"RP.L="+_rightPaddle.getLeft() + ">= Ball.R=" + _ball.getRight());
       
       _ball.setX(_rightPaddle.getLeft() - _ball.getWidth());
       _ball.reverseXSpeed();
@@ -310,8 +312,8 @@ void loop() {
       _curGameState = NEW_GAME;
     }
   }else{
-    int xSpeed = random(1, 5);
-    int ySpeed = random(1, 5);
+    int xSpeed = random(1, _ball.getRadius() + 1);
+    int ySpeed = random(1, _ball.getRadius() + 1);
     //Serial.println((String)"_ballServer:" + _ballServer + " _curGameState:" + _curGameState);
     if(_ballServer == LEFT_PLAYER){
       _ball.setLocation(_leftPaddle.getRight(), _leftPaddle.getY() + 
@@ -322,7 +324,7 @@ void loop() {
         _curGameState = PLAYING;
       }
     }else{
-      _ball.setLocation(_rightPaddle.getLeft() - _ball.getWidth() - 1, 
+      _ball.setLocation(_rightPaddle.getLeft() - _ball.getWidth(), 
         _rightPaddle.getY() + _rightPaddle.getHeight() / 2 - _ball.getHeight() / 2);
 
       if(ballServeButtonVal == LOW){
