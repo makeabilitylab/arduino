@@ -22,7 +22,6 @@
 #include <Shape.hpp>;
 #include <ParallaxJoystick.hpp>;
 
-
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
@@ -130,7 +129,7 @@ void setup() {
   
   
   _display.display();
-  delay(1500);
+  //delay(1500);
   _display.clearDisplay();
   _display.setTextSize(1);
 
