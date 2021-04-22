@@ -56,6 +56,7 @@ unsigned long _startTimeStamp = 0;
 // status bar
 const boolean _drawFrameCount = true; // change to show/hide status bar
 const int DELAY_LOOP_MS = 5;
+const int LOAD_SCREEN_SHOW_MS = 500;
 
 void setup() {
   Serial.begin(9600);
@@ -78,7 +79,6 @@ void setup() {
   _targetShapes = new Shape*[NUM_TARGET_SHAPES];
   for(int i = 0; i < NUM_TARGET_SHAPES; i++){
     
-
     // Create dimensions of shape
     int randWidth = random(3, 25);
     int randHeight = random(3, 25);
@@ -125,7 +125,7 @@ void showLoadScreen(){
   _display.print(STR_LOADSCREEN_APP_NAME);
 
   _display.display();
-  delay(1500);
+  delay(LOAD_SCREEN_SHOW_MS);
   _display.clearDisplay();
   _display.setTextSize(1);
   
