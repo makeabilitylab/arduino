@@ -19,8 +19,9 @@
 // The Arduino Uno ADC is 10 bits (thus, 0 - 1023 values)
 #define MAX_ANALOG_INPUT_VAL 1023
 
-const int LED_OUTPUT_PIN = 3;
+const int LED_OUTPUT_PIN = 13;
 const int POT_INPUT_PIN = A0;
+const int OUTPUT_PIEZO_PIN = 4;
 
 void setup() {
   pinMode(LED_OUTPUT_PIN, OUTPUT);
@@ -31,6 +32,18 @@ void loop() {
 
   // read the potentiometer value
   int potVal = analogRead(POT_INPUT_PIN);
+
+  // Convert potentiometer value to a frequency to play
+  // https://www.arduino.cc/reference/en/language/functions/advanced-io/tone/
+  // The lowest possible frequency is 31
+  int freq = map(potVal, 0, 1023, 31, 1500); // change min/max freq here
+
+  // only play sound if above 0
+  if(potVal > 0){
+    tone(OUTPUT_PIEZO_PIN, freq);
+  }else{
+    noTone(OUTPUT_PIEZO_PIN);
+  }
 
   // the analogRead on the Arduino Uno goes from 0 to 1023. We need to remap
   // this value to the smaller range (0-255) since the analogWrite function can 
