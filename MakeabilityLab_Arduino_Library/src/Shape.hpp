@@ -9,6 +9,7 @@ class Shape {
     int _width;
     int _height;
     bool _drawFill = false;
+    bool _drawBoundingBox = false;
 
   public:
     Shape(int x, int y, int width, int height) {
@@ -18,9 +19,9 @@ class Shape {
       _height = height;
     }
 
-//    void update(){
-//
-//    }
+    void setDrawBoundingBox(bool drawBoundingBox){
+      _drawBoundingBox = drawBoundingBox;
+    }
 
     void setDrawFill(bool drawFill){
       _drawFill = drawFill;
@@ -47,8 +48,10 @@ class Shape {
       return _y;
     }
 
-    void draw(const Adafruit_SSD1306& display) {
-      // empty
+    virtual void draw(const Adafruit_SSD1306& display) {
+      if(_drawBoundingBox){
+        display.drawRect(_x, _y, _width, _height, SSD1306_WHITE);
+      }
     }
 
     int getWidth(){
@@ -89,7 +92,9 @@ class Shape {
       }
     }
 
-    bool overlaps(const Shape& shape) {
+    virtual bool overlaps(const Shape& shape) {
+      Serial.println("We are in overlaps shape!");
+
       // based on https://stackoverflow.com/a/4098512
       return !(getRight() < shape._x ||
                getBottom() < shape._y ||
@@ -97,15 +102,45 @@ class Shape {
                _y > shape.getBottom());
     }
 
-    bool contains(int x, int y) {
+    virtual bool contains(int x, int y) {
       return x >= _x && // check within left edge
              x <= (_x + _width) && // check within right edge
              y >= _y && // check within top edge
              y <= (_y + _height); // check within bottom edge
     }
 
+    virtual String getName(){
+      return "Shape";
+    }
+
+    virtual String toString(){
+      return (String)"x: " + _x + " y: " + _y + " width: " + _width + " height: " + _height;
+    }
+
     static float distance(int x1, int y1, int x2, int y2){
       return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+    }
+};
+
+  
+class Rectangle : public Shape {
+  public:
+    Rectangle(int x, int y, int width, int height) : Shape(x, y, width, height)
+    {
+    }
+
+    void draw (const Adafruit_SSD1306& display) override{
+      // Draw rectangle takes in (xTop, yTop, width, height)
+      // https://learn.adafruit.com/adafruit-gfx-graphics-library/graphics-primitives#rectangles-2002784-10
+      if(_drawFill){
+        display.fillRect(_x, _y, _width, _height, SSD1306_WHITE);
+      }else{
+        display.drawRect(_x, _y, _width, _height, SSD1306_WHITE);
+      }
+    }
+
+    String getName() override{
+      return "Rectangle";
     }
 };
 
@@ -114,18 +149,18 @@ class Ball : public Shape {
 
   protected:
     int _radius;
-    int _xSpeed;
-    int _ySpeed;
+    int _xSpeed = 0;
+    int _ySpeed = 0;
   
   public:
-    Ball(int xCenter, int yCenter, int radius) : Shape(xCenter - radius, yCenter - radius, radius * 2, radius * 2)    
+    Ball(int xCenter, int yCenter, int radius) : Shape(xCenter - radius, yCenter - radius, (radius * 2) + 1, (radius * 2) + 1)    
     {
         _radius = radius;
 
         // Gets a random long between min and max - 1
         // https://www.arduino.cc/reference/en/language/functions/random-numbers/random/
-        _xSpeed = random(1, 4);
-        _ySpeed = random(1, 4);
+        //_xSpeed = random(1, 4);
+        //_ySpeed = random(1, 4);
     }
 
     /**
@@ -133,7 +168,7 @@ class Ball : public Shape {
      * 
      * @param display 
      */
-    void draw(const Adafruit_SSD1306& disp) {
+    void draw(const Adafruit_SSD1306& disp) override{
       // Draw circle takes in (xCenter, yCenter, radius)
       // https://learn.adafruit.com/adafruit-gfx-graphics-library/graphics-primitives#circles-2002788-14
       if(_drawFill){
@@ -141,11 +176,24 @@ class Ball : public Shape {
       }else{
         disp.drawCircle(_x + _radius, _y + _radius, _radius, SSD1306_WHITE);
       }
+
+      // Call super method
+      Shape::draw(disp);
     }
 
     bool overlaps(const Ball& ball) {
       int distanceFromCenterPoints = Shape::distance(getCenterX(), getCenterY(), ball.getCenterX(), ball.getCenterY());
       return distanceFromCenterPoints <= getRadius() + ball.getRadius();
+    }
+
+    bool overlaps(const Shape& shape) override{
+      if(getName().equals(shape.getName())){
+        const Ball* ball = (Ball*)&shape;
+        return this->overlaps((Ball&)shape);
+      }
+      
+      // Default to parent overlaps function
+      return Shape::overlaps(shape);
     }
 
     int getCenterX(){
@@ -154,6 +202,10 @@ class Ball : public Shape {
 
     int getCenterY(){
       return _y + _radius;
+    }
+
+    int setCenter(int x, int y){
+      setLocation(x - _radius, y - _radius);
     }
 
     int getRadius(){
@@ -169,6 +221,14 @@ class Ball : public Shape {
     void setSpeed(int xSpeed, int ySpeed){
       _xSpeed = xSpeed;
       _ySpeed = ySpeed;
+    }
+
+    int getXSpeed(){
+      return _xSpeed;
+    }
+
+    int getYSpeed(){
+      return _ySpeed;
     }
 
     void update(){
@@ -192,5 +252,9 @@ class Ball : public Shape {
 
     boolean checkXBounce(int xMin, int xMax){
       return getLeft() <= xMin || getRight() >= xMax;
+    }
+
+    String getName() override{
+      return "Ball";
     }
 };
