@@ -28,7 +28,7 @@ unsigned long _startTimeStamp = 0;
 // status bar
 const boolean _drawFrameCount = false; // change to show/hide frame count
 const int DELAY_LOOP_MS = 5;
-const int LOAD_SCREEN_SHOW_MS = 500;
+const int LOAD_SCREEN_SHOW_MS = 750;
 
 class Bird : public Rectangle {
   public:
@@ -61,9 +61,9 @@ const int NUM_PIPES = 3;
 
 const int MIN_PIPE_WIDTH = 8;
 const int MAX_PIPE_WIDTH = 18; // in pixels
-const int MIN_PIPE_X_SPACING_DISTANCE = BIRD_WIDTH * 2 + 3; // in pixels
+const int MIN_PIPE_X_SPACING_DISTANCE = BIRD_WIDTH * 3; // in pixels
 const int MAX_PIPE_X_SPACING_DISTANCE = 100; // in pixels
-const int MIN_PIPE_Y_SPACE = BIRD_HEIGHT * 2 + 3;
+const int MIN_PIPE_Y_SPACE = BIRD_HEIGHT * 3;
 const int MAX_PIPE_Y_SPACE = SCREEN_HEIGHT - BIRD_HEIGHT * 2;
 
 int _pipeSpeed = 2;
@@ -185,6 +185,7 @@ void nonGamePlayLoop() {
 }
 
 void initializeGameEntities() {
+  _points = 0;
 
   _bird.setY(_display.height() / 2 - _bird.getHeight() / 2);
   _bird.setDrawFill(true);
@@ -360,10 +361,12 @@ void drawStatusBar() {
   _display.print(_points);
 
   // Draw frame count
-  int16_t x1, y1;
-  uint16_t w, h;
-  _display.getTextBounds("XX.XX fps", 0, 0, &x1, &y1, &w, &h);
-  _display.setCursor(_display.width() - w, 0);
-  _display.print(_fps);
-  _display.print(" fps");
+  if (_drawFrameCount) {
+    int16_t x1, y1;
+    uint16_t w, h;
+    _display.getTextBounds("XX.XX fps", 0, 0, &x1, &y1, &w, &h);
+    _display.setCursor(_display.width() - w, 0);
+    _display.print(_fps);
+    _display.print(" fps");
+  }
 }
