@@ -71,7 +71,7 @@ void loop() {
   // Read new data
   _joystick.read();
 
-  // Update ball based on speed location
+  // Update ball based on joystick location
   int upDownVal = _joystick.getUpDownVal();
   int leftRightVal = _joystick.getLeftRightVal();
 
