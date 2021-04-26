@@ -13,20 +13,24 @@
  * 
  */
 
+// The digital pins usable for interrupts:
+//  - Arduino Uno, Nano, and Mini: 2, 3
+//  - Leondardo, Micro, and other 32u4 boards: 0, 1, 2, 3, 7
+// See: https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
 const int BUTTON_INPUT_PIN = 2;
 const int LED_OUTPUT_PIN = 3;
-const int DEBOUNCE_WINDOW_MILLISECONDS = 40;
-const int DEBOUNCE_WINDOW_MICROSECONDS = DEBOUNCE_WINDOW_MILLISECONDS * 1000;
+const unsigned long DEBOUNCE_WINDOW_MILLISECONDS = 20;
+const unsigned long DEBOUNCE_WINDOW_MICROSECONDS = DEBOUNCE_WINDOW_MILLISECONDS * 1000;
 
-volatile unsigned long _timestampLastInterrupt = LOW;
+volatile unsigned long _diff = 0;
 
-int _prevRawButtonVal = LOW;
-int _debouncedButtonVal = LOW;
-unsigned long _buttonStateChangeTimestamp = 0;  // the last time the input pin was toggled
+volatile unsigned long _buttonStateChangeTimestamp = 0;
+volatile byte _savedButtonVal = LOW; // assume pull-down resistor setup
 
 void setup() {
   pinMode(BUTTON_INPUT_PIN, INPUT);
   pinMode(LED_OUTPUT_PIN, OUTPUT);
+  //Serial.begin(9600);
 
   // The attachInterrupt function takes three parameters:
   //  - The digital pin to interrupt
@@ -37,7 +41,10 @@ void setup() {
 
 /**
  * This function is an interrupt service routine (ISR) called automatically by the microcontroller
- * based on the attachInterrupt method above. It must take no parameters and return nothing.
+ * based on the attachInterrupt method above. In this case, it's called whenever the input 
+ * on the BUTTON_INPUT_PIN goes from LOW to HIGH or HIGH to LOW
+ * 
+ * ISR routines take no parameters and return nothing.
  * 
  * Generally, an ISR should be as short and fast as possible. If your sketch uses multiple ISRs, only 
  * one can run at a time, other interrupts will be executed after the current one finishes in an order 
@@ -48,33 +55,35 @@ void setup() {
  * you modify within the attached function. See the section on ISRs below for more information.
  */
 void buttonInterrupt(){
+  // Only use micros at very beginning of ISR (https://arduino.stackexchange.com/a/22237)
   unsigned long interruptTimestamp = micros();
-  if(interruptTimestamp - _buttonStateChangeTimestamp >= DEBOUNCE_WINDOW_MICROSECONDS){
-    // There's been no change for DEBOUNCE_WINDOW_MICROSECONDS, so let's shift
+  byte buttonVal = digitalRead(BUTTON_INPUT_PIN);
+
+  _diff = (interruptTimestamp - _buttonStateChangeTimestamp);
+  if(_diff >= DEBOUNCE_WINDOW_MICROSECONDS){
+    // There's been no change for DEBOUNCE_WINDOW_MICROSECONDS, so let's read 
+    _savedButtonVal = buttonVal;
+    _buttonStateChangeTimestamp = interruptTimestamp;
   }
+
 }
 
 void loop() {
-
-  // Read the button value. We assume a pull-down resistor button configuration so
-  // the button will be HIGH when pressed and LOW when not pressed
-  int rawButtonVal = digitalRead(BUTTON_INPUT_PIN);
-
-  // If the button state has changed since the last reading, grab timestamp
-  // This state change may be due to a legitimate user action or noise
-  if(rawButtonVal != _prevRawButtonVal){
-    _buttonStateChangeTimestamp = millis();
-  }
-
-  if((millis() - _buttonStateChangeTimestamp) >= DEBOUNCE_WINDOW){
-    // If we're here, then the button state hasn't changed for at least DEBOUNCE_WINDOW
-    // So, we must be in a steady state
-
-    _debouncedButtonVal = rawButtonVal;
-  }
-
   // Write out HIGH or LOW
-  digitalWrite(LED_OUTPUT_PIN, _debouncedButtonVal);
-
-  _prevRawButtonVal = rawButtonVal;
+  digitalWrite(LED_OUTPUT_PIN, _savedButtonVal);
+//  byte buttonVal = digitalRead(BUTTON_INPUT_PIN);
+//  Serial.print(_savedButtonVal);
+//  Serial.print(" ");
+//  Serial.println(buttonVal);
+//
+  Serial.print(micros());
+  Serial.print(" ");
+  Serial.print(_buttonStateChangeTimestamp);
+  Serial.print(" ");
+  Serial.print(_diff);
+  Serial.print(" ");
+  Serial.print(DEBOUNCE_WINDOW_MICROSECONDS);
+  Serial.print(" ");
+  Serial.println((long)(_diff - DEBOUNCE_WINDOW_MICROSECONDS));
+  delay(50);
 }
