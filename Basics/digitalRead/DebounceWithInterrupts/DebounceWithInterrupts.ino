@@ -64,17 +64,16 @@ void buttonInterrupt(){
     // There's been no change for DEBOUNCE_WINDOW_MICROSECONDS, so let's read 
     _savedButtonVal = buttonVal;
     _buttonStateChangeTimestamp = interruptTimestamp;
+    digitalWrite(LED_OUTPUT_PIN, _savedButtonVal);
   }
 
 }
 
 void loop() {
   // Write out HIGH or LOW
-  digitalWrite(LED_OUTPUT_PIN, _savedButtonVal);
-//  byte buttonVal = digitalRead(BUTTON_INPUT_PIN);
-//  Serial.print(_savedButtonVal);
-//  Serial.print(" ");
-//  Serial.println(buttonVal);
+  //digitalWrite(LED_OUTPUT_PIN, _savedButtonVal);
+  byte buttonVal = digitalRead(BUTTON_INPUT_PIN);
+  
 //
   Serial.print(micros());
   Serial.print(" ");
@@ -84,6 +83,11 @@ void loop() {
   Serial.print(" ");
   Serial.print(DEBOUNCE_WINDOW_MICROSECONDS);
   Serial.print(" ");
-  Serial.println((long)(_diff - DEBOUNCE_WINDOW_MICROSECONDS));
+  Serial.print((long)(_diff - DEBOUNCE_WINDOW_MICROSECONDS));
+  Serial.print(" ");
+  Serial.print(buttonVal);
+  Serial.print(" ");
+  Serial.println(_savedButtonVal);
+  
   delay(50);
 }
