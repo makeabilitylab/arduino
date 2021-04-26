@@ -40,13 +40,18 @@ void loop() {
   // perhaps logarithmic)
   int ledVal = map(potVal, 0, MAX_ANALOG_INPUT_VAL, 0, 255);
 
-  float analogInVoltage = potVal * (5.0 / 1023.0);
+  // See: https://www.arduino.cc/en/Tutorial/BuiltInExamples/ReadAnalogVoltage
+  // On the Uno and Leonardo, the ADC is 10 bits (so, analog input ranges from 0 - 1023)
+  // so the resolution between readings is 0.0049 volts (4.9mV).
+  // On the Due, Zero, and MKR boards, the ADC is 12 bits (so, analog input ranges from 0 - 4095)
+  // so the resolution between readings is 0.0012V (or 1.2mV)
+  float analogInVoltage = potVal * (5.0 / MAX_ANALOG_INPUT_VAL);
   
   // print the raw pot value and the converted led value
   Serial.print("Analog in: ");
-  Serial.print(potVal);
+  Serial.print(potVal); 
   Serial.print(" Input voltage: ");
-  Serial.print(analogInVoltage);
+  Serial.print(analogInVoltage, 4); // the second number is number of decimal places
   Serial.println("V");
   Serial.print(" LED val: ");
   Serial.print(ledVal);
