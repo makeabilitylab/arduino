@@ -9,6 +9,10 @@
  * The GP2Y0A21YK operates from 3.1V at 10cm to 0.4V at 80cm while the GP2Y0A02YK0F is longer range: 
  * 2.8V at 15cm to 0.4V at 150cm. Both require supply voltages of ~5V.
  * 
+ * Datasheets:
+ * - GP2Y0A21YK: https://www.sparkfun.com/datasheets/Components/GP2Y0A21YK.pdf
+ * - GP2Y0A02YK0F: https://www.sparkfun.com/datasheets/Sensors/Infrared/gp2y0a02yk_e.pdf
+ * 
  * See:
  * https://www.makerguides.com/sharp-gp2y0a21yk0f-ir-distance-sensor-arduino-tutorial/
  *  
