@@ -1,0 +1,372 @@
+#include <Wire.h>
+#include <SPI.h>
+#include <Shape.hpp>;
+
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128 // OLED _display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED _display height, in pixels
+
+// Declaration for an SSD1306 _display connected to I2C (SDA, SCL pins)
+#define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
+Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+const char STR_LOADSCREEN_CREATOR[] = "Makeability Lab";
+const char STR_LOADSCREEN_APP_NAME_LINE1[] = "Flappy";
+const char STR_LOADSCREEN_APP_NAME_LINE2[] = "Bird!";
+const char STR_PRESS_FLAP_TO_PLAY[] = "Press flap to play";
+const char STR_GAME_OVER[] = "Game Over!";
+const int FLAP_BUTTON_INPUT_PIN = 5;
+
+
+// for tracking fps
+unsigned long _frameCount = 0;
+float _fps = 0;
+unsigned long _startTimeStamp = 0;
+
+// status bar
+const boolean _drawFrameCount = false; // change to show/hide frame count
+const int DELAY_LOOP_MS = 5;
+const int LOAD_SCREEN_SHOW_MS = 750;
+
+class Bird : public Rectangle {
+  public:
+    Bird(int x, int y, int width, int height) : Rectangle(x, y, width, height)
+    {
+    }
+};
+
+class Pipe : public Rectangle {
+  protected:
+    bool _hasPassedBird = false;
+
+  public:
+    Pipe(int x, int y, int width, int height) : Rectangle(x, y, width, height)
+    {
+    }
+
+    bool getHasPassedBird() {
+      return _hasPassedBird;
+    }
+
+    bool setHasPassedBird(bool hasPassedBird) {
+      _hasPassedBird = hasPassedBird;
+    }
+};
+
+const int BIRD_HEIGHT = 5;
+const int BIRD_WIDTH = 10;
+const int NUM_PIPES = 3;
+
+const int MIN_PIPE_WIDTH = 8;
+const int MAX_PIPE_WIDTH = 18; // in pixels
+const int MIN_PIPE_X_SPACING_DISTANCE = BIRD_WIDTH * 3; // in pixels
+const int MAX_PIPE_X_SPACING_DISTANCE = 100; // in pixels
+const int MIN_PIPE_Y_SPACE = BIRD_HEIGHT * 3;
+const int MAX_PIPE_Y_SPACE = SCREEN_HEIGHT - BIRD_HEIGHT * 2;
+
+int _pipeSpeed = 2;
+int _gravity = 1; // can't apply gravity every frame, apply every X time
+int _points = 0;
+unsigned long _gameOverTimestamp = 0;
+
+const int IGNORE_INPUT_AFTER_GAME_OVER_MS = 500; //ignores input for 500ms after game over
+
+// Initialize top pipe and bottom pipe arrays. The location/sizes don't matter
+// at this point as we'll set them in setup()
+Pipe _topPipes[NUM_PIPES] = { Pipe(0, 0, 0, 0),
+                              Pipe(0, 0, 0, 0),
+                              Pipe(0, 0, 0, 0)
+                            };
+
+Pipe _bottomPipes[NUM_PIPES] = { Pipe(0, 0, 0, 0),
+                                 Pipe(0, 0, 0, 0),
+                                 Pipe(0, 0, 0, 0)
+                               };
+
+Bird _bird(5, SCREEN_HEIGHT / 2, BIRD_WIDTH, BIRD_HEIGHT);
+
+enum GameState {
+  NEW_GAME,
+  PLAYING,
+  GAME_OVER,
+};
+
+GameState _gameState = NEW_GAME;
+
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(FLAP_BUTTON_INPUT_PIN, INPUT_PULLUP);
+
+  // SSD1306_SWITCHCAPVCC = generate _display voltage from 3.3V internally
+  if (!_display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
+    Serial.println(F("SSD1306 allocation failed"));
+    for (;;); // Don't proceed, loop forever
+  }
+
+  // if analog input pin 5 is unconnected, random analog
+  // noise will cause the call to randomSeed() to generate
+  // different seed numbers each time the sketch runs.
+  // randomSeed() will then shuffle the random function.
+  randomSeed(analogRead(A5));
+
+  // Show load screen
+  showLoadScreen();
+
+  // Setup pipes
+  initializeGameEntities();
+
+  _startTimeStamp = millis();
+}
+
+void loop() {
+
+  _display.clearDisplay();
+
+  drawStatusBar();
+  if (_gameState == NEW_GAME || _gameState == GAME_OVER) {
+    nonGamePlayLoop();
+  } else if (_gameState == PLAYING) {
+    gamePlayLoop();
+  }
+  calcFrameRate();
+
+  // Draw the display buffer to the screen
+  _display.display();
+
+  if (DELAY_LOOP_MS > 0) {
+    delay(DELAY_LOOP_MS);
+  }
+}
+
+void nonGamePlayLoop() {
+  for (int i = 0; i < NUM_PIPES; i++) {
+    _topPipes[i].draw(_display);
+    _bottomPipes[i].draw(_display);
+  }
+
+  int16_t x1, y1;
+  uint16_t w, h;
+  int flapButtonVal = digitalRead(FLAP_BUTTON_INPUT_PIN);
+  if (_gameState == NEW_GAME) {
+
+    _display.getTextBounds(STR_PRESS_FLAP_TO_PLAY, 0, 0, &x1, &y1, &w, &h);
+    _display.setCursor(_display.width() / 2 - w / 2, 15);
+    _display.print(STR_PRESS_FLAP_TO_PLAY);
+
+    if (flapButtonVal == LOW) {
+      _gameState = PLAYING;
+    }
+  } else if (_gameState == GAME_OVER) {
+    _display.setTextSize(2);
+    _display.getTextBounds(STR_GAME_OVER, 0, 0, &x1, &y1, &w, &h);
+    int yText = 15;
+    _display.setCursor(_display.width() / 2 - w / 2, yText);
+    _display.print(STR_GAME_OVER);
+
+    yText = yText + h + 2;
+    _display.setTextSize(1);
+    _display.getTextBounds(STR_PRESS_FLAP_TO_PLAY, 0, 0, &x1, &y1, &w, &h);
+    _display.setCursor(_display.width() / 2 - w / 2, yText);
+    _display.print(STR_PRESS_FLAP_TO_PLAY);
+
+    // We ignore input a bit after game over so that user can see end game screen
+    // and not accidentally start a new game
+    if (flapButtonVal == LOW && millis() - _gameOverTimestamp >= IGNORE_INPUT_AFTER_GAME_OVER_MS) {
+      // if the current state is game over, need to reset
+      initializeGameEntities();
+      _gameState = PLAYING;
+    }
+  }
+
+  _bird.draw(_display);
+}
+
+void initializeGameEntities() {
+  _points = 0;
+
+  _bird.setY(_display.height() / 2 - _bird.getHeight() / 2);
+  _bird.setDrawFill(true);
+
+  const int minStartXPipeLocation = _display.width() / 2;
+  int lastPipeX = minStartXPipeLocation;
+  for (int i = 0; i < NUM_PIPES; i++) {
+
+    int pipeX = lastPipeX + random(MIN_PIPE_X_SPACING_DISTANCE, MAX_PIPE_X_SPACING_DISTANCE);
+    int pipeWidth = random(MIN_PIPE_WIDTH, MAX_PIPE_WIDTH);
+
+    int yGapBetweenPipes = random(MIN_PIPE_Y_SPACE, MAX_PIPE_Y_SPACE);
+
+    int topPipeY = 0;
+    int topPipeHeight = random(0, SCREEN_HEIGHT - yGapBetweenPipes);
+
+    int bottomPipeY = topPipeHeight + yGapBetweenPipes;
+    int bottomPipeHeight = SCREEN_HEIGHT - bottomPipeY;
+
+    _topPipes[i].setLocation(pipeX, topPipeY);
+    _topPipes[i].setDimensions(pipeWidth, topPipeHeight);
+    _topPipes[i].setDrawFill(false);
+
+    _bottomPipes[i].setLocation(pipeX, bottomPipeY);
+    _bottomPipes[i].setDimensions(pipeWidth, bottomPipeHeight);
+    _topPipes[i].setDrawFill(false);
+
+    lastPipeX = _topPipes[i].getRight();
+  }
+}
+
+void gamePlayLoop() {
+  int flapButtonVal = digitalRead(FLAP_BUTTON_INPUT_PIN);
+  _bird.setY(_bird.getY() + _gravity);
+
+  if (flapButtonVal == LOW) {
+    _bird.setY(_bird.getY() - 3);
+  }
+  _bird.forceInside(0, 0, _display.width(), _display.height());
+
+  // xMaxRight tracks the furthest right pixel of the furthest right pipe
+  // which we will use to reposition pipes that go off the left part of screen
+  int xMaxRight = 0;
+
+  // Iterate through pipes and check for collisions and scoring
+  for (int i = 0; i < NUM_PIPES; i++) {
+
+    _topPipes[i].setX(_topPipes[i].getX() - _pipeSpeed);
+    _bottomPipes[i].setX(_bottomPipes[i].getX() - _pipeSpeed);
+
+    _topPipes[i].draw(_display);
+    _bottomPipes[i].draw(_display);
+
+    Serial.println(_topPipes[i].toString());
+
+    // Check if the bird passed by the pipe
+    if (_topPipes[i].getRight() < _bird.getLeft()) {
+
+      // If we're here, the bird has passed the pipe. Check to see
+      // if we've marked it as passed yet. If not, then increment the score!
+      if (_topPipes[i].getHasPassedBird() == false) {
+        _points++;
+        _topPipes[i].setHasPassedBird(true);
+        _bottomPipes[i].setHasPassedBird(true);
+      }
+    }
+
+    // xMaxRight is used to track future placements of pipes once
+    // they go off the left part of the screen
+    if (xMaxRight < _topPipes[i].getRight()) {
+      xMaxRight = _topPipes[i].getRight();
+    }
+
+    // Check for collisions and end of game
+    if (_topPipes[i].overlaps(_bird)) {
+      _topPipes[i].setDrawFill(true);
+      _gameState = GAME_OVER;
+      _gameOverTimestamp = millis();
+    } else {
+      _topPipes[i].setDrawFill(false);
+    }
+
+    if (_bottomPipes[i].overlaps(_bird)) {
+      _bottomPipes[i].setDrawFill(true);
+      _gameState = GAME_OVER;
+      _gameOverTimestamp = millis();
+    } else {
+      _bottomPipes[i].setDrawFill(false);
+    }
+  }
+
+  // Check for pipes that have gone off the screen to the left
+  // and reset them to off the screen on the right
+  xMaxRight = max(xMaxRight, _display.width());
+  for (int i = 0; i < NUM_PIPES; i++) {
+    if (_topPipes[i].getRight() < 0) {
+      int pipeX = xMaxRight + random(MIN_PIPE_X_SPACING_DISTANCE, MAX_PIPE_X_SPACING_DISTANCE);
+      int pipeWidth = random(MIN_PIPE_WIDTH, MAX_PIPE_WIDTH);
+
+      int yGapBetweenPipes = random(MIN_PIPE_Y_SPACE, MAX_PIPE_Y_SPACE);
+
+      int topPipeY = 0;
+      int topPipeHeight = random(0, SCREEN_HEIGHT - yGapBetweenPipes);
+
+      int bottomPipeY = topPipeHeight + yGapBetweenPipes;
+      int bottomPipeHeight = SCREEN_HEIGHT - bottomPipeY;
+
+      _topPipes[i].setLocation(pipeX, topPipeY);
+      _topPipes[i].setDimensions(pipeWidth, topPipeHeight);
+      _topPipes[i].setHasPassedBird(false);
+
+      _bottomPipes[i].setLocation(pipeX, bottomPipeY);
+      _bottomPipes[i].setDimensions(pipeWidth, bottomPipeHeight);
+      _bottomPipes[i].setHasPassedBird(false);
+
+      xMaxRight = _topPipes[i].getRight();
+    }
+  }
+
+  _bird.draw(_display);
+}
+
+
+void showLoadScreen() {
+  // Clear the buffer
+  _display.clearDisplay();
+
+  // Show load screen
+  _display.setTextSize(1);
+  _display.setTextColor(WHITE, BLACK);
+
+  int16_t x1, y1;
+  uint16_t w, h;
+  _display.setTextSize(1);
+
+  int yText = 10;
+  _display.getTextBounds(STR_LOADSCREEN_CREATOR, 0, 0, &x1, &y1, &w, &h);
+  _display.setCursor(_display.width() / 2 - w / 2, yText);
+  _display.print(STR_LOADSCREEN_CREATOR);
+
+  _display.setTextSize(2);
+  yText = yText + h + 1;
+  _display.getTextBounds(STR_LOADSCREEN_APP_NAME_LINE1, 0, 0, &x1, &y1, &w, &h);
+  _display.setCursor(_display.width() / 2 - w / 2, yText);
+  _display.print(STR_LOADSCREEN_APP_NAME_LINE1);
+
+  yText = yText + h + 1;
+  _display.getTextBounds(STR_LOADSCREEN_APP_NAME_LINE2, 0, 0, &x1, &y1, &w, &h);
+  _display.setCursor(_display.width() / 2 - w / 2, yText);
+  _display.print(STR_LOADSCREEN_APP_NAME_LINE2);
+
+  _display.display();
+  delay(LOAD_SCREEN_SHOW_MS);
+  _display.clearDisplay();
+  _display.setTextSize(1);
+
+}
+
+void calcFrameRate() {
+  unsigned long elapsedTime = millis() - _startTimeStamp;
+  _frameCount++;
+  if (elapsedTime > 1000) {
+    _fps = _frameCount / (elapsedTime / 1000.0);
+    _startTimeStamp = millis();
+    _frameCount = 0;
+  }
+}
+
+void drawStatusBar() {
+  // Draw accumulated points
+  _display.setTextSize(1);
+  _display.setCursor(0, 0); // draw points
+  _display.print(_points);
+
+  // Draw frame count
+  if (_drawFrameCount) {
+    int16_t x1, y1;
+    uint16_t w, h;
+    _display.getTextBounds("XX.XX fps", 0, 0, &x1, &y1, &w, &h);
+    _display.setCursor(_display.width() - w, 0);
+    _display.print(_fps);
+    _display.print(" fps");
+  }
+}
