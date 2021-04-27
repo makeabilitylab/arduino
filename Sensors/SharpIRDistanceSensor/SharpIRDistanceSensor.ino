@@ -28,7 +28,7 @@
  * 
  */
 
-// The Arduino Uno ADC is 10 bits (thus, 0 - 1023 values)
+// The Arduino Uno and Leonardo ADC is 10 bits (thus, 0 - 1023 values)
 #define MAX_ANALOG_INPUT_VAL 1023
 
 enum SharpIRModel{
@@ -37,6 +37,9 @@ enum SharpIRModel{
 };
 
 SharpIRModel _sharpIrModel = GP2Y0A21YK;
+
+
+boolean _justPrintDistance = true;
 
 void setup() {
   
@@ -56,7 +59,18 @@ void loop() {
     distanceCM = 138773.464825 / 10 * pow(sharpInfraredVal,-1.0233470);
   }
   
-  Serial.print("Distance (cm): ");
-  Serial.println(distanceCM);
+  
+
+  if(_justPrintDistance){
+    Serial.println(distanceCM);
+  }else{
+    Serial.print("InputVoltage(V):");
+    Serial.print(analogInVoltage);
+    Serial.print(", ");
+    Serial.print("Distance(cm):");
+    Serial.println(distanceCM);
+  }
+  
+  
   delay(50);
 }
