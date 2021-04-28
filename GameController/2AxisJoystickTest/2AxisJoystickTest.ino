@@ -56,7 +56,6 @@ void loop() {
 
   Serial.print("joystickYDir: ");
   Serial.print(joystickYDir);
-  Serial.println("-------");
   Serial.print("joystickLeftRightVal: ");
   Serial.print(joystickLeftRightVal);
   Serial.print(" joystickUpDownVal: ");
