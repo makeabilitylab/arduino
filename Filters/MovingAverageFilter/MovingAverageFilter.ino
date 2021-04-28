@@ -1,6 +1,9 @@
 /*
  * Example of smoothing input on A0 using a moving average filter.  
  *
+ * This example is based on:
+ * https://www.arduino.cc/en/Tutorial/BuiltInExamples/Smoothing
+ *
  * By Jon E. Froehlich
  * @jonfroehlich
  * http://makeabilitylab.io
@@ -8,8 +11,6 @@
  * For a walkthrough and circuit diagram, see:
  * https://makeabilitylab.github.io/physcomp/arduino/potentiometers.html
  * 
- * Smoothing based on:
- * https://www.arduino.cc/en/Tutorial/BuiltInExamples/Smoothing
  * 
  */
 
@@ -17,7 +18,7 @@
 #define MAX_ANALOG_INPUT_VAL 1023
 
 const int LED_OUTPUT_PIN = LED_BUILTIN;
-const int POT_INPUT_PIN = A0;
+const int SENSOR_INPUT_PIN = A0;
 
 // Define the number of samples to keep track of. The higher the number, the
 // more the readings will be smoothed, but the slower the output will respond to
@@ -45,9 +46,9 @@ void loop() {
   // subtract the last reading:
   _sampleTotal = _sampleTotal - _samples[_curReadIndex];
   
-  // read the potentiometer value
-  int potVal = analogRead(POT_INPUT_PIN);
-  _samples[_curReadIndex] = potVal;
+  // read the sensor value
+  int sensorVal = analogRead(SENSOR_INPUT_PIN);
+  _samples[_curReadIndex] = sensorVal;
   
   // add the reading to the total:
   _sampleTotal = _sampleTotal + _samples[_curReadIndex];
@@ -75,7 +76,7 @@ void loop() {
 
   // print the raw pot value and the converted led value
   Serial.print("AnalogIn:");
-  Serial.print(potVal);
+  Serial.print(sensorVal);
   Serial.print(", ");
   Serial.print("Smoothed:");
   Serial.println(_sampleAvg);
@@ -83,5 +84,5 @@ void loop() {
   // write out the LED value. 
   analogWrite(LED_OUTPUT_PIN, ledVal);
 
-  delay(50);
+  delay(50); // read samples at ~20Hz (once every 50ms)
 }
