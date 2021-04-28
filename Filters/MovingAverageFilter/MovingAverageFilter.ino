@@ -64,15 +64,10 @@ void loop() {
 
   // calculate the average:
   _sampleAvg = _sampleTotal / SMOOTHING_WINDOW_SIZE;
-
   
-  // the analogRead on the Arduino Uno goes from 0 to 1023. We need to remap
-  // this value to the smaller range (0-255) since the analogWrite function can 
-  // only write out 0-255 (a byte--2^8). The map function provides a linear
-  // mapping to do this (however, a better way would likely be some sort of
-  // non-linear mapping given that perceived LED brightness is not linear with current,
-  // perhaps logarithmic)
+  // set the LED brightness to the smoothed value
   int ledVal = map(_sampleAvg, 0, MAX_ANALOG_INPUT_VAL, 0, 255);
+  analogWrite(LED_OUTPUT_PIN, ledVal);
 
   // print the raw pot value and the converted led value
   Serial.print("AnalogIn:");
@@ -81,8 +76,6 @@ void loop() {
   Serial.print("Smoothed:");
   Serial.println(_sampleAvg);
 
-  // write out the LED value. 
-  analogWrite(LED_OUTPUT_PIN, ledVal);
 
   delay(50); // read samples at ~20Hz (once every 50ms)
 }
