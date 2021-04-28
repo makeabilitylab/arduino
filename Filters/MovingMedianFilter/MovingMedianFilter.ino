@@ -1,5 +1,5 @@
 /*
- * Example of smoothing input on A0 using a moving median filter of various window sizes.  
+ * Example of smoothing input on A0 using a moving median filter.  
  * 
  * Requires the Median Filter 2 library from Luis Llamas:
  * https://github.com/warhog/Arduino-MedianFilter
@@ -20,11 +20,10 @@
 // The Arduino Uno ADC is 10 bits (thus, 0 - 1023 values)
 #define MAX_ANALOG_INPUT_VAL 1023
 
+const int LED_OUTPUT_PIN = LED_BUILTIN;
 const int SENSOR_INPUT_PIN = A0;
 
 MedianFilter2<int> _movingMedianFilter5(5);
-MedianFilter2<int> _movingMedianFilter11(11);
-MedianFilter2<int> _movingMedianFilter21(21);
 
 void setup() {
   Serial.begin(9600);
@@ -35,21 +34,19 @@ void loop() {
   // Read the sensor value
   int sensorVal = analogRead(SENSOR_INPUT_PIN);
 
-  // Get value
+  // Get median filter value
   int median5 = _movingMedianFilter5.AddValue(sensorVal);
-  int median11 = _movingMedianFilter11.AddValue(sensorVal);
-  int median21 = _movingMedianFilter21.AddValue(sensorVal);
+
+  // write out the LED value. 
+  int ledVal = map(median5, 0, MAX_ANALOG_INPUT_VAL, 0, 255);
+  analogWrite(LED_OUTPUT_PIN, ledVal);
 
   // print the sensor value and the smoothed values
   // best to visualize these in the serial plotter tool
   Serial.print("AnalogIn:");
   Serial.print(sensorVal);
   Serial.print(", MovingMedian5:");
-  Serial.print(median5);
-  Serial.print(", MovingMedian11:");
-  Serial.print(median11);
-  Serial.print(", MovingMedian21:");
-  Serial.println(median21);
+  Serial.println(median5);
 
   delay(50);
 }
