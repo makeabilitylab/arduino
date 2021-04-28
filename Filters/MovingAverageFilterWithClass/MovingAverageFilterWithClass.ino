@@ -33,14 +33,16 @@ void setup() {
 
 void loop() {
 
-  // Read the potentiometer value
+  // Read the sensor value
   int sensorVal = analogRead(SENSOR_INPUT_PIN);
 
   // Get the smoothed version using a moving average filter
   _movingAverageFilter.add(sensorVal);
   int smoothedVal = _movingAverageFilter.getAverage();
- 
+
+  // write out the LED value. 
   int ledVal = map(smoothedVal, 0, MAX_ANALOG_INPUT_VAL, 0, 255);
+  analogWrite(LED_OUTPUT_PIN, ledVal);
 
   // print the raw pot value and the converted led value
   Serial.print("AnalogIn:");
@@ -49,8 +51,7 @@ void loop() {
   Serial.print("MovingAverageFilter-WindowSize10:");
   Serial.println(smoothedVal);
 
-  // write out the LED value. 
-  analogWrite(LED_OUTPUT_PIN, ledVal);
+  
 
   delay(50);
 }
