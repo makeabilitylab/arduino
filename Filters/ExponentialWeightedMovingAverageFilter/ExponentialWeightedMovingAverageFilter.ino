@@ -1,6 +1,9 @@
 /*
- * Example of smoothing input on A0 using a moving average filter.  
- * Uses the MovingAverageFilter.hpp class from the MakeabilityLab_Arduino_Library
+ * Example of smoothing input on A0 using an exponential moving average 
+ * or exponentially weighted moving average (EWMA) filter.
+ * 
+ * See:
+ * https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
  *
  * By Jon E. Froehlich
  * @jonfroehlich
@@ -8,7 +11,6 @@
  * 
  */
 
-#include <MovingAverageFilter.hpp>
 
 // The Arduino Uno ADC is 10 bits (thus, 0 - 1023 values)
 #define MAX_ANALOG_INPUT_VAL 1023
