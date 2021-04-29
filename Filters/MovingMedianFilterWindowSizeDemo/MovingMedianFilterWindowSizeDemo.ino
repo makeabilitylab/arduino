@@ -23,8 +23,8 @@
 const int SENSOR_INPUT_PIN = A0;
 
 MedianFilter2<int> _movingMedianFilter5(5);
-MedianFilter2<int> _movingMedianFilter11(11);
-MedianFilter2<int> _movingMedianFilter21(21);
+MedianFilter2<int> _movingMedianFilter10(10);
+MedianFilter2<int> _movingMedianFilter20(20);
 
 void setup() {
   Serial.begin(9600);
@@ -37,8 +37,8 @@ void loop() {
 
   // Get value
   int median5 = _movingMedianFilter5.AddValue(sensorVal);
-  int median11 = _movingMedianFilter11.AddValue(sensorVal);
-  int median21 = _movingMedianFilter21.AddValue(sensorVal);
+  int median10 = _movingMedianFilter10.AddValue(sensorVal);
+  int median20 = _movingMedianFilter20.AddValue(sensorVal);
 
   // print the sensor value and the smoothed values
   // best to visualize these in the serial plotter tool
@@ -46,10 +46,10 @@ void loop() {
   Serial.print(sensorVal);
   Serial.print(", MovingMedian5:");
   Serial.print(median5);
-  Serial.print(", MovingMedian11:");
-  Serial.print(median11);
-  Serial.print(", MovingMedian21:");
-  Serial.println(median21);
+  Serial.print(", MovingMedian10:");
+  Serial.print(median10);
+  Serial.print(", MovingMedian20:");
+  Serial.println(median20);
 
   delay(50);
 }
