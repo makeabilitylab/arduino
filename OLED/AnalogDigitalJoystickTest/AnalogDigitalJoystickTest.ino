@@ -27,8 +27,9 @@ const int LEFT_BUTTON_INPUT_PIN = 5;
 const int RIGHT_BUTTON_INPUT_PIN = 4;
 
 // for tracking fps
-unsigned long _totalFrameCount = 0;
-unsigned long _startTimeStamp = 0;
+float _fps = 0;
+unsigned long _frameCount = 0;
+unsigned long _fpsStartTimeStamp = 0;
 
 // status bar
 const boolean _drawStatusBar = true; // change to show/hide status bar
@@ -41,45 +42,24 @@ void setup() {
   pinMode(LEFT_BUTTON_INPUT_PIN, INPUT_PULLUP);
   pinMode(RIGHT_BUTTON_INPUT_PIN, INPUT_PULLUP);
 
-  // SSD1306_SWITCHCAPVCC = generate _display voltage from 3.3V internally
-  if (!_display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
-    Serial.println(F("SSD1306 allocation failed"));
-    for (;;); // Don't proceed, loop forever
-  }
-
-  // Clear the buffer
-  _display.clearDisplay();
-
-  _display.setTextSize(1);
-  _display.setTextColor(WHITE, BLACK);
-  _display.setCursor(0, 0);
-  _display.println("Screen initialized!");
-  _display.display();
-  delay(500);
-  _display.clearDisplay();
+  initializeOledAndShowStartupScreen();
 
   _analogBall.setSpeed(0, 0);
   _digitalBall.setSpeed(0, 0);
   _digitalBall.setDrawFill(true);
+  _fpsStartTimeStamp = millis();
 }
 
 void loop() {
-  if(_startTimeStamp == 0){
-    _startTimeStamp = millis();
-  }
 
   _display.clearDisplay();
-  
-  if(_drawStatusBar && _totalFrameCount > 0){
-    int16_t x1, y1;
-    uint16_t w, h;
-    unsigned long elapsedTime = millis() - _startTimeStamp;
-    float fps = _totalFrameCount / (elapsedTime / 1000.0);
-    _display.getTextBounds("XX.XX fps", 0, 0, &x1, &y1, &w, &h);
-    _display.setCursor(_display.width() - w, 0);
-    _display.print(fps);
-    _display.print(" fps");
+
+  if(_drawStatusBar){
+    drawStatusBar();
   }
+
+  calcFrameRate();
+  
 
   // Read new digital joystick data
   int upButtonVal = digitalRead(UP_BUTTON_INPUT_PIN);
@@ -106,15 +86,14 @@ void loop() {
   _digitalBall.forceInside(0, 0, _display.width(), _display.height());
   
 
-  // Read new analog joystick data
+  // Read analog joystick to control player ball
   _analogJoystick.read();
-
-  // Update ball based on joystick location
   int upDownVal = _analogJoystick.getUpDownVal();
   int leftRightVal = _analogJoystick.getLeftRightVal();
 
-  int yMovementPixels = map(upDownVal, 0, _analogJoystick.getMaxAnalogValue() + 1, -1, 2);
-  int xMovementPixels = map(leftRightVal, 0, _analogJoystick.getMaxAnalogValue() + 1, -1, 2);
+  // Translate joystick movement into amount of pixels to move
+  int yMovementPixels = map(upDownVal, 0, _analogJoystick.getMaxAnalogValue() + 1, -4, 5);
+  int xMovementPixels = map(leftRightVal, 0, _analogJoystick.getMaxAnalogValue() + 1, -10, 11);
 
   // Serial.println((String)"upDownVal:" + upDownVal + " leftRightVal:" + leftRightVal + " xMovementPixels:" + xMovementPixels + " yMovementPixels:" + yMovementPixels);
 
@@ -142,9 +121,57 @@ void loop() {
 
   // Render buffer to screen
   _display.display();
-  _totalFrameCount++;
 
   if(DELAY_LOOP_MS > 0){
     delay(DELAY_LOOP_MS);
   }
+}
+
+/**
+ * Call this from setup() to initialize the OLED screen
+ */
+void initializeOledAndShowStartupScreen(){
+  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  if (!_display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
+    Serial.println(F("SSD1306 allocation failed"));
+    for (;;); // Don't proceed, loop forever
+  }
+
+  // Clear the buffer
+  _display.clearDisplay();
+
+  _display.setTextSize(1);
+  _display.setTextColor(WHITE, BLACK);
+  _display.setCursor(0, 0);
+  _display.println("Screen initialized!");
+  _display.display();
+  delay(500);
+  _display.clearDisplay();
+}
+
+/**
+ * Call this every frame to calculate frame rate
+ */
+void calcFrameRate() {
+  unsigned long elapsedTime = millis() - _fpsStartTimeStamp;
+  _frameCount++;
+  if (elapsedTime > 1000) {
+    _fps = _frameCount / (elapsedTime / 1000.0);
+    _fpsStartTimeStamp = millis();
+    _frameCount = 0;
+  }
+}
+
+/**
+ * Draws the status bar at top of screen with fps
+ */
+void drawStatusBar() {
+
+  // Draw frame count
+  int16_t x1, y1;
+  uint16_t w, h;
+  _display.getTextBounds("XX.XX fps", 0, 0, &x1, &y1, &w, &h);
+  _display.setCursor(_display.width() - w, 0);
+  _display.print(_fps);
+  _display.print(" fps");
 }
