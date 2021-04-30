@@ -60,7 +60,7 @@ void buttonInterrupt(){
   byte buttonVal = digitalRead(BUTTON_INPUT_PIN);
 
   _diff = (interruptTimestamp - _buttonStateChangeTimestamp);
-  if(_diff >= DEBOUNCE_WINDOW_MICROSECONDS){
+  if(_diff >= DEBOUNCE_WINDOW_MICROSECONDS && _savedButtonVal != buttonVal){
     // There's been no change for DEBOUNCE_WINDOW_MICROSECONDS, so let's read 
     _savedButtonVal = buttonVal;
     _buttonStateChangeTimestamp = interruptTimestamp;
