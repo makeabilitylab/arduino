@@ -45,10 +45,10 @@ const unsigned char PROGMEM _logoBitmap []  = {
   0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-int _xLogo = 0;
-int _yLogo = 0;
-int _xSpeed = 1;
-int _ySpeed = 2;
+int _xLogo = 0;   // x location of logo (in pixels)
+int _yLogo = 0;   // y location of logo (in pixels)
+int _xSpeed = 1;  // x speed of logo (in pixels per frame)
+int _ySpeed = 2;  // y speed of logo (in pixels per frame)
 
 void setup() {
   Serial.begin(9600);
