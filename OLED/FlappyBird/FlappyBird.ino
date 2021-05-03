@@ -17,12 +17,16 @@ const char STR_LOADSCREEN_APP_NAME_LINE1[] = "Flappy";
 const char STR_LOADSCREEN_APP_NAME_LINE2[] = "Bird!";
 const char STR_PRESS_FLAP_TO_PLAY[] = "Press flap to play";
 const char STR_GAME_OVER[] = "Game Over!";
+
+// Define I/O pins
 const int FLAP_BUTTON_INPUT_PIN = 5;
+const int TONE_OUTPUT_PIN = 8;
+const int VIBROMOTOR_OUTPUT_PIN = 9;
 
 // for tracking fps
 unsigned long _frameCount = 0;
 float _fps = 0;
-unsigned long _startTimeStamp = 0;
+unsigned long _fpsStartTimeStamp = 0;
 
 // status bar
 const boolean _drawFrameCount = false; // change to show/hide frame count
@@ -117,7 +121,7 @@ void setup() {
   // Setup pipes
   initializeGameEntities();
 
-  _startTimeStamp = millis();
+  _fpsStartTimeStamp = millis();
 }
 
 void loop() {
@@ -343,16 +347,22 @@ void showLoadScreen() {
 
 }
 
+/**
+ * Call this every frame to calculate frame rate
+ */
 void calcFrameRate() {
-  unsigned long elapsedTime = millis() - _startTimeStamp;
+  unsigned long elapsedTime = millis() - _fpsStartTimeStamp;
   _frameCount++;
   if (elapsedTime > 1000) {
     _fps = _frameCount / (elapsedTime / 1000.0);
-    _startTimeStamp = millis();
+    _fpsStartTimeStamp = millis();
     _frameCount = 0;
   }
 }
 
+/**
+ * Draws the status bar at top of screen with points and fps
+ */
 void drawStatusBar() {
   // Draw accumulated points
   _display.setTextSize(1);
