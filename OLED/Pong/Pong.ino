@@ -1,22 +1,29 @@
-
 /**
-    Draws a bouncing ball on the OLED _display
-
-    Based on: https://makeabilitylab.github.io/p5js/Animation/BallBounce2D
-    Source: https://github.com/makeabilitylab/p5js/tree/master/Animation/BallBounce2D
-
-    Adafruit Gfx Library:
-    https://learn.adafruit.com/adafruit-gfx-graphics-library/overview
-
-    Adafruit OLED tutorials:
-    https://learn.adafruit.com/monochrome-oled-breakouts
-
-    By Jon E. Froehlich
-    @jonfroehlich
-    http://makeabilitylab.io
-
-*/
-
+ * A simple pong game for the OLED display
+ *  
+ * This code requires the Shape.hpp and ParallaxJoystick.hpp from the MakeabilityLab_Arduino_Library
+ * 
+ * To install and use these files:
+ * 1. Get it from here: https://github.com/makeabilitylab/arduino/tree/master/MakeabilityLab_Arduino_Library
+ * 2. Move the entire folder to the Arduino libraries folder on your computer.
+ *   - On my Windows box, this is C:\Users\jonfr\Documents\Arduino\libraries
+ *   - On Mac, it's: /Users/jonf/Documents/Arduino/libraries
+ * 3. Then include the relevant libraries via #include <libraryname.h> or <libraryname.hpp>
+ *
+ * Adafruit Gfx Library:
+ * https://learn.adafruit.com/adafruit-gfx-graphics-library/overview 
+ *
+ * Adafruit OLED tutorials:
+ * https://learn.adafruit.com/monochrome-oled-breakouts
+ * 
+ * Code based on:
+ * https://makeabilitylab.github.io/p5js/Games/Pong/
+ *  
+ * By Jon E. Froehlich
+ * @jonfroehlich
+ * http://makeabilitylab.io
+ *
+ */
 #include <Wire.h>
 #include <SPI.h>
 #include <Shape.hpp>;
@@ -54,6 +61,8 @@ Ball _ball(20, 20, 3);
 
 const char STR_PLAYER1_SERVE[] = "Player 1 serve!";
 const char STR_PLAYER2_SERVE[] = "Player 2 serve!";
+const char STR_PLAY_TO[] = "Play to ";
+const char STR_GAME_POINT[] = "GAME POINT!";
 const char STR_GAME_OVER[] = "Game Over";
 const char STR_PLAYER1_WON[] = "Player 1 wins!";
 const char STR_PLAYER2_WON[] = "Player 2 wins!";
@@ -66,7 +75,7 @@ Rectangle _rightPaddle(SCREEN_WIDTH - PADDLE_WIDTH, SCREEN_HEIGHT / 2 - PADDLE_H
 int _leftPlayerScore = 0;
 int _rightPlayerScore = 0;
 
-const int GAME_OVER_SCORE = 5;
+const int GAME_OVER_SCORE = 3;
 
 enum GameState {
   NEW_GAME,
@@ -126,14 +135,32 @@ void loop() {
   int16_t x1, y1;
   uint16_t w, h;
   if (_curGameState == NEW_GAME || _curGameState == BALL_SERVE) {
+
+    int yText = 0;
     if (_ballServer == LEFT_PLAYER) {
       _display.getTextBounds(STR_PLAYER1_SERVE, 0, 0, &x1, &y1, &w, &h);
-      _display.setCursor(_display.width() / 2 - w / 2, _display.height() / 2 - h / 2);
+      yText = _display.height() / 2 - h / 2;
+      _display.setCursor(_display.width() / 2 - w / 2, yText);
       _display.print(STR_PLAYER1_SERVE);
     } else {
       _display.getTextBounds(STR_PLAYER2_SERVE, 0, 0, &x1, &y1, &w, &h);
-      _display.setCursor(_display.width() / 2 - w / 2, _display.height() / 2 - h / 2);
+      yText = _display.height() / 2 - h / 2;
+      _display.setCursor(_display.width() / 2 - w / 2, yText);
       _display.print(STR_PLAYER2_SERVE);
+    }
+
+    if(GAME_OVER_SCORE - _leftPlayerScore == 1 || GAME_OVER_SCORE - _rightPlayerScore == 1){
+      yText = yText + h + 2;
+      _display.getTextBounds(STR_GAME_POINT, 0, 0, &x1, &y1, &w, &h);
+      _display.setCursor(_display.width() / 2 - w / 2, yText);
+      _display.print(STR_GAME_POINT);
+    }else{
+      yText = yText + h + 2;
+      _display.getTextBounds("Play to 3 pts", 0, 0, &x1, &y1, &w, &h);
+      _display.setCursor(_display.width() / 2 - w / 2, yText);
+      _display.print(STR_PLAY_TO);
+      _display.print(GAME_OVER_SCORE);
+      _display.print(" pts");
     }
   }
 
@@ -187,9 +214,12 @@ void loop() {
     // Check for ball-paddle collision. We could be far smarter here and actually
     // calculate the trajectory of the ball, etc. See:
     // https://codeincomplete.com/articles/javascript-pong/part4/
-    // This would be important if the ball could go large distances across
-    // each frame calculation. But we're limiting ball speed and this is a simple demo
-    // so good enough for now!
+    // This is important because the ball can move multiple pixels per frame
+    // Could also put "spin" on the ball and have the paddle's movement
+    // affect the trajectory.
+    //
+    // But, for now, we'll just leave it as this is a rapid prototype for
+    // demonstrative purposes
     if ( _leftPaddle.overlaps(_ball)) {
       //_display.setCursor(0, 20);
       //_display.print((String)"LP.R="+_leftPaddle.getRight() + "<= Ball.L=" + _ball.getLeft());
