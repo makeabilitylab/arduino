@@ -19,7 +19,6 @@ const char STR_PRESS_FLAP_TO_PLAY[] = "Press flap to play";
 const char STR_GAME_OVER[] = "Game Over!";
 const int FLAP_BUTTON_INPUT_PIN = 5;
 
-
 // for tracking fps
 unsigned long _frameCount = 0;
 float _fps = 0;
