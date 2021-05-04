@@ -1,5 +1,5 @@
 /**
- * Simple example that animates an increasingly large circle on screen
+ * Draws all the characters to the screen
  * 
  * Adafruit Gfx Library:
  * https://learn.adafruit.com/adafruit-gfx-graphics-library/overview 
