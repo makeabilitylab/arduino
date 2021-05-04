@@ -40,7 +40,6 @@ int _xSpeed = 0;
 int _ySpeed = 0;
 
 // for tracking fps
-// for tracking fps
 float _fps = 0;
 unsigned long _frameCount = 0;
 unsigned long _fpsStartTimeStamp = 0;
