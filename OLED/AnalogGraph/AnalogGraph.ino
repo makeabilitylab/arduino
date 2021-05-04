@@ -1,6 +1,6 @@
 
 /**
- * Graphs a single analog input value to an OLED display. The graph is 
+ * Graphs a single analog input value to an OLED _display. The graph is 
  * cleared each time SCREEN_WIDTH is reached. For a scrolling version,
  * see AnalogGraphScrolling.ino:
  * https://github.com/makeabilitylab/arduino/blob/master/OLED/AnalogGraphScrolling/AnalogGraphScrolling.ino
@@ -28,7 +28,7 @@
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 const int ANALOG_INPUT_PIN = A0;
 const int MIN_ANALOG_INPUT = 0;
@@ -38,8 +38,9 @@ const int DELAY_LOOP_MS = 5; // change to slow down how often to read and graph 
 int _xPos = 0;
 
 // for tracking fps
-unsigned long _totalFrameCount = 0;
-unsigned long _startTimeStamp = 0;
+float _fps = 0;
+unsigned long _frameCount = 0;
+unsigned long _fpsStartTimeStamp = 0;
 
 // status bar
 boolean _drawStatusBar = true; // change to show/hide status bar
@@ -49,65 +50,91 @@ void setup() {
   Serial.begin(9600);
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
+  if (!_display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
     Serial.println(F("SSD1306 allocation failed"));
     for (;;); // Don't proceed, loop forever
   }
 
   // Clear the buffer
-  display.clearDisplay();
+  _display.clearDisplay();
 
-  display.setTextSize(1);
-  display.setTextColor(WHITE, BLACK);
-  display.setCursor(0, 0);
-  display.println("Screen initialized!");
-  display.display();
+  _display.setTextSize(1);
+  _display.setTextColor(WHITE, BLACK);
+  _display.setCursor(0, 0);
+  _display.println("Screen initialized!");
+  _display.display();
   delay(50);
-  display.clearDisplay();
+  _display.clearDisplay();
 
   if(_drawStatusBar){
     _graphHeight = SCREEN_HEIGHT - 10;
   }
+
+  _fpsStartTimeStamp = millis();
 }
 
 void loop() {
-  if(_startTimeStamp == 0){
-    _startTimeStamp = millis();
-  }
-  
-  int analogVal = analogRead(ANALOG_INPUT_PIN);
-  // Serial.println(analogVal);
 
-  if(_drawStatusBar){
-    // erase status bar by drawing all black
-    display.fillRect(0, 0, display.width(), 8, SSD1306_BLACK); 
-    
-    // Draw current val
-    display.setCursor(0, 0);
-    display.print(analogVal);
-  
-    if(_totalFrameCount > 0){
-      int16_t  x1, y1;
-      uint16_t w, h;
-      unsigned long elapsedTime = millis() - _startTimeStamp;
-      float fps = _totalFrameCount / (elapsedTime / 1000.0);
-      display.getTextBounds("XX.XX fps", 0, 0, &x1, &y1, &w, &h);
-      display.setCursor(display.width() - w, 0);
-      display.print(fps);
-      display.print(" fps");
-    }
-  }
-
-  // Draw the line
-  int lineHeight = map(analogVal, MIN_ANALOG_INPUT, MAX_ANALOG_INPUT, 0, _graphHeight);
-  int yPos = display.height() - lineHeight;
-  display.drawFastVLine(_xPos++, yPos, lineHeight, SSD1306_WHITE);
-  display.display();
-  delay(DELAY_LOOP_MS);
-
-  if (_xPos >= display.width()) {
+  // If the x-position of is off the right side of the screen, clear the display
+  // and start the graph over
+  if (_xPos >= _display.width()) {
     _xPos = 0;
-    display.clearDisplay();
+    _display.clearDisplay();
   }
-  _totalFrameCount++;
+
+  // Read the analog voltage value
+  int analogVal = analogRead(ANALOG_INPUT_PIN);
+  
+  if(_drawStatusBar){
+    drawStatusBar(analogVal);
+  }
+
+  // Draw the line for the given sensor value
+  int lineHeight = map(analogVal, MIN_ANALOG_INPUT, MAX_ANALOG_INPUT, 0, _graphHeight);
+  int yPos = _display.height() - lineHeight;
+
+  // For purely horizontal and vertical lines, there are optimized line-drawing functions
+  // that avoid angular calculations. 
+  // See: https://learn.adafruit.com/adafruit-gfx-graphics-library/graphics-primitives#drawing-lines-2002778-4
+  _display.drawFastVLine(_xPos++, yPos, lineHeight, SSD1306_WHITE);
+  _display.display();
+  
+  calcFrameRate();
+
+  delay(DELAY_LOOP_MS);
+}
+
+/**
+ * Call this every frame to calculate frame rate
+ */
+void calcFrameRate() {
+    
+  unsigned long elapsedTime = millis() - _fpsStartTimeStamp;
+  _frameCount++;
+  if (elapsedTime > 1000) {
+    _fps = _frameCount / (elapsedTime / 1000.0);
+    _fpsStartTimeStamp = millis();
+    _frameCount = 0;
+  }
+}
+
+/**
+ * Draws the status bar at top of screen with fps and analog value
+ */
+void drawStatusBar(int analogVal) {
+
+   // erase status bar by drawing all black
+  _display.fillRect(0, 0, _display.width(), 8, SSD1306_BLACK); 
+  
+  // Draw current val
+  _display.setCursor(0, 0);
+  _display.print(analogVal);
+
+  // Draw frame count
+  int16_t x1, y1;
+  uint16_t w, h;
+  _display.getTextBounds("XX.XX fps", 0, 0, &x1, &y1, &w, &h);
+  _display.setCursor(_display.width() - w, 0);
+  _display.print(_fps);
+  _display.print(" fps");
 }
