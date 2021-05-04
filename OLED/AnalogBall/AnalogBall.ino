@@ -44,14 +44,21 @@ void loop() {
   // On each loop, we'll want to clear the display so we're not writing over
   // previously drawn data
   _display.clearDisplay(); 
-  
+
+  // Read the analog input value
   int sensorVal = analogRead(ANALOG_INPUT_PIN);
 
+  // The maximum radius is either the display width or height, whichever is smallest
   int maxRadius = min(_display.width(), _display.height());
+
+  // Now calculate the radius based on the sensor val
   int radius = map(sensorVal, 0, MAX_ANALOG_INPUT, 0, maxRadius);
 
+  // Center the circle
   int xCircle = _display.width() / 2;
   int yCircle = _display.height() / 2;
+
+  // Draw it on the screen
   _display.fillCircle(xCircle, yCircle,  radius, SSD1306_WHITE);
 
   // Render the graphics buffer to screen
