@@ -54,7 +54,7 @@ void loop() {
 
   // Translate sensor readings to x, y pixel locations
   int xLoc = map(xSensorVal, 0, MAX_ANALOG_INPUT, 0, _display.width());
-  int yLoc = map(ySensorVal, 0, MAX_ANALOG_INPUT, 0, _display.width());
+  int yLoc = map(ySensorVal, 0, MAX_ANALOG_INPUT, 0, _display.height());
 
   // Draw it on the screen
   _display.fillCircle(xLoc, yLoc,  BALL_RADIUS, SSD1306_WHITE);
