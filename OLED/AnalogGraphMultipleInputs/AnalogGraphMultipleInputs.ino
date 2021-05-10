@@ -34,10 +34,6 @@ float _fps = 0;
 unsigned long _frameCount = 0;
 unsigned long _fpsStartTimeStamp = 0;
 
-// status bar
-boolean _drawStatusBar = true; // change to show/hide status bar
-int _graphHeight = SCREEN_HEIGHT;
-
 enum PointSymbol {
   CIRCLE,
   SQUARE,
@@ -53,13 +49,11 @@ class GraphLine{
     int _curWriteIndex = 0; 
     enum PointSymbol _symbol = CIRCLE; 
     int _ptSize = 4; 
-    int _displayWidth = 128;
 
   public:
     GraphLine(int displayWidth, PointSymbol symbol) 
     {
-      _displayWidth = displayWidth;
-      _bufferSize = _displayWidth / _ptSize;      
+      _bufferSize = displayWidth / _ptSize;      
       _circularBuffer = new int[_bufferSize];
 
       _symbol = symbol;
@@ -86,6 +80,15 @@ class GraphLine{
       return _ptSize;
     }
 
+    int getCurrentValue(){
+      int curValIndex = _curWriteIndex - 1;
+      if(curValIndex < 0){
+        curValIndex = _bufferSize - 1;
+      }
+
+      return _circularBuffer[curValIndex];
+    }
+
     void addData(int yVal){
       _circularBuffer[_curWriteIndex++] = yVal;
     
@@ -96,19 +99,28 @@ class GraphLine{
       }
     }
 
-    void draw(const Adafruit_SSD1306& disp){
+    void draw(const Adafruit_SSD1306& disp, int yGraph, int heightGraph, int minY, int maxY){
       // Draw the line graph based on data in _circularBuffer
       int xPos = 0; 
       for (int i = _curWriteIndex; i < _bufferSize; i++){
-        int yPos = _circularBuffer[i];
+        int yVal = _circularBuffer[i];
+
+        // convert to yPos
+        int lineHeight = map(yVal, minY, maxY, yGraph, heightGraph);
+        int yPos = yGraph + heightGraph - lineHeight;
+        
         //drawValue(disp, xPos, yPos);
         drawSymbol(disp, xPos, yPos, _ptSize, _symbol);
         xPos += _ptSize;
       }
       
       for(int i = 0; i < _curWriteIndex; i++){
-        int yPos = _circularBuffer[i];
-        //drawValue(disp, xPos, yPos);
+        int yVal = _circularBuffer[i];
+
+        // convert to yPos
+        int lineHeight = map(yVal, minY, maxY, yGraph, heightGraph);
+        int yPos = yGraph + heightGraph - lineHeight;
+        
         drawSymbol(disp, xPos, yPos, _ptSize, _symbol);
         xPos += _ptSize;
       }
@@ -169,14 +181,32 @@ class ScrollingLineGraph{
     GraphLine** _graphLines = NULL;
     int _numLines = -1;
 
+    int _minY = 0;
+    int _maxY = 1023;
+
+    int _xGraph = 0; // in pixels
+    int _yGraph = 0; // in pixels
+    int _widthGraph = 128; // in pixels
+    int _heightGraph = 64; // in pixels
+
   public:
-    ScrollingLineGraph(int displayWidth, int numLines, PointSymbol symbols[]) 
+    ScrollingLineGraph(int numLines, PointSymbol symbols[]) :
+      ScrollingLineGraph(0, 0, 128, 64, numLines, symbols){
+        // purposefully empty
+      }
+  
+    ScrollingLineGraph(int xGraph, int yGraph, int graphWidth, int graphHeight, int numLines, PointSymbol symbols[]) 
     {
+      _xGraph = xGraph;
+      _yGraph = yGraph;
+      _widthGraph = graphWidth;
+      _heightGraph = graphHeight;
+      
       _graphLines = new GraphLine*[numLines];
       _numLines = numLines;
 
       for (int i = 0; i < numLines; i++) {
-        _graphLines[i] = new GraphLine(displayWidth, symbols[i]);
+        _graphLines[i] = new GraphLine(graphWidth, symbols[i]);
       }
     }
 
@@ -193,6 +223,14 @@ class ScrollingLineGraph{
       }      
     }
 
+    int getMinY(){
+      return _minY;
+    }
+
+    int getMaxY(){
+      return _maxY;
+    }
+
     void addData(int graphLineIndex, int newYPos){
       if(graphLineIndex > _numLines){
         return;
@@ -203,42 +241,99 @@ class ScrollingLineGraph{
 
     void draw(const Adafruit_SSD1306& disp){
       for (int i = 0; i < _numLines; i++) {
-        _graphLines[i]->draw(disp);
+        _graphLines[i]->draw(disp, _yGraph, _heightGraph, _minY, _maxY);
       }
     }
 
-    void drawLegend(const Adafruit_SSD1306& disp, int x, int y, int curVals[]){
-      int xCurPos = x;
+    void drawLegend(const Adafruit_SSD1306& disp, int x, int y){
+      int xCurPos = -1;
+      int ySymbolPos = -1;
+      int16_t xText, yText;
+      uint16_t textWidth, textHeight;
+      int symbolSize = 6;
+      
       for (int i = 0; i < _numLines; i++) {
         PointSymbol ptSymbol = _graphLines[i]->getSymbol();
-        int symbolSize = _graphLines[i]->getSymbolSize();
-        xCurPos = x - symbolSize / 2;
-        GraphLine::drawSymbol(disp, xCurPos, y, symbolSize, ptSymbol);
-        xCurPos += symbolSize + 1;
-        // TODO: finish this.
-      }
+        //int symbolSize = _graphLines[i]->getSymbolSize();
 
-//          // erase status bar by drawing all black
-//      _display.fillRect(0, 0, _display.width(), 8, SSD1306_BLACK); 
-//      
-//      // Draw current val
-//      _display.setCursor(0, 0);
-//      _display.print(analogVal);
-//    
-//      // Draw frame count
-//      int16_t x1, y1;
-//      uint16_t w, h;
-//      _display.getTextBounds("XX.XX fps", 0, 0, &x1, &y1, &w, &h);
-//      _display.setCursor(_display.width() - w, 0);
-//      _display.print(_fps);
-//      _display.print(" fps");
+        if(xCurPos == -1){
+          xCurPos = x + symbolSize / 2;
+        }
+
+        if(ySymbolPos == -1){
+          ySymbolPos = y + symbolSize / 2; 
+        }
+        
+        GraphLine::drawSymbol(disp, xCurPos, ySymbolPos, symbolSize, ptSymbol);
+        xCurPos += symbolSize;
+
+        String strVal = (String)_graphLines[i]->getCurrentValue();
+        disp.getTextBounds(strVal, 0, 0, &xText, &yText, &textWidth, &textHeight);
+        disp.setCursor(xCurPos, 0);
+        disp.print(strVal);
+        xCurPos += textWidth + 5;
+      }
+    }
+
+    /**
+     * @brief Get the width of the graph
+     * 
+     * @return int Width of the shape in pixels
+     */
+    int getWidth(){
+      return _widthGraph;
+    }
+
+    /**
+     * @brief Get the height of the graph
+     * 
+     * @return int Height of the graph in pixels
+     */
+    int getHeight(){
+      return _heightGraph;
+    }
+
+    /**
+     * @brief Get the left (x) location of the graph
+     * 
+     * @return int The left location of the shape
+     */
+    int getLeft() {
+      return _xGraph;
+    }
+
+    /**
+     * @brief Get the right (x) location of the graph
+     * 
+     * @return int The right location (x) of the graph
+     */
+    int getRight() {
+      return _xGraph + _widthGraph;
+    }
+
+    /**
+     * @brief Get the bottom of the graph (y)
+     * 
+     * @return int 
+     */
+    int getBottom() {
+      return _yGraph + _heightGraph;
+    }
+
+    /**
+     * @brief Get the top of the graph
+     * 
+     * @return int 
+     */
+    int getTop() {
+      return _yGraph;
     }
 };
 
 
 const int NUM_GRAPH_LINES = 3;
 const PointSymbol GRAPH_SYMBOLS[NUM_GRAPH_LINES] = {CIRCLE, SQUARE, TRIANGLE};
-ScrollingLineGraph _scrollingLineGraph(SCREEN_WIDTH, NUM_GRAPH_LINES, GRAPH_SYMBOLS);
+ScrollingLineGraph _scrollingLineGraph(NUM_GRAPH_LINES, GRAPH_SYMBOLS);
 
 void setup() {
   Serial.begin(9600);
@@ -260,37 +355,30 @@ void setup() {
   delay(500);
   _display.clearDisplay();
 
-  if(_drawStatusBar){
-    _graphHeight = SCREEN_HEIGHT - 10;
-  }
-
   _fpsStartTimeStamp = millis();
 }
 
 void loop() {
-  // Clear the display on each frame. We draw from the _circularBuffer
+  // Clear the display on each frame. 
   _display.clearDisplay();
 
   // Read and store the analog data into a circular buffer
   int analogVal = analogRead(ANALOG_INPUT_PIN1);
-  int lineHeight = map(analogVal, MIN_ANALOG_INPUT, MAX_ANALOG_INPUT, 0, _graphHeight);
-  int yPos = _display.height() - lineHeight;
-  _scrollingLineGraph.addData(0, yPos);
+  _scrollingLineGraph.addData(0, analogVal);
 
+  delay(1);
   analogVal = analogRead(ANALOG_INPUT_PIN2);
-  lineHeight = map(analogVal, MIN_ANALOG_INPUT, MAX_ANALOG_INPUT, 0, _graphHeight);
-  yPos = _display.height() - lineHeight;
-  _scrollingLineGraph.addData(1, yPos);
+  _scrollingLineGraph.addData(1, analogVal);
 
+  delay(1);
   analogVal = analogRead(ANALOG_INPUT_PIN3);
-  lineHeight = map(analogVal, MIN_ANALOG_INPUT, MAX_ANALOG_INPUT, 0, _graphHeight);
-  yPos = _display.height() - lineHeight;
-  _scrollingLineGraph.addData(2, yPos);
+  _scrollingLineGraph.addData(2, analogVal);
 
-  if(_drawStatusBar){
-    drawStatusBar(analogVal);
+  if(_drawFps){
+    drawFps();
   }
-  
+
+  _scrollingLineGraph.drawLegend(_display, 0, 0);
   _scrollingLineGraph.draw(_display);
   
   _display.display();
@@ -315,22 +403,15 @@ void calcFrameRate() {
 }
 
 /**
- * Draws the status bar at top of screen with fps and analog value
+ * Draws the status bar at top of screen with fps
  */
-void drawStatusBar(int analogVal) {
-
-   // erase status bar by drawing all black
-  _display.fillRect(0, 0, _display.width(), 8, SSD1306_BLACK); 
-  
-  // Draw current val
-  _display.setCursor(0, 0);
-  _display.print(analogVal);
+void drawFps() {
 
   // Draw frame count
   int16_t x1, y1;
   uint16_t w, h;
-  _display.getTextBounds("XX.XX fps", 0, 0, &x1, &y1, &w, &h);
+  _display.getTextBounds("XX.X fps", 0, 0, &x1, &y1, &w, &h);
   _display.setCursor(_display.width() - w, 0);
-  _display.print(_fps);
+  _display.print(_fps, 1);
   _display.print(" fps");
 }
