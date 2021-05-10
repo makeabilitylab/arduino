@@ -33,6 +33,7 @@ const int DELAY_LOOP_MS = 5; // change to slow down how often to read and graph 
 float _fps = 0;
 unsigned long _frameCount = 0;
 unsigned long _fpsStartTimeStamp = 0;
+boolean _drawFps = false;
 
 enum PointSymbol {
   CIRCLE,
@@ -176,7 +177,7 @@ class GraphLine{
     }
 };
 
-class ScrollingLineGraph{
+class MultiValueScrollingLineGraph{
   protected:
     GraphLine** _graphLines = NULL;
     int _numLines = -1;
@@ -190,12 +191,12 @@ class ScrollingLineGraph{
     int _heightGraph = 64; // in pixels
 
   public:
-    ScrollingLineGraph(int numLines, PointSymbol symbols[]) :
-      ScrollingLineGraph(0, 0, 128, 64, numLines, symbols){
+    MultiValueScrollingLineGraph(int numLines, PointSymbol symbols[]) :
+      MultiValueScrollingLineGraph(0, 0, 128, 64, numLines, symbols){
         // purposefully empty
       }
   
-    ScrollingLineGraph(int xGraph, int yGraph, int graphWidth, int graphHeight, int numLines, PointSymbol symbols[]) 
+    MultiValueScrollingLineGraph(int xGraph, int yGraph, int graphWidth, int graphHeight, int numLines, PointSymbol symbols[]) 
     {
       _xGraph = xGraph;
       _yGraph = yGraph;
@@ -210,7 +211,7 @@ class ScrollingLineGraph{
       }
     }
 
-    ~ScrollingLineGraph(){
+    ~MultiValueScrollingLineGraph(){
       if(_graphLines != NULL){
         // From https://stackoverflow.com/a/4194228/388117
         for (int i=0; i<_numLines; i++){
@@ -271,7 +272,7 @@ class ScrollingLineGraph{
         disp.getTextBounds(strVal, 0, 0, &xText, &yText, &textWidth, &textHeight);
         disp.setCursor(xCurPos, 0);
         disp.print(strVal);
-        xCurPos += textWidth + 5;
+        xCurPos += textWidth + 7;
       }
     }
 
@@ -333,7 +334,7 @@ class ScrollingLineGraph{
 
 const int NUM_GRAPH_LINES = 3;
 const PointSymbol GRAPH_SYMBOLS[NUM_GRAPH_LINES] = {CIRCLE, SQUARE, TRIANGLE};
-ScrollingLineGraph _scrollingLineGraph(NUM_GRAPH_LINES, GRAPH_SYMBOLS);
+MultiValueScrollingLineGraph _scrollingLineGraph(NUM_GRAPH_LINES, GRAPH_SYMBOLS);
 
 void setup() {
   Serial.begin(9600);
