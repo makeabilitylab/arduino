@@ -60,6 +60,31 @@ class ScrollingLineGraph{
       }
     }
 
+    void setDrawLegend(boolean drawLegendOn){
+        _drawLegend = drawLegendOn;
+    }
+
+    void setDrawAxis(boolean drawAxisOn){
+        _drawAxis = drawAxisOn;
+    }
+
+    void setAutoYAxis(boolean autoYAxisOn){
+        _isAutoYAxis = autoYAxisOn;
+    }
+
+    void setMinMaxY(int minY, int maxY){
+        _yMin = min(minY, maxY);
+        _yMax = max(minY, maxY);
+    }
+
+    int getMinY(){
+      return _yMin;
+    }
+
+    int getMaxY(){
+      return _yMax;
+    }
+
     void resetGraph(){
       // initialize all the readings to 0:
       for (int i = 0; i < _bufferSize; i++) {

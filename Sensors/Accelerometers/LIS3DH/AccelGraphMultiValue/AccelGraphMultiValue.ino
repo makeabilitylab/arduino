@@ -17,7 +17,6 @@
 
 // For the accelerometer
 #include <Adafruit_LIS3DH.h> 
-#include <Adafruit_Sensor.h>
 
 #include <ScrollingLineGraphMultiValue.hpp> // from Makeability Lab Arduino Library
 
@@ -42,7 +41,7 @@ boolean _drawFps = false;
 
 const int NUM_GRAPH_LINES = 3;
 const PointSymbol GRAPH_SYMBOLS[NUM_GRAPH_LINES] = {CIRCLE, SQUARE, TRIANGLE};
-ScrollingLineGraphMultiValue _scrollingLineGraph(NUM_GRAPH_LINES, GRAPH_SYMBOLS);
+ScrollingLineGraphMultiValue _scrollingLineGraph(NUM_GRAPH_LINES, GRAPH_SYMBOLS, 2);
 
 void setup() {
   Serial.begin(9600);
@@ -80,6 +79,7 @@ void setup() {
   _fpsStartTimeStamp = millis();
 
   _scrollingLineGraph.setMinMaxY(-11000, 12000);
+  _scrollingLineGraph.setAutoYAxis(true);
 }
 
 void loop() {

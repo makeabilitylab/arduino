@@ -12,12 +12,21 @@ class GraphLine{
     long _sampleTotal = 0; 
     int _curWriteIndex = 0; 
     enum PointSymbol _symbol = CIRCLE; 
-    int _ptSize = 2; 
+    int _ptSize = DEFAULT_SYMBOL_SIZE; 
     boolean _isBufferFull = false;
 
   public:
+    const int DEFAULT_SYMBOL_SIZE = 4;
+
     GraphLine(int displayWidth, PointSymbol symbol) 
+      : GraphLine(displayWidth, symbol, DEFAULT_SYMBOL_SIZE)
     {
+      // empty on purpose
+    }
+
+    GraphLine(int displayWidth, PointSymbol symbol, int symbolSize) 
+    {
+      _ptSize = symbolSize;
       _bufferSize = displayWidth / _ptSize;      
       _circularBuffer = new int[_bufferSize];
 
@@ -87,6 +96,7 @@ class GraphLine{
     }
 
     void draw(const Adafruit_SSD1306& disp, int yGraph, int heightGraph, int minY, int maxY){
+
       // Draw the line graph based on data in _circularBuffer
       int xPos = 0; 
       for (int i = _curWriteIndex; i < _bufferSize; i++){
@@ -178,15 +188,22 @@ class ScrollingLineGraphMultiValue{
 
     boolean _drawAxis = true;
     boolean _isAutoYAxis = true;
-    boolean _drawLegend = false;
+    boolean _drawLegend = true;
 
   public:
+    const int DEFAULT_SYMBOL_SIZE = 4;
+
     ScrollingLineGraphMultiValue(int numLines, PointSymbol symbols[]) :
-      ScrollingLineGraphMultiValue(0, 0, 128, 64, numLines, symbols){
+      ScrollingLineGraphMultiValue(0, 0, 128, 64, numLines, symbols, DEFAULT_SYMBOL_SIZE){
+        // purposefully empty
+      }
+
+    ScrollingLineGraphMultiValue(int numLines, PointSymbol symbols[], int symbolSize) :
+      ScrollingLineGraphMultiValue(0, 0, 128, 64, numLines, symbols, symbolSize){
         // purposefully empty
       }
   
-    ScrollingLineGraphMultiValue(int xGraph, int yGraph, int graphWidth, int graphHeight, int numLines, PointSymbol symbols[]) 
+    ScrollingLineGraphMultiValue(int xGraph, int yGraph, int graphWidth, int graphHeight, int numLines, PointSymbol symbols[], int symbolSize) 
     {
       _xGraph = xGraph;
       _yGraph = yGraph;
@@ -197,7 +214,7 @@ class ScrollingLineGraphMultiValue{
       _numLines = numLines;
 
       for (int i = 0; i < numLines; i++) {
-        _graphLines[i] = new GraphLine(graphWidth, symbols[i]);
+        _graphLines[i] = new GraphLine(graphWidth, symbols[i], symbolSize);
       }
     }
 
@@ -212,6 +229,18 @@ class ScrollingLineGraphMultiValue{
         _graphLines = NULL;
         _numLines = -1;
       }      
+    }
+
+    void setDrawLegend(boolean drawLegendOn){
+      _drawLegend = drawLegendOn;
+    }
+
+    void setDrawAxis(boolean drawAxisOn){
+      _drawAxis = drawAxisOn;
+    }
+
+    void setAutoYAxis(boolean autoYAxisOn){
+        _isAutoYAxis = autoYAxisOn;
     }
 
     void setMinMaxY(int minY, int maxY){
