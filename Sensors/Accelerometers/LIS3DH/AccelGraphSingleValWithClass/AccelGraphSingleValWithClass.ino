@@ -2,10 +2,9 @@
 /**
  *  This example graphs an LIS3DH accelerometer value in real-time to an OLED screen. 
  *  You can select which value to graph: x, y, z, or the magnitude of the accelerometer
- *  signal using the GraphData _graphData enum.
+ *  signal using a button hooked up to Pin 4 (with a pull-up resistor)
  *  
  *  Other configurable options:
- *  - turn on/off the status bar at the top by setting _drawStatusBar to false
  *  - graph points rather than lines by setting _drawGraphPrimitive = POINTS
  *
  *  Adafruit Gfx Library:
