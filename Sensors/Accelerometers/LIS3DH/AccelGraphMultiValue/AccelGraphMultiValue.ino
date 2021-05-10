@@ -1,6 +1,6 @@
 
 /**
- *  Draws a scrolling graph of a single analog input (set to A0) on the OLED display
+ *  Draws a scrolling graph of the X, Y, and Z axes from the LIS3DH accelerometer
  *
  *  By Jon E. Froehlich
  *  @jonfroehlich

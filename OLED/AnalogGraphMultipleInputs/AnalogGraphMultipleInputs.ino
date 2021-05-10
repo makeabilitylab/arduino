@@ -1,6 +1,6 @@
 
 /**
- *  Draws a scrolling graph of a single analog input (set to A0) on the OLED display
+ *  Draws a scrolling graph of a three inputs on A0, A1, and A2
  *
  *  By Jon E. Froehlich
  *  @jonfroehlich
