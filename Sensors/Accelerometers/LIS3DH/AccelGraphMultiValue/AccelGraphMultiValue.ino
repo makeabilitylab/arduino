@@ -11,8 +11,13 @@
 #include <Wire.h>
 #include <SPI.h>
 
+// For the OLED Display
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+
+// For the accelerometer
+#include <Adafruit_LIS3DH.h> 
+#include <Adafruit_Sensor.h>
 
 #include <ScrollingLineGraphMultiValue.hpp> // from Makeability Lab Arduino Library
 
@@ -23,13 +28,11 @@
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-const int ANALOG_INPUT_PIN1 = A0;
-const int ANALOG_INPUT_PIN2 = A1;
-const int ANALOG_INPUT_PIN3 = A2;
+// Used for LIS3DH hardware & software SPI
+#define LIS3DH_CS 10
+Adafruit_LIS3DH _lis3dh = Adafruit_LIS3DH();
 
-const int MIN_ANALOG_INPUT = 0;
-const int MAX_ANALOG_INPUT = 1023;
-const int DELAY_LOOP_MS = 5; // change to slow down how often to read and graph value
+const int DELAY_LOOP_MS = 0; // change to slow down how often to read and graph value
 
 // for tracking fps
 float _fps = 0;
@@ -58,40 +61,55 @@ void setup() {
   _display.setCursor(0, 0);
   _display.println("Screen initialized!");
   _display.display();
-  delay(500);
+  delay(200);
   _display.clearDisplay();
 
+  _display.println("Initializing accelerometer...");
+  if (!_lis3dh.begin(0x18)) {   // change this to 0x19 for alternative i2c address
+    Serial.println("Couldn't start");
+    while (1) yield();
+  }
+  Serial.println("LIS3DH found!");
+
+  _lis3dh.setRange(LIS3DH_RANGE_4_G);   // 2, 4, 8 or 16 G!
+
+  Serial.print("Range = ");
+  Serial.print(2 << _lis3dh.getRange());
+  Serial.println("G");
+
   _fpsStartTimeStamp = millis();
+
+  _scrollingLineGraph.setMinMaxY(-11000, 12000);
 }
 
 void loop() {
   // Clear the display on each frame. 
   _display.clearDisplay();
 
+  _lis3dh.read(); 
+
   // Read and store the analog data into a circular buffer
-  int analogVal = analogRead(ANALOG_INPUT_PIN1);
-  _scrollingLineGraph.addData(0, analogVal);
+  _scrollingLineGraph.addData(0, _lis3dh.x);
 
   delay(1);
-  analogVal = analogRead(ANALOG_INPUT_PIN2);
-  _scrollingLineGraph.addData(1, analogVal);
+  _scrollingLineGraph.addData(1, _lis3dh.y);
 
   delay(1);
-  analogVal = analogRead(ANALOG_INPUT_PIN3);
-  _scrollingLineGraph.addData(2, analogVal);
+  _scrollingLineGraph.addData(2, _lis3dh.z);
 
   if(_drawFps){
     drawFps();
   }
 
-  _scrollingLineGraph.drawLegend(_display, 0, 0);
   _scrollingLineGraph.draw(_display);
   
   _display.display();
   
   calcFrameRate();
   
-  delay(DELAY_LOOP_MS);
+  if(DELAY_LOOP_MS > 0){
+    delay(DELAY_LOOP_MS);
+  }
 }
 
 /**

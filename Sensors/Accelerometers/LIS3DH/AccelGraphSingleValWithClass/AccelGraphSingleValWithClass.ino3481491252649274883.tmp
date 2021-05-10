@@ -1,0 +1,194 @@
+
+/**
+ *  This example graphs an LIS3DH accelerometer value in real-time to an OLED screen. 
+ *  You can select which value to graph: x, y, z, or the magnitude of the accelerometer
+ *  signal using the GraphData _graphData enum.
+ *  
+ *  Other configurable options:
+ *  - turn on/off the status bar at the top by setting _drawStatusBar to false
+ *  - graph points rather than lines by setting _drawGraphPrimitive = POINTS
+ *
+ *  Adafruit Gfx Library:
+ *  https://learn.adafruit.com/adafruit-gfx-graphics-library/overview 
+ *
+ *  Adafruit OLED tutorials:
+ *  https://learn.adafruit.com/monochrome-oled-breakouts
+ *
+ *  Adafruit LIS3DH tutorial:
+ *  https://learn.adafruit.com/adafruit-lis3dh-triple-axis-accelerometer-breakout
+ *
+ *  By Jon E. Froehlich
+ *  @jonfroehlich
+ *  http://makeabilitylab.io
+ *
+ */
+
+#include <Wire.h>
+#include <SPI.h>
+
+// For accelerometer
+#include <Adafruit_LIS3DH.h>
+#include <Adafruit_Sensor.h>
+
+// For graphics libraries
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#include <ScrollingLineGraph.hpp>
+
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+#define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
+Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+// Used for LIS3DH hardware & software SPI
+#define LIS3DH_CS 10
+Adafruit_LIS3DH _lis3dh = Adafruit_LIS3DH();
+
+const int DELAY_LOOP_MS = 0; // change to slow down how often to read and graph value
+const int GRAPH_MODE_BUTTON_PIN = 4;
+
+// status bar
+boolean _drawStatusBar = true; // change to show/hide status bar
+
+int _graphHeight = SCREEN_HEIGHT;
+
+enum SensorData{
+  X_DATA,
+  Y_DATA,
+  Z_DATA,
+  MAGNITUDE
+};
+
+// You can change this to X_DATA, Y_DATA, Z_DATA, or MAGNITUDE
+// to display those respective values
+SensorData _graphDataMode = X_DATA; 
+
+ScrollingLineGraph _scrollingLineGraph(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(GRAPH_MODE_BUTTON_PIN, INPUT_PULLUP);
+
+  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  if (!_display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
+    Serial.println(F("SSD1306 allocation failed"));
+    for (;;); // Don't proceed, loop forever
+  }
+
+  // Clear the buffer
+  _display.clearDisplay();
+
+  _display.setTextSize(1);
+  _display.setTextColor(WHITE, BLACK);
+  _display.setCursor(0, 0);
+  _display.println("Screen initialized!");
+  _display.display();
+  delay(250);
+
+  _display.println("Initializing accelerometer...");
+  if (!_lis3dh.begin(0x18)) {   // change this to 0x19 for alternative i2c address
+    Serial.println("Couldn't start");
+    while (1) yield();
+  }
+  Serial.println("LIS3DH found!");
+
+  _lis3dh.setRange(LIS3DH_RANGE_4_G);   // 2, 4, 8 or 16 G!
+
+  Serial.print("Range = ");
+  Serial.print(2 << _lis3dh.getRange());
+  Serial.println("G");
+
+  _scrollingLineGraph.setDataLabel(getDataLabelForMode(_graphDataMode));
+}
+
+void loop() {
+
+  // clear display, prepare for next render
+  _display.clearDisplay();
+
+  // Read the accel
+  _lis3dh.read(); 
+  int sensorVal = getSensorValForMode(_graphDataMode);
+
+  // Add data to scrolling graph
+  _scrollingLineGraph.addData(sensorVal);
+  _scrollingLineGraph.draw(_display);
+
+  int graphModeButtonVal = digitalRead(GRAPH_MODE_BUTTON_PIN);
+  if(graphModeButtonVal == HIGH){
+    _graphDataMode++;
+
+    if(_graphDataMode > MAGNITUDE){
+      _graphDataMode = X_DATA;
+    }
+
+    //_scrollingLineGraph.resetGraph();
+    _scrollingLineGraph.setDataLabel(getDataLabelForMode(_graphDataMode));
+  }
+  
+  // Render buffer to screen
+  _display.display();
+ 
+  if(DELAY_LOOP_MS > 0){
+    delay(DELAY_LOOP_MS);
+  }
+}
+
+String getDataLabelForMode(SensorData graphMode){
+  switch(graphMode){
+    case X_DATA:
+    {
+      return "X";
+    }
+    case Y_DATA:
+    {
+      return "Y";
+    }
+    case Z_DATA:
+    {
+      return "Z";
+    }
+    case MAG:
+    {
+      return "MAG";
+    }
+  }
+}
+
+int getSensorValForMode(SensorData graphMode){
+  int sensorVal = 0;
+
+  // We can graph the X, Y, or Z accelerometer data
+  // or the magnitude of the signal
+  switch(graphMode){
+    case X_DATA:
+    {
+      sensorVal = _lis3dh.x;
+      break;
+    }
+    case Y_DATA:
+    {
+      sensorVal = _lis3dh.y;
+      break;
+    }
+    case Z_DATA:
+    {
+      sensorVal = _lis3dh.z;
+      break;
+    }
+    case MAG:
+    {
+      long x = _lis3dh.x;
+      long y = _lis3dh.y;
+      long z = _lis3dh.z;
+      double mag = sqrt(x * x + y * y + z * z);     
+      sensorVal = mag;
+      break;
+    }
+  }
+  return sensorVal;
+}
