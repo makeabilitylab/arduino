@@ -52,17 +52,20 @@ class GraphLine{
     long _sampleTotal = 0; 
     int _curWriteIndex = 0; 
     enum PointSymbol _symbol = CIRCLE; 
-    int _ptSize = 5; 
+    int _ptSize = 4; 
+    int _displayWidth = 128;
 
   public:
-    GraphLine(int bufferSize, PointSymbol symbol) 
+    GraphLine(int displayWidth, PointSymbol symbol) 
     {
-      _circularBuffer = new int[bufferSize];
-      _bufferSize = bufferSize;
+      _displayWidth = displayWidth;
+      _bufferSize = _displayWidth / _ptSize;      
+      _circularBuffer = new int[_bufferSize];
+
       _symbol = symbol;
 
       // initialize all the readings to 0:
-      for (int i = 0; i < bufferSize; i++) {
+      for (int i = 0; i < _bufferSize; i++) {
         _circularBuffer[i] = 0;
       }
     }
@@ -73,6 +76,14 @@ class GraphLine{
         _circularBuffer = NULL;
         _bufferSize = -1;
       }
+    }
+
+    PointSymbol getSymbol(){
+      return _symbol;
+    }
+
+    int getSymbolSize(){
+      return _ptSize;
     }
 
     void addData(int yVal){
@@ -88,49 +99,45 @@ class GraphLine{
     void draw(const Adafruit_SSD1306& disp){
       // Draw the line graph based on data in _circularBuffer
       int xPos = 0; 
-      int step = _ptSize;
-      for (int i = _curWriteIndex; i < _bufferSize; i += step){
+      for (int i = _curWriteIndex; i < _bufferSize; i++){
         int yPos = _circularBuffer[i];
-        drawValue(disp, xPos, yPos);
-        xPos += step;
+        //drawValue(disp, xPos, yPos);
+        drawSymbol(disp, xPos, yPos, _ptSize, _symbol);
+        xPos += _ptSize;
       }
       
-      for(int i = 0; i < _curWriteIndex; i += step){
+      for(int i = 0; i < _curWriteIndex; i++){
         int yPos = _circularBuffer[i];
-        drawValue(disp, xPos, yPos);
-        xPos += step;
+        //drawValue(disp, xPos, yPos);
+        drawSymbol(disp, xPos, yPos, _ptSize, _symbol);
+        xPos += _ptSize;
       }
     }
 
-    void drawValue(const Adafruit_SSD1306& disp, int x, int y){
+    /**
+     * Draws the symbol centered at the given x,y point
+     */ 
+    static void drawSymbol(const Adafruit_SSD1306& disp, int x, int y, int size, PointSymbol symbol){
       // Ugh, ran into major problem with switch statements
       // Need to have brackets around cases
       // See: https://stackoverflow.com/questions/92396/why-cant-variables-be-declared-in-a-switch-statement
-      int halfSize = _ptSize / 2;
-      Serial.println((String)"drawValue " + _symbol + " triangle: " + TRIANGLE);
-
-      if(_symbol == TRIANGLE){
-        Serial.println("THIS IS A TRIANGLE");
-      }
+      int halfSize = size / 2;
       
-      switch(_symbol) {
+      switch(symbol) {
          case CIRCLE:
          {
-            Serial.println("IN CIRCLE!!!");
             disp.drawCircle(x, y, halfSize, SSD1306_WHITE);
             break; 
          }
          case SQUARE:
          {
-            Serial.println("IN SQUARE!!!");
             int topLeftX = x - halfSize;
             int topLeftY = y - halfSize;
-            disp.drawRect(topLeftX, topLeftY, _ptSize, _ptSize, SSD1306_WHITE);
+            disp.drawRect(topLeftX, topLeftY, size, size, SSD1306_WHITE);
             break; 
          }
          case TRIANGLE:
          {
-            Serial.println("SWITCH STATEMENT TRIANGLE");
             int x0 = x - halfSize;
             int y0 = y + halfSize;
             
@@ -140,14 +147,11 @@ class GraphLine{
             int x2 = x + halfSize;
             int y2 = y0;
 
-            Serial.println((String)"x0=" + x0 + " y0=" + y0 + "x1=" + x1 + " y1=" + y1 + "x2=" + x2 + " y2=" + y2);
-            
             disp.drawTriangle(x0, y0, x1, y1, x2, y2, SSD1306_WHITE);
             break;
          }
          case POINT:
          {
-            Serial.println("IN POINT!!!");
             disp.drawPixel(x, y, SSD1306_WHITE);
             break;
          }
@@ -202,20 +206,39 @@ class ScrollingLineGraph{
         _graphLines[i]->draw(disp);
       }
     }
+
+    void drawLegend(const Adafruit_SSD1306& disp, int x, int y, int curVals[]){
+      int xCurPos = x;
+      for (int i = 0; i < _numLines; i++) {
+        PointSymbol ptSymbol = _graphLines[i]->getSymbol();
+        int symbolSize = _graphLines[i]->getSymbolSize();
+        xCurPos = x - symbolSize / 2;
+        GraphLine::drawSymbol(disp, xCurPos, y, symbolSize, ptSymbol);
+        xCurPos += symbolSize + 1;
+        // TODO: finish this.
+      }
+
+//          // erase status bar by drawing all black
+//      _display.fillRect(0, 0, _display.width(), 8, SSD1306_BLACK); 
+//      
+//      // Draw current val
+//      _display.setCursor(0, 0);
+//      _display.print(analogVal);
+//    
+//      // Draw frame count
+//      int16_t x1, y1;
+//      uint16_t w, h;
+//      _display.getTextBounds("XX.XX fps", 0, 0, &x1, &y1, &w, &h);
+//      _display.setCursor(_display.width() - w, 0);
+//      _display.print(_fps);
+//      _display.print(" fps");
+    }
 };
-//
+
+
 const int NUM_GRAPH_LINES = 3;
 const PointSymbol GRAPH_SYMBOLS[NUM_GRAPH_LINES] = {CIRCLE, SQUARE, TRIANGLE};
-ScrollingLineGraph _scrollingLineGraph(32, NUM_GRAPH_LINES, GRAPH_SYMBOLS);
-
-//
-//const int NUM_GRAPH_LINES = 2;
-//const PointSymbol GRAPH_SYMBOLS[NUM_GRAPH_LINES] = {CIRCLE, TRIANGLE};
-//ScrollingLineGraph _scrollingLineGraph(SCREEN_WIDTH, NUM_GRAPH_LINES, GRAPH_SYMBOLS);
-
-//const int NUM_GRAPH_LINES = 1;
-//const PointSymbol GRAPH_SYMBOLS[NUM_GRAPH_LINES] = {TRIANGLE};
-//ScrollingLineGraph _scrollingLineGraph(SCREEN_WIDTH, NUM_GRAPH_LINES, GRAPH_SYMBOLS);
+ScrollingLineGraph _scrollingLineGraph(SCREEN_WIDTH, NUM_GRAPH_LINES, GRAPH_SYMBOLS);
 
 void setup() {
   Serial.begin(9600);
@@ -258,12 +281,11 @@ void loop() {
   lineHeight = map(analogVal, MIN_ANALOG_INPUT, MAX_ANALOG_INPUT, 0, _graphHeight);
   yPos = _display.height() - lineHeight;
   _scrollingLineGraph.addData(1, yPos);
-//
-//
-//  analogVal = analogRead(ANALOG_INPUT_PIN3);
-//  lineHeight = map(analogVal, MIN_ANALOG_INPUT, MAX_ANALOG_INPUT, 0, _graphHeight);
-//  yPos = _display.height() - lineHeight;
-//  _scrollingLineGraph.addData(2, yPos);
+
+  analogVal = analogRead(ANALOG_INPUT_PIN3);
+  lineHeight = map(analogVal, MIN_ANALOG_INPUT, MAX_ANALOG_INPUT, 0, _graphHeight);
+  yPos = _display.height() - lineHeight;
+  _scrollingLineGraph.addData(2, yPos);
 
   if(_drawStatusBar){
     drawStatusBar(analogVal);
