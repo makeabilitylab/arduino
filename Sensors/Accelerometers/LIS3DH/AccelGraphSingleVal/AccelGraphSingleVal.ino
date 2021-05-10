@@ -74,7 +74,7 @@ enum GraphData{
 
 // You can change this to X_DATA, Y_DATA, Z_DATA, or MAG
 // to display those respective values
-GraphData _graphData = MAG; 
+GraphData _graphData = X_DATA; 
 
 void setup() {
   Serial.begin(9600);
