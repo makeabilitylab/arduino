@@ -1,6 +1,33 @@
+/**
+ * A simple pong Flappy Bird game for the OLED display
+ *  
+ * This code requires Shape.hpp from the MakeabilityLab_Arduino_Library
+ * 
+ * To install and use these files:
+ * 1. Get it from here: https://github.com/makeabilitylab/arduino/tree/master/MakeabilityLab_Arduino_Library
+ * 2. Move the entire folder to the Arduino libraries folder on your computer.
+ *   - On my Windows box, this is C:\Users\jonfr\Documents\Arduino\libraries
+ *   - On Mac, it's: /Users/jonf/Documents/Arduino/libraries
+ * 3. Then include the relevant libraries via #include <libraryname.h> or <libraryname.hpp>
+ *
+ * Adafruit Gfx Library:
+ * https://learn.adafruit.com/adafruit-gfx-graphics-library/overview 
+ *
+ * Adafruit OLED tutorials:
+ * https://learn.adafruit.com/monochrome-oled-breakouts
+ * 
+ * Code based on:
+ * https://makeabilitylab.github.io/p5js/Games/FlappyBird
+ * https://makeabilitylab.github.io/p5js/Games/FlappyBird2
+ *  
+ * By Jon E. Froehlich
+ * @jonfroehlich
+ * http://makeabilitylab.io
+ *
+ */
+
 #include <Wire.h>
-#include <SPI.h>
-#include <Shape.hpp>;
+#include <Shape.hpp>
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -19,7 +46,7 @@ const char STR_PRESS_FLAP_TO_PLAY[] = "Press flap to play";
 const char STR_GAME_OVER[] = "Game Over!";
 
 // Define I/O pins
-const int FLAP_BUTTON_INPUT_PIN = 5;
+const int FLAP_BUTTON_INPUT_PIN = 4;
 const int TONE_OUTPUT_PIN = 8;
 const int VIBROMOTOR_OUTPUT_PIN = 9;
 
@@ -97,6 +124,14 @@ enum GameState {
 };
 
 GameState _gameState = NEW_GAME;
+
+// This is necessary for the game to work on the ESP32
+// See: 
+//  - https://github.com/espressif/arduino-esp32/issues/1734
+//  - https://github.com/Bodmer/TFT_eSPI/issues/189
+#ifndef max
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
 
 void setup() {
   Serial.begin(9600);
