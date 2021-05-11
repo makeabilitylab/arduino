@@ -52,6 +52,7 @@ void setup() {
 
   // Not all the characters will fit on the display. This is normal.
   // Library will draw what it can and the rest will be clipped.
+  // Notice that we are using .write here rather than .print!
   for(int16_t i=0; i<256; i++) {
     if(i == '\n') _display.write(' ');
     else          _display.write(i);
