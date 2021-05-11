@@ -459,7 +459,7 @@ class Ball : public Circle{
       return getLeft() <= xMin || getRight() >= xMax;
     }
 
-     void setSpeed(int xSpeed, int ySpeed){
+    void setSpeed(int xSpeed, int ySpeed){
       _xSpeed = xSpeed;
       _ySpeed = ySpeed;
     }
