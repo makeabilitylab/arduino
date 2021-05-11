@@ -34,18 +34,18 @@ class ParallaxJoystick {
 
     ParallaxJoystick(int upDownInputPin, int leftRightInputPin, int maxAnalogValue, JoystickYDirection joystickYDir)
       : ParallaxJoystick(upDownInputPin, leftRightInputPin) { // syntax to call constructor in C++ 11
-      _maxAnalogValue = maxAnalogValue;
       _joystickYDir = joystickYDir;
+      setMaxAnalogValue(maxAnalogValue);
     }
 
-    int getMaxAnalogValue(){
+    int getMaxAnalogValue() const{
       return _maxAnalogValue;
     }
 
     /**
      * Defaults to 1023
      */
-    setMaxAnalogValue(int maxAnalogVal) {
+    void setMaxAnalogValue(int maxAnalogVal) {
       _maxAnalogValue = maxAnalogVal;
       _joyStickCenterValue = int(maxAnalogVal / 2);
     }
@@ -53,7 +53,7 @@ class ParallaxJoystick {
     /**
      * Defaults to UP
      */
-    setJoystickYOrientation(JoystickYDirection joystickYDir){
+    void setJoystickYOrientation(JoystickYDirection joystickYDir){
       _joystickYDir = joystickYDir;
     }
 
@@ -63,15 +63,15 @@ class ParallaxJoystick {
      * 
      * @return int 
      */
-    int getUpDownVal(){
+    int getUpDownVal() const{
       return _upDownVal;
     }
 
-    int getLeftRightVal(){
+    int getLeftRightVal() const{
       return _leftRightVal;
     }
 
-    read() {
+    void read() {
       int joystickUpDownVal = analogRead(_upDownInputPin);
       int joystickLeftRightVal = analogRead(_leftRightInputPin);
 
