@@ -8,15 +8,23 @@ class Shape {
     int _y;
     int _width;
     int _height;
-    bool _drawFill = false;
+    bool _drawFill = DEFAULT_DRAW_FILL;
     bool _drawBoundingBox = false;
 
   public:
-    Shape(int x, int y, int width, int height) {
+    const bool DEFAULT_DRAW_FILL = false;
+
+    Shape(int x, int y, int width, int height)
+      : Shape(x, y, width, height, DEFAULT_DRAW_FILL){
+        // purposefully empty
+      }
+
+    Shape(int x, int y, int width, int height, bool drawFillOn) {
       _x = x;
       _y = y;
       _width = width;
       _height = height;
+      _drawFill = drawFillOn;
     }
 
     /**
@@ -71,7 +79,7 @@ class Shape {
      * 
      * @return int x location of the shape
      */
-    int getX(){
+    int getX() const{
       return _x;
     }
 
@@ -80,7 +88,7 @@ class Shape {
      * 
      * @return int y locaiton of the shape
      */
-    int getY(){
+    int getY() const{
       return _y;
     }
 
@@ -90,7 +98,7 @@ class Shape {
      * 
      * @param display A reference to the Adafruit_SSD1306 object
      */
-    virtual void draw(const Adafruit_SSD1306& display) {
+    virtual void draw( Adafruit_SSD1306& display) {
       if(_drawBoundingBox){
         display.drawRect(_x, _y, _width, _height, SSD1306_WHITE);
       }
@@ -115,7 +123,7 @@ class Shape {
      * 
      * @return int Width of the shape in pixels
      */
-    int getWidth(){
+    int getWidth() const{
       return _width;
     }
 
@@ -124,7 +132,7 @@ class Shape {
      * 
      * @return int Height of the shape in pixels
      */
-    int getHeight(){
+    int getHeight() const{
       return _height;
     }
 
@@ -133,7 +141,7 @@ class Shape {
      * 
      * @return int The left location of the shape
      */
-    int getLeft() {
+    int getLeft() const{
       return _x;
     }
 
@@ -142,7 +150,7 @@ class Shape {
      * 
      * @return int The right location (x) of the shape
      */
-    int getRight() {
+    int getRight() const{
       return _x + _width;
     }
 
@@ -151,7 +159,7 @@ class Shape {
      * 
      * @return int 
      */
-    int getBottom() {
+    int getBottom() const{
       return _y + _height;
     }
 
@@ -160,7 +168,7 @@ class Shape {
      * 
      * @return int 
      */
-    int getTop() {
+    int getTop() const{
       return _y;
     }
 
@@ -196,7 +204,7 @@ class Shape {
      * @return true If the shape overlaps
      * @return false If the shape does not overlap
      */
-    virtual bool overlaps(const Shape& shape) {
+    virtual bool overlaps(const Shape& shape) const{
       //Serial.println("We are in overlaps shape!");
 
       // based on https://stackoverflow.com/a/4098512
@@ -214,7 +222,7 @@ class Shape {
      * @return true If this shape contains the x,y
      * @return false If this shape does NOT contain the x,y
      */
-    virtual bool contains(int x, int y) {
+    virtual bool contains(int x, int y) const {
       return x >= _x && // check within left edge
              x <= (_x + _width) && // check within right edge
              y >= _y && // check within top edge
@@ -226,7 +234,7 @@ class Shape {
      * 
      * @return String 
      */
-    virtual String getName(){
+    virtual String getName() const{
       return "Shape";
     }
 
@@ -236,7 +244,7 @@ class Shape {
      * 
      * @return String 
      */
-    virtual String toString(){
+    virtual String toString() const{
       return (String)"x: " + _x + " y: " + _y + " width: " + _width + " height: " + _height;
     }
 
@@ -260,8 +268,16 @@ class Shape {
  */
 class Rectangle : public Shape {
   public:
-    Rectangle(int x, int y, int width, int height) : Shape(x, y, width, height)
+    Rectangle(int x, int y, int width, int height) 
+      : Rectangle(x, y, width, height, DEFAULT_DRAW_FILL)
     {
+      // purposefully empty
+    }
+
+    Rectangle(int x, int y, int width, int height, bool drawFillOn) 
+      : Shape(x, y, width, height)
+    {
+      // purposefully empty
     }
 
     /**
@@ -269,7 +285,7 @@ class Rectangle : public Shape {
      * 
      * @param display 
      */
-    void draw (const Adafruit_SSD1306& display) override{
+    void draw (Adafruit_SSD1306& display) override{
       // Draw rectangle takes in (xTop, yTop, width, height)
       // https://learn.adafruit.com/adafruit-gfx-graphics-library/graphics-primitives#rectangles-2002784-10
       if(_drawFill){
@@ -283,7 +299,7 @@ class Rectangle : public Shape {
       // Shape::draw(disp);
     }
 
-    String getName() override{
+    String getName() const override{
       return "Rectangle";
     }
 };
@@ -295,9 +311,16 @@ class Rectangle : public Shape {
 class Circle : public Shape {
 
   public:
-    Circle(int xCenter, int yCenter, int radius) : Shape(xCenter - radius, yCenter - radius, (radius * 2) + 1, (radius * 2) + 1)    
+    Circle(int xCenter, int yCenter, int radius) : 
+      Circle(xCenter, yCenter, radius, DEFAULT_DRAW_FILL)    
     {
+      // purposefully empty
+    }
 
+    Circle(int xCenter, int yCenter, int radius, bool drawFillOn) : 
+      Shape(xCenter - radius, yCenter - radius, (radius * 2) + 1, (radius * 2) + 1, drawFillOn)    
+    {
+      // purposefully empty
     }
 
     /**
@@ -305,7 +328,7 @@ class Circle : public Shape {
      * 
      * @param display 
      */
-    void draw(const Adafruit_SSD1306& disp) override{
+    void draw(Adafruit_SSD1306& disp) override{
       // Draw circle takes in (xCenter, yCenter, radius)
       // https://learn.adafruit.com/adafruit-gfx-graphics-library/graphics-primitives#circles-2002788-14
       int radius = getRadius();
@@ -326,7 +349,7 @@ class Circle : public Shape {
      * @return true 
      * @return false 
      */
-    bool overlaps(const Circle& circle) {
+    bool overlaps(const Circle& circle) const {
       int distanceFromCenterPoints = Shape::distance(getCenterX(), getCenterY(), circle.getCenterX(), circle.getCenterY());
       return distanceFromCenterPoints <= getRadius() + circle.getRadius();
     }
@@ -338,7 +361,7 @@ class Circle : public Shape {
      * @return true 
      * @return false 
      */
-    bool overlaps(const Shape& shape) override{
+    bool overlaps(const Shape& shape) const override{
       if(getName().equals(shape.getName())){
         return this->overlaps((Circle&)shape);
       }
@@ -362,7 +385,7 @@ class Circle : public Shape {
      * 
      * @return int 
      */
-    int getCenterX(){
+    int getCenterX() const{
       return _x + getWidth() / 2;
     }
 
@@ -371,7 +394,7 @@ class Circle : public Shape {
      * 
      * @return int 
      */
-    int getCenterY(){
+    int getCenterY() const{
       return _y + getWidth() / 2;
     }
 
@@ -392,7 +415,7 @@ class Circle : public Shape {
      * 
      * @return int 
      */
-    int getRadius(){
+    int getRadius() const{
       return getWidth() / 2;
     }
 
@@ -404,6 +427,15 @@ class Circle : public Shape {
     void setRadius(int radius){
       int size = 2 * radius;
       setDimensions(size, size);
+    }
+
+    /**
+     * @brief Get the name of the circle
+     * 
+     * @return String 
+     */
+    String getName() const override{
+      return "Circle";
     }
 };
 
@@ -432,11 +464,11 @@ class Ball : public Circle{
       _ySpeed = ySpeed;
     }
 
-    int getXSpeed(){
+    int getXSpeed() const{
       return _xSpeed;
     }
 
-    int getYSpeed(){
+    int getYSpeed() const{
       return _ySpeed;
     }
 
@@ -455,7 +487,7 @@ class Ball : public Circle{
       return _xSpeed;
     }
 
-    String getName() override{
+    String getName() const override{
       return "Ball";
     }
 };
