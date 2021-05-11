@@ -77,6 +77,8 @@ void setup() {
   Serial.print("Range = ");
   Serial.print(2 << _lis3dh.getRange());
   Serial.println("G");
+
+  _circle.setLocation(_display.width() / 2, _display.height() / 2);
 }
 
 void loop() {
