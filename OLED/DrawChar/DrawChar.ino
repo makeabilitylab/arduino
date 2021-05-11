@@ -83,7 +83,7 @@ void loop() {
     drawChar(_currentCharIndex);
     _display.display(); // show the graphics buffer to screen
 
-    delay(100);
+    delay(200);
   }
 
   _lastButtonVal = buttonVal;
