@@ -22,8 +22,8 @@
  *
  */
 
-#include <Shape.hpp>;
-#include <ParallaxJoystick.hpp>;
+#include <Shape.hpp>
+#include <ParallaxJoystick.hpp>
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -36,9 +36,10 @@
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 const int DELAY_LOOP_MS = 5; 
-const int JOYSTICK_UPDOWN_PIN = A1;
+const int JOYSTICK_UPDOWN_PIN = A5;
 const int JOYSTICK_LEFTRIGHT_PIN = A0;
-const int MAX_ANALOG_VAL = 1023;
+const int MAX_ANALOG_VAL = 4095; // Change to 4095 for 12-bit ADCs like ESP32
+
 const enum JoystickYDirection JOYSTICK_Y_DIR = RIGHT;
 
 ParallaxJoystick _joystick(JOYSTICK_UPDOWN_PIN, JOYSTICK_LEFTRIGHT_PIN, MAX_ANALOG_VAL, JOYSTICK_Y_DIR);
@@ -55,10 +56,14 @@ const boolean _drawStatusBar = true; // change to show/hide status bar
 void setup() {
   Serial.begin(9600);
 
+  pinMode(JOYSTICK_LEFTRIGHT_PIN, INPUT);
+
   initializeOledAndShowStartupScreen();
 
   _ball.setSpeed(0, 0);
   _fpsStartTimeStamp = millis();
+
+  Serial.println((String)"Joystick max analog val: " + _joystick.getMaxAnalogValue() + " Center: " + _joystick.getCenter());
 }
 
 void loop() {
@@ -81,6 +86,10 @@ void loop() {
   int yMovementPixels = map(upDownVal, 0, _joystick.getMaxAnalogValue() + 1, -1, 2);
   int xMovementPixels = map(leftRightVal, 0, _joystick.getMaxAnalogValue() + 1, -1, 2);
 
+  //Serial.println((String)"DEFINES UpDownPin: " + JOYSTICK_UPDOWN_PIN+ " LeftRightPin: " + JOYSTICK_LEFTRIGHT_PIN);
+  //Serial.println((String)"Joystick UpDownPin: " + _joystick.getUpDownPin() + " LeftRightPin: " + _joystick.getLeftRightPin() );
+  //Serial.println((String)"Joystick max analog val: " + _joystick.getMaxAnalogValue() + " Center: " + _joystick.getCenter());
+  
   // Set the new ball location based on joystick position
   Serial.println((String)"upDownVal:" + upDownVal + " leftRightVal:" + leftRightVal + " xMovementPixels:" + xMovementPixels + " yMovementPixels:" + yMovementPixels);
   _ball.setLocation(_ball.getX() + xMovementPixels, _ball.getY() - yMovementPixels);

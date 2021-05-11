@@ -27,9 +27,8 @@ class ParallaxJoystick {
 
   public:
     ParallaxJoystick(int upDownInputPin, int leftRightInputPin) 
-      : _upDownInputPin(upDownInputPin), _leftRightInputPin(_leftRightInputPin) { // syntax to initialize consts
-//      _upDownInputPin = upDownInputPin;
-//      _leftRightInputPin = leftRightInputPin;
+      : _upDownInputPin(upDownInputPin), _leftRightInputPin(leftRightInputPin) { // syntax to initialize consts
+
     }
 
     ParallaxJoystick(int upDownInputPin, int leftRightInputPin, int maxAnalogValue, JoystickYDirection joystickYDir)
@@ -38,12 +37,47 @@ class ParallaxJoystick {
       setMaxAnalogValue(maxAnalogValue);
     }
 
+    /**
+     * @brief Get the up-down Joystick input pin
+     * 
+     * @return int 
+     */
+    int getUpDownPin() const{
+      return _upDownInputPin;
+    }
+
+    /**
+     * @brief Get the left-right Joystick input pin
+     * 
+     * @return int 
+     */
+    int getLeftRightPin() const{
+      return _leftRightInputPin;
+    }
+
+    /**
+     * @brief Get the max analog value (e.g., 1023 for Arduino Uno and Leonardo with 10-bit ADCs
+     * and 4095 for 12-bit ADCs)
+     * 
+     * @return int 
+     */
     int getMaxAnalogValue() const{
       return _maxAnalogValue;
     }
 
     /**
-     * Defaults to 1023
+     * @brief Get the center of the joystick range
+     * 
+     * @return int 
+     */
+    int getCenter() const{
+      return _joyStickCenterValue;
+    }
+
+    /**
+     * @brief Set the maximum analog value
+     * 
+     * @param maxAnalogVal 
      */
     void setMaxAnalogValue(int maxAnalogVal) {
       _maxAnalogValue = maxAnalogVal;
@@ -71,6 +105,9 @@ class ParallaxJoystick {
       return _leftRightVal;
     }
 
+    /**
+     * @brief Read the joystick values. Call getUpDownVal() and getLeftRightVal() to retrieve
+     */
     void read() {
       int joystickUpDownVal = analogRead(_upDownInputPin);
       int joystickLeftRightVal = analogRead(_leftRightInputPin);
