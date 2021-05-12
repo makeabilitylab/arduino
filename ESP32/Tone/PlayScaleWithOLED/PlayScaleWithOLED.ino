@@ -1,7 +1,5 @@
 /**
- * Demonstrates how to use the Tone32 class with durations. Hook up a sensor like a pot
- * to A1 and then walk up and down the C scale. OLED will show currently played
- * note and amount of time left for that note
+ * Plays a scale on ESP32 and outputs current note on OLED
  * 
  * ## BACKGROUND ##
  * 
@@ -32,35 +30,19 @@
  * @jonfroehlich
  * http://makeabilitylab.io
  * 
- * 
  */
-
-#include <Tone32.hpp>
 
 // #include <SPI.h> // Comment out when using i2c
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-const int NUM_NOTES_IN_SCALE = 8;
-const note_t C_SCALE[NUM_NOTES_IN_SCALE] = { NOTE_C, NOTE_D, NOTE_E, NOTE_F, NOTE_G, NOTE_A, NOTE_B, NOTE_C }; 
-const int C_SCALE_OCTAVES[NUM_NOTES_IN_SCALE]  = { 4, 4, 4, 4, 4, 4, 4, 5 };
-const char C_SCALE_CHARS[NUM_NOTES_IN_SCALE] = { 'C', 'D', 'E', 'F', 'G', 'A', 'B', 'C' }; 
-note_t _lastNote = NOTE_C;
-
-// Change this depending on where you connect your piezo buzzer
+// Change this depending on where you put your piezo buzzer
 const int TONE_OUTPUT_PIN = 26;
-
-// Change this depending on where you connect your input
-const int SENSOR_INPUT_PIN = A1;
 
 // The ESP32 has 16 channels which can generate 16 independent waveforms
 // We'll just choose PWM channel 0 here
 const int TONE_PWM_CHANNEL = 0; 
-
-Tone32 _tone32(TONE_OUTPUT_PIN, TONE_PWM_CHANNEL);
-const int PLAY_NOTE_DURATION_MS = 500;
-const int MAX_ANALOG_VAL = 4095;
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -70,7 +52,7 @@ const int MAX_ANALOG_VAL = 4095;
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 void setup() {
-  Serial.begin(115200);
+  ledcAttachPin(TONE_OUTPUT_PIN, TONE_PWM_CHANNEL);
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!_display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
@@ -85,57 +67,51 @@ void setup() {
 }
 
 void loop() {
+  // Plays the middle C scale
+  ledcWriteNote(TONE_PWM_CHANNEL, NOTE_C, 4);
+  drawNote("C");
+  delay(500);
   
-  int sensorVal = analogRead(SENSOR_INPUT_PIN);
-  int scaleIndex = map(sensorVal, 0, MAX_ANALOG_VAL, 0, NUM_NOTES_IN_SCALE - 1);
-
-  // Just walk up or down scale based on sensorVal position
-  note_t note = C_SCALE[scaleIndex];
-  int octave = C_SCALE_OCTAVES[scaleIndex];
-  if(_lastNote != note){
-     _tone32.playNote(note, octave, PLAY_NOTE_DURATION_MS);
-  }
-
-  // IMPORTANT: Unlike the regular Arduino tone function, which uses timer interrupts
-  // for tracking time and automatically turning off PWM waves after the duration
-  // interval passes, we use "polling". So, you must call update() to turn off
-  // the sound automatically after the play duration expires
-  _tone32.update();
-
-  // Track the last note (we only play a note on a note change)
-  // Yes, that means in this simple demo that we can't repeat the same
-  // note twice consecutively!
-  _lastNote = note;
-
-  _display.clearDisplay();
-  drawNote(scaleIndex);
-  _display.display();
-
-  Serial.println((String)"sensorVal: " + sensorVal + " note: " + note + " scaleIndex: " + scaleIndex);
+  ledcWriteNote(TONE_PWM_CHANNEL, NOTE_D, 4);
+  drawNote("D");
+  delay(500);
+  
+  ledcWriteNote(TONE_PWM_CHANNEL, NOTE_E, 4);
+  drawNote("E");
+  delay(500);
+  
+  ledcWriteNote(TONE_PWM_CHANNEL, NOTE_F, 4);
+  drawNote("F");
+  delay(500);
+  
+  ledcWriteNote(TONE_PWM_CHANNEL, NOTE_G, 4);
+  drawNote("G");
+  delay(500);
+  
+  ledcWriteNote(TONE_PWM_CHANNEL, NOTE_A, 4);
+  drawNote("A");
+  delay(500);
+  
+  ledcWriteNote(TONE_PWM_CHANNEL, NOTE_B, 4);
+  drawNote("B");
+  delay(500);
+  
+  ledcWriteNote(TONE_PWM_CHANNEL, NOTE_C, 5);
+  drawNote("HIGH C");
+  delay(500);
+  
+  // ledcDetachPin(TONE_OUTPUT_PIN);
 }
 
-void drawNote(int scaleIndex){
+void drawNote(String strNote){
+  _display.clearDisplay();
   int16_t x1, y1;
   uint16_t textWidth, textHeight;
-  _display.setTextSize(3);
-  String strNote = (String)C_SCALE_CHARS[scaleIndex];
-
-  if(scaleIndex == NUM_NOTES_IN_SCALE - 1){ 
-    strNote = (String)"High " + strNote; 
-  }
-
   _display.setTextSize(3);      
   _display.getTextBounds(strNote, 0, 0, &x1, &y1, &textWidth, &textHeight);
-  uint16_t yText = _display.height() / 2 - textHeight + 4;
+  uint16_t yText = _display.height() / 2 - textHeight / 2;
   uint16_t xText = _display.width() / 2 - textWidth / 2;
   _display.setCursor(xText, yText);
   _display.print(strNote);
-  yText += textHeight + 4;
-
-  _display.setTextSize(1); 
-  String strDuration = (String)_tone32.getPlayDurationRemaining() + " ms";
-  _display.getTextBounds(strDuration, 0, 0, &x1, &y1, &textWidth, &textHeight);
-  xText = _display.width() / 2 - textWidth / 2;
-  _display.setCursor(xText, yText);
-  _display.print(strDuration);
+  _display.display();
 }
