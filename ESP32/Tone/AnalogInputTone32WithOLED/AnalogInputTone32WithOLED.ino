@@ -1,5 +1,7 @@
 /**
- * Demonstrates how to use the Tone32 class
+ * Demonstrates how to use the Tone32 class with durations. Hook up a sensor like a pot
+ * to A1 and then walk up and down the C scale. OLED will show currently played
+ * note and amount of time left for that note
  * 
  * ## BACKGROUND ##
  * 
