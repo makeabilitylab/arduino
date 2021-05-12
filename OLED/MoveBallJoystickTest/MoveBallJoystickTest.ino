@@ -35,10 +35,14 @@
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-const int DELAY_LOOP_MS = 5; 
+const int DELAY_LOOP_MS = 5;
+
+// Change these depending on where you have your joystick hooked up!
 const int JOYSTICK_UPDOWN_PIN = A5;
 const int JOYSTICK_LEFTRIGHT_PIN = A0;
-const int MAX_ANALOG_VAL = 4095; // Change to 4095 for 12-bit ADCs like ESP32
+
+// Change to 4095 for 12-bit ADCs like ESP32 and 1023 for 10-bit ADCs like Arduino Uno/Leonardo
+const int MAX_ANALOG_VAL = 4095; 
 
 const enum JoystickYDirection JOYSTICK_Y_DIR = RIGHT;
 
