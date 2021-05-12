@@ -1,6 +1,13 @@
 /**
  * Change the size of the circle depending on analog input
  * 
+ * This code has been tested on: 
+ *  - the Adafruit Huzzah32 ESP32
+ *  - Arduino Leonardo
+ * 
+ * For our OLED tutorials, see:
+ * https://makeabilitylab.github.io/physcomp/
+ * 
  * Adafruit Gfx Library:
  * https://learn.adafruit.com/adafruit-gfx-graphics-library/overview 
  *
@@ -25,6 +32,7 @@
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+// Change to 4095 for 12-bit ADCs like ESP32 & 1023 for 10-bit ADCs like Arduino Uno/Leonardo
 const int MAX_ANALOG_INPUT = 1023;
 const int ANALOG_INPUT_PIN = A0;
 
