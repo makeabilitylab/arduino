@@ -14,6 +14,10 @@
  *  By Jon E. Froehlich
  *  @jonfroehlich
  *  http://makeabilitylab.io
+ *  
+ *  See: 
+ *  - https://natureofcode.com/book/chapter-2-forces/#chapter02_section2
+ *  - https://www.youtube.com/watch?v=MkXoQVWRDJs
  *
  */
 
