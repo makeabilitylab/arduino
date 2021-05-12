@@ -1,6 +1,13 @@
 /**
- * Iterates through all the characters in the font. See:
+ * Iterates through all the characters in the default font. See:
  * https://makeabilitylab.github.io/physcomp/advancedio/oled.html#drawing-text
+ * 
+ * This code has been tested on: 
+ *  - Adafruit Huzzah32 ESP32
+ *  - Arduino Leonardo
+ * 
+ * For our OLED tutorials, see:
+ * https://makeabilitylab.github.io/physcomp/
  * 
  * Adafruit Gfx Library:
  * https://learn.adafruit.com/adafruit-gfx-graphics-library/overview 
@@ -87,6 +94,8 @@ void loop() {
   }
 
   _lastButtonVal = buttonVal;
+
+  Serial.println(buttonVal);
 }
 
 void showAllChars(){
