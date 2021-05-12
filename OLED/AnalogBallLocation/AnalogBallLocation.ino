@@ -1,6 +1,13 @@
 /**
  * Change the size of the circle depending on analog input
  * 
+ * This code has been tested and works on: 
+ *  - the Adafruit Huzzah32 ESP32
+ *  - Arduino Leonardo
+ * 
+ * For our OLED tutorials, see:
+ * https://makeabilitylab.github.io/physcomp/
+ *  
  * Adafruit Gfx Library:
  * https://learn.adafruit.com/adafruit-gfx-graphics-library/overview 
  *
@@ -25,9 +32,10 @@
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+// Change to 4095 for 12-bit ADCs like ESP32 and 1023 for 10-bit ADCs like Arduino Uno/Leonardo
 const int MAX_ANALOG_INPUT = 1023;
 const int X_ANALOG_INPUT_PIN = A0; // control x location of ball
-const int Y_ANALOG_INPUT_PIN = A1; // control y location of ball
+const int Y_ANALOG_INPUT_PIN = A5; // control y location of ball
 const int BALL_RADIUS = 15;
 
 void setup() {
@@ -55,6 +63,8 @@ void loop() {
   // Translate sensor readings to x, y pixel locations
   int xLoc = map(xSensorVal, 0, MAX_ANALOG_INPUT, 0, _display.width());
   int yLoc = map(ySensorVal, 0, MAX_ANALOG_INPUT, 0, _display.height());
+
+  Serial.println((String)"xLoc: " + xLoc + " yLoc: " + yLoc);
 
   // Draw it on the screen
   _display.fillCircle(xLoc, yLoc,  BALL_RADIUS, SSD1306_WHITE);

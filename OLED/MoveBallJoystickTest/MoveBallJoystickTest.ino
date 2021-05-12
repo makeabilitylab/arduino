@@ -9,6 +9,13 @@
  *   - On my Windows box, this is C:\Users\jonfr\Documents\Arduino\libraries
  *   - On Mac, it's: /Users/jonf/Documents/Arduino/libraries
  * 3. Then include the relevant libraries via #include <libraryname.h> or <libraryname.hpp>
+ * 
+ * This code has been tested and works on: 
+ *  - the Adafruit Huzzah32 ESP32
+ *  - Arduino Leonardo
+ * 
+ * For our OLED tutorials, see:
+ * https://makeabilitylab.github.io/physcomp/
  *
  * Adafruit Gfx Library:
  * https://learn.adafruit.com/adafruit-gfx-graphics-library/overview 
