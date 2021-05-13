@@ -40,7 +40,8 @@
 // Change this depending on where you put your piezo buzzer
 const int TONE_OUTPUT_PIN = 26;
 
-const int SENSOR_INTPUT_PIN = A1;
+// Change this depending on where you hook up your sensor
+const int SENSOR_INPUT_PIN = A1;
 
 // The ESP32 has 16 channels which can generate 16 independent waveforms
 // We'll just choose PWM channel 0 here
@@ -57,7 +58,7 @@ void setup() {
 
 void loop() {
   
-  int sensorVal = analogRead(SENSOR_INTPUT_PIN);
+  int sensorVal = analogRead(SENSOR_INPUT_PIN);
   int pwmFreq = map(sensorVal, 0, MAX_ANALOG_VAL, MIN_FREQ, MAX_FREQ);
   
   // The ledcWriteTone signature: double ledcWriteTone(uint8_t chan, double freq)
