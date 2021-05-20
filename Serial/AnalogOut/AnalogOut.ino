@@ -15,6 +15,10 @@ const int MAX_ANALOG_INPUT = 1023;
 
 int _lastAnalogVal = -1;
 
+// If false, only sends new data when the new analog value does not
+// equal the last analog value. If true, always sends the data
+boolean _alwaysSendData = true; 
+
 void setup() {
   Serial.begin(115200);
 }
@@ -25,7 +29,7 @@ void loop() {
   int analogVal = analogRead(ANALOG_INPUT_PIN);
 
   // If the analog value has changed, send a new one over serial
-  if(_lastAnalogVal != analogVal){
+  if(_alwaysSendData || _lastAnalogVal != analogVal){
     float sizeFrac = analogVal / (float)MAX_ANALOG_INPUT;
     Serial.println(sizeFrac, 4); // 4 decimal point precision
   }
