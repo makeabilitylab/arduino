@@ -105,7 +105,7 @@ void loop() {
   _display.fillCircle(xCenter, yCenter, radius, SSD1306_WHITE);
   _display.display();
   
-  delay(20);
+  delay(1);
 }
 
 float normalizeDistance(float distanceCm){

@@ -36,6 +36,9 @@ enum ShapeType {
 ShapeType _curShapeType = CIRCLE;
 float _curShapeSizeFraction = -1;
 
+int _lastShapeType = CIRCLE;
+int _lastShapeSize = -1;
+
 const int MIN_SHAPE_SIZE = 4;
 int _maxShapeSize;
 
@@ -98,8 +101,7 @@ void loop() {
 }
 
 void drawShape(ShapeType shapeType, float fractionSize){
-  _display.clearDisplay();
-
+  
   int shapeSize = MIN_SHAPE_SIZE + fractionSize * (_maxShapeSize - MIN_SHAPE_SIZE);
   int halfShapeSize = shapeSize / 2;
   int xCenter = _display.width() / 2;
@@ -107,23 +109,30 @@ void drawShape(ShapeType shapeType, float fractionSize){
   int xLeft =  xCenter - halfShapeSize;
   int yTop =  yCenter - halfShapeSize;
 
-  // Render the appropriate shape
-  if(shapeType == CIRCLE){
-    _display.fillRoundRect(xLeft, yTop, shapeSize, shapeSize, halfShapeSize, SSD1306_WHITE);
-  }else if(shapeType == SQUARE){
-    _display.fillRect(xLeft, yTop, shapeSize, shapeSize, SSD1306_WHITE);
-  }else if(shapeType == TRIANGLE){
-    int x1 = xCenter - halfShapeSize;
-    int y1 = yCenter + halfShapeSize;
-
-    int x2 = xCenter;
-    int y2 = yCenter - halfShapeSize;
-
-    int x3 = xCenter + halfShapeSize;
-    int y3 = y1;
-
-    _display.fillTriangle(x1, y1, x2, y2, x3, y3, SSD1306_WHITE);
+  if(_lastShapeSize != shapeSize || _lastShapeType != shapeType){
+    _display.clearDisplay();
+    
+    // Render the appropriate shape
+    if(shapeType == CIRCLE){
+      _display.fillRoundRect(xLeft, yTop, shapeSize, shapeSize, halfShapeSize, SSD1306_WHITE);
+    }else if(shapeType == SQUARE){
+      _display.fillRect(xLeft, yTop, shapeSize, shapeSize, SSD1306_WHITE);
+    }else if(shapeType == TRIANGLE){
+      int x1 = xCenter - halfShapeSize;
+      int y1 = yCenter + halfShapeSize;
+  
+      int x2 = xCenter;
+      int y2 = yCenter - halfShapeSize;
+  
+      int x3 = xCenter + halfShapeSize;
+      int y3 = y1;
+  
+      _display.fillTriangle(x1, y1, x2, y2, x3, y3, SSD1306_WHITE);
+    }
+  
+    _display.display();
   }
-
-  _display.display();
+  
+  _lastShapeType = shapeType;
+  _lastShapeSize = shapeSize;
 }
