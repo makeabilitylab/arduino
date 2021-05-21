@@ -39,7 +39,7 @@ float _curShapeSizeFraction = -1;
 const int MIN_SHAPE_SIZE = 4;
 int _maxShapeSize;
 
-const int BAUD_RATE = 115200;
+const long BAUD_RATE = 115200;
 void setup() {
   Serial.begin(BAUD_RATE);
 
