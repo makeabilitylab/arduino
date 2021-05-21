@@ -8,7 +8,9 @@
  * 
  */
 const int LED_OUTPUT_PIN = 3;
-const int MAX_ANALOG_IN = 676; //1024 with 5V, 676 with 3.3V on Arduino Uno
+
+// 1024 with 5V, 676 with 3.3V on Arduino Uno or Leonardo
+const int MAX_ANALOG_IN = 676; 
 const int MAX_ANALOG_OUT = 255;
 const int MIC_INPUT_PIN = A0;
 
