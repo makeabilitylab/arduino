@@ -50,8 +50,6 @@ void setup() {
   _display.setTextSize(1);      // Normal 1:1 pixel scale
   _display.setTextColor(SSD1306_WHITE); // Draw white text
   _display.setCursor(0, 0);     // Start at top-left corner
-  _display.print("Waiting to receive\ndata from serial...");
-  _display.display();
 }
 
 void loop() {
