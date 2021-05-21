@@ -20,8 +20,6 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-const int DELAY_MS = 5;
-
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
@@ -41,8 +39,9 @@ float _curShapeSizeFraction = -1;
 const int MIN_SHAPE_SIZE = 4;
 int _maxShapeSize;
 
+const int BAUD_RATE = 115200;
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(BAUD_RATE);
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!_display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
@@ -57,6 +56,10 @@ void setup() {
   _display.setTextColor(SSD1306_WHITE); // Draw white text
   _display.setCursor(0, 0);     // Start at top-left corner
   _display.print("Waiting to receive\ndata from serial...");
+  _display.println("\n");
+  _display.print("Baud rate:");
+  _display.print(BAUD_RATE);
+  _display.print(" bps");
   _display.display();
 }
 
@@ -88,9 +91,10 @@ void loop() {
     Serial.println("'");
   }
 
-  drawShape(_curShapeType, _curShapeSizeFraction);
-
-  delay(DELAY_MS);
+  // if no data has arrived, shape fraction will be < 0
+  if(_curShapeSizeFraction > 0){ 
+    drawShape(_curShapeType, _curShapeSizeFraction);
+  }
 }
 
 void drawShape(ShapeType shapeType, float fractionSize){
