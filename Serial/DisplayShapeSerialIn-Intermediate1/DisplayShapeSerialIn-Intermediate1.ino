@@ -60,7 +60,9 @@ void loop() {
     // Display data on OLED for debugging purposes
     _display.clearDisplay();
     _display.setCursor(0, 0);
-    _display.println("RECEIVED:");
+    _display.setTextSize(1);
+    _display.println("RECEIVED:\n");
+    _display.setTextSize(3);
     _display.println(rcvdSerialData);
     _display.display();
 
