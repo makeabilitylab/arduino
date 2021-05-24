@@ -1,5 +1,14 @@
 /**
- * TODO
+ * Takes in three parameters off of serial as comma separated text-encoded
+ * data: shapeType, shapeSize, drawMode and draws a shape accordingly.
+ * 
+ * shapeType is either 0, 1, 2 corresponding to CIRCLE, SQUARE, TRIANGLE
+ * shapeSize is a float between [0, 1] inclusive that corresponds to shape size
+ * drawMode is either 0, 1 corresponding to FILL, OUTLINE
+ * 
+ * Designed to work with the p5.js app:
+ *  - Live page: http://makeabilitylab.github.io/p5js/WebSerial/p5js/DisplayShapeBidirectional
+ *  - Code: https://github.com/makeabilitylab/p5js/tree/master/WebSerial/p5js/DisplayShapeBidirectional
  * 
  * By Jon E. Froehlich
  * @jonfroehlich
