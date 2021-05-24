@@ -84,6 +84,12 @@ void loop() {
       // Parse out shape size fraction, a float between [0, 1]
       String strShapeSize = rcvdSerialData.substring(indexOfComma + 1, rcvdSerialData.length());
       _curShapeSizeFraction = strShapeSize.toFloat();
+
+      if(_curShapeSizeFraction < 0){
+        _curShapeSizeFraction = 0;
+      }else if(_curShapeSizeFraction > 1){
+        _curShapeSizeFraction = 1;
+      }
     } 
     
     // Echo the data back on serial (for debugging purposes)
