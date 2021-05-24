@@ -27,17 +27,18 @@
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+// New enum for tracking shape types
 enum ShapeType {
   CIRCLE,
   SQUARE,
   TRIANGLE,
 };
 
-ShapeType _curShapeType = CIRCLE;
-float _curShapeSizeFraction = -1;
+ShapeType _curShapeType = CIRCLE; // tracks current shape type
+float _curShapeSizeFraction = -1; // tracks current shape fraction
 
-const int MIN_SHAPE_SIZE = 4;
-int _maxShapeSize;
+const int MIN_SHAPE_SIZE = 4;     // min shape size
+int _maxShapeSize;                // max shape size (dependent on display width/height)
 
 const long BAUD_RATE = 115200;
 void setup() {
@@ -75,10 +76,12 @@ void loop() {
     int indexOfComma = rcvdSerialData.indexOf(',');
     
     if(indexOfComma != -1){
+      // Parse out the shape type, which should be 0 (circle), 1 (square), 2 (triangle)
       String strShapeType = rcvdSerialData.substring(0, indexOfComma);
       int shapeType = strShapeType.toInt();
       _curShapeType = (ShapeType)shapeType;
 
+      // Parse out shape size fraction, a float between [0, 1]
       String strShapeSize = rcvdSerialData.substring(indexOfComma + 1, rcvdSerialData.length());
       _curShapeSizeFraction = strShapeSize.toFloat();
     } 
@@ -97,6 +100,12 @@ void loop() {
   }
 }
 
+/**
+ * drawShape draws the given shapeType at the given fractionSize
+ * 
+ * shapeType: an enum of ShapeType 
+ * fractionSize: a float value between [0, 1] inclusive
+ */
 void drawShape(ShapeType shapeType, float fractionSize){
   _display.clearDisplay();
 
