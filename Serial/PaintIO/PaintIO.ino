@@ -1,14 +1,21 @@
 /**
- * Takes in three parameters off of serial as comma separated text-encoded
- * data: BrushType, shapeSize, drawMode and draws a shape accordingly.
+ * This Arduino sketch serves as the "paint brush" controller for the PaintIO p5.js app
+ *  - Live page: http://makeabilitylab.github.io/p5js/WebSerial/p5js/PaintIO
+ *  - Code: https://github.com/makeabilitylab/p5js/tree/master/WebSerial/p5js/PaintIO
  * 
- * BrushType is either 0, 1, 2 corresponding to CIRCLE, SQUARE, TRIANGLE
- * shapeSize is a float between [0, 1] inclusive that corresponds to shape size
- * drawMode is either 0, 1 corresponding to FILL, OUTLINE
+ * Takes in two parameters off of serial as comma separated text-encoded
+ * data: brushType, brushFillMode
+ *  - brushType is either 0, 1, 2 corresponding to CIRCLE, SQUARE, TRIANGLE
+ *  - brushFillMode is either 0, 1 corresponding to FILL, OUTLINE
  * 
- * Designed to work with the p5.js app:
- *  - Live page: http://makeabilitylab.github.io/p5js/WebSerial/p5js/DisplayShapeBidirectional
- *  - Code: https://github.com/makeabilitylab/p5js/tree/master/WebSerial/p5js/DisplayShapeBidirectional
+ * Sends out a comma separated string: xPosFrac, yPosFrac, sizeFrac, brushType, brushFillMode
+ *  - xPosFrac is [0, 1] inclusive representing the brush's x position
+ *  - yPosFrac is [0, 1] inclusive representing the brush's y position
+ *  - sizeFrac is [0, 1] inclusive representing the brush's size
+ *  - brushType is either 0, 1, 2 corresponding to CIRCLE, SQUARE, TRIANGLE 
+ *  - brushFillMode is either 0, 1 corresponding to FILL, OUTLINE
+ * 
+ * Also, sends out a clear sequence called 'cls' when the screen should be reset
  * 
  * By Jon E. Froehlich
  * @jonfroehlich
