@@ -60,17 +60,21 @@ void loop() {
     // Parse out the comma separated string
     int indexOfComma = rcvdSerialData.indexOf(',');
     if(indexOfComma != -1){
+      // Parse out the shape type, which should be 0 (circle), 1 (square), 2 (triangle)
       String strShapeType = rcvdSerialData.substring(0, indexOfComma);
       int shapeType = strShapeType.toInt();
-
+    
+      // Parse out shape size fraction, a float between [0, 1]
       String strShapeSize = rcvdSerialData.substring(indexOfComma + 1, rcvdSerialData.length());
       float curShapeSizeFraction = strShapeSize.toFloat();
-
+    
       // Display data for debugging purposes
       _display.clearDisplay();
       _display.setCursor(0, 0);
       _display.println("RECEIVED:");
       _display.println(rcvdSerialData);
+    
+      // Display parsed data
       _display.println("\nPARSED:");
       _display.print("Shape Type: ");
       _display.println(shapeType);
