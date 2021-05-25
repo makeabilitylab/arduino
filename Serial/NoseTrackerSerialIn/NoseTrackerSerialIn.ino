@@ -4,6 +4,10 @@
  * [0, 1] inclusive as floating points. So, for example, 0.5, 0.5 would
  * be the center of the screen
  * 
+ * This sketch is designed to work with the p5.js app NoseTracker:
+ * - Live app: https://makeabilitylab.github.io/p5js/WebSerial/p5js/NoseTracker/
+ * - Code: https://github.com/makeabilitylab/p5js/tree/master/WebSerial/p5js/NoseTracker
+ * 
  * By Jon E. Froehlich
  * @jonfroehlich
  * http://makeabilitylab.io
@@ -81,15 +85,18 @@ void loop() {
   }
 
   _display.clearDisplay();
-  drawFace();
+  drawFace(_faceX, _faceY);
   _display.display();
   delay(DELAY_MS);
 }
 
-void drawFace(){
+/**
+ * Draws a face at the given x,y fractions [0, 1] mapped to screen
+ */
+void drawFace(float xFrac, float yFrac){
 
-  int x = _faceX * (_display.width() - _charWidth);
-  int y = _faceY * (_display.height() - _charHeight);
+  int x = xFrac * (_display.width() - _charWidth);
+  int y = yFrac * (_display.height() - _charHeight);
   
   //_display.setCursor(x, y);
   _display.drawChar(x, y, (unsigned char)2, SSD1306_WHITE, SSD1306_BLACK, CHAR_SIZE);
