@@ -133,6 +133,8 @@ void loop() {
   float yFrac = yVal / (float)(MAX_ANALOG_VAL);
   float sizeFrac = sizeVal / (float)(MAX_ANALOG_VAL);
 
+  // TODO: add in display of where brush cursor is
+
   Serial.print(xFrac, 4);
   Serial.print(",");
   Serial.print(yFrac, 4);

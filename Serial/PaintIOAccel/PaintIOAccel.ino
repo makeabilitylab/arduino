@@ -77,9 +77,9 @@ int _lastClearDrawingButtonVal = HIGH;
 
 const long BAUD_RATE = 115200;
 
-float _x;
-float _y;
-int _radius = 5;
+float _xBrushCursorCenter;
+float _yBrushCursorCenter;
+int _brushCursorSize = 10;
 
 void setup() {
   Serial.begin(BAUD_RATE);
@@ -121,6 +121,7 @@ void loop() {
 
   if(checkClearDrawingButton()){
    
+    // if we're here, clear drawing button pressed
     // draw clear to screen
     _display.setTextSize(3);
     int16_t x1, y1;
@@ -147,31 +148,12 @@ void loop() {
     Serial.println("cls");
   }
 
-  // Use Adafruit Sensor Library to get a normalized reading
-  // https://learn.adafruit.com/using-the-adafruit-unified-sensor-driver/how-does-it-work
-  sensors_event_t event;
-  _lis3dh.getEvent(&event);
-
-  // Set new circle location based on accel
-  _x = _x + -event.acceleration.x;
-  _y = _y + event.acceleration.y;
-
-  // Check boundaries
-  if(_x - _radius < 0){
-    _x = _radius;
-  }else if(_x + _radius >= _display.width()){
-    _x = _display.width() - _radius;
-  }
-
-  if(_y - _radius < 0){
-    _y = _radius;
-  }else if(_y + _radius >= _display.height()){
-    _y = _display.height() - _radius;
-  }
+  readAccelAndUpdateBrushCursorLocation();
 
   // Normalize ball location (in terms of fraction of screen)
-  float xFrac = (_x - _radius) / (float)(_display.width() - 2 * _radius);
-  float yFrac= (_y - _radius) / (float)(_display.height() - 2 * _radius);
+  int halfSize = _brushCursorSize / 2;
+  float xFrac = (_xBrushCursorCenter - halfSize) / (float)(_display.width() - 2 * halfSize);
+  float yFrac= (_yBrushCursorCenter - halfSize) / (float)(_display.height() - 2 * halfSize);
 
   // Read brush size
   int sizeVal = analogRead(BRUSH_SIZE_ANALOG_INPUT); 
@@ -180,22 +162,11 @@ void loop() {
   // Draw values to screen for x, y
   _display.clearDisplay();
 
-// Print accel values for debugging
-//  _display.setCursor(0, 0);
-//  _display.println("Accel:");
-//  _display.print("X: ");
-//  _display.println(event.acceleration.x, 3);
-//  _display.print("Y: ");
-//  _display.print(event.acceleration.y, 3);
-
   // draw brush info
   drawBrushInfo(xFrac, yFrac, sizeFrac);
 
-  // Draw brush location
-  _display.fillCircle(_x, _y, _radius, SSD1306_WHITE);
-  _display.drawCircle(_x, _y, _radius, SSD1306_BLACK);
-  _display.drawLine(_x - _radius, _y, _x + _radius, _y, SSD1306_BLACK);
-  _display.drawLine(_x, _y - _radius, _x, _y  + _radius, SSD1306_BLACK);
+  // draw brush location
+  drawBrushCursor(_xBrushCursorCenter, _yBrushCursorCenter, _brushCursorSize);
   
   _display.display();
 
@@ -213,12 +184,57 @@ void loop() {
   delay(20);
 }
 
+void drawBrushCursor(float xCursorCenter, float yCursorCenter, int cursorSize){
+  int halfSize = cursorSize / 2;
+  int xCursorLeft = xCursorCenter - halfSize;
+  int yCursorTop = yCursorCenter - halfSize;
+
+  int fillColor = SSD1306_BLACK;
+  int outlineColor = SSD1306_WHITE;
+
+  if(_curBrushFillMode == FILL){
+    fillColor = SSD1306_WHITE;
+    outlineColor = SSD1306_BLACK;
+  }
+
+  if(_curBrushType == CIRCLE){
+    // Draw brush location
+    _display.fillCircle(xCursorCenter, yCursorCenter, halfSize, fillColor);
+    _display.drawCircle(xCursorCenter, yCursorCenter, halfSize, outlineColor);
+  }else if(_curBrushType == SQUARE){
+    _display.fillRect(xCursorLeft, yCursorTop, cursorSize + 1, cursorSize + 1, fillColor);
+    _display.drawRect(xCursorLeft, yCursorTop, cursorSize + 1, cursorSize + 1, outlineColor);
+  }else if(_curBrushType == TRIANGLE){
+    int x1 = xCursorCenter - halfSize;
+    int y1 = yCursorCenter + halfSize;
+
+    int x2 = xCursorCenter;
+    int y2 = yCursorCenter - halfSize;
+
+    int x3 = xCursorCenter + halfSize;
+    int y3 = y1;
+
+    _display.fillTriangle(x1, y1, x2, y2, x3, y3, fillColor);
+    _display.drawTriangle(x1, y1, x2, y2, x3, y3, outlineColor);
+  }
+
+  int lineColor = SSD1306_WHITE;
+  if(_curBrushFillMode == FILL){
+    lineColor = SSD1306_BLACK;
+  }
+
+  // don't draw crosshair for triangle (it looks bad!)
+  if(_curBrushType != TRIANGLE){
+    _display.drawLine(_xBrushCursorCenter - halfSize, _yBrushCursorCenter, _xBrushCursorCenter + halfSize, _yBrushCursorCenter, lineColor);
+    _display.drawLine(_xBrushCursorCenter, _yBrushCursorCenter - halfSize, _xBrushCursorCenter, _yBrushCursorCenter  + halfSize, lineColor);
+  }
+}
+
 void drawBrushInfo(float xFrac, float yFrac, float sizeFrac){
   const int CHAR_HEIGHT = 8;
   const int MAX_MARGIN = (2 * CHAR_HEIGHT) + 2;
   const int MAX_BRUSH_SIZE = min(_display.width() - MAX_MARGIN, _display.height() - MAX_MARGIN);
   
- 
   int brushSize = sizeFrac * MAX_BRUSH_SIZE;
   int halfBrushSize = brushSize / 2;
   int xCenter = _display.width() / 2;
@@ -314,6 +330,31 @@ void checkAndParseSerial(){
     Serial.print("# Arduino Received: '");
     Serial.print(rcvdSerialData);
     Serial.println("'");
+  }
+}
+
+void readAccelAndUpdateBrushCursorLocation(){
+  // Use Adafruit Sensor Library to get a normalized reading
+  // https://learn.adafruit.com/using-the-adafruit-unified-sensor-driver/how-does-it-work
+  sensors_event_t event;
+  _lis3dh.getEvent(&event);
+
+  // Set new circle location based on accel
+  _xBrushCursorCenter = _xBrushCursorCenter + -event.acceleration.x;
+  _yBrushCursorCenter = _yBrushCursorCenter + event.acceleration.y;
+
+  int halfSize = _brushCursorSize / 2;
+  // Check boundaries
+  if(_xBrushCursorCenter - halfSize < 0){
+    _xBrushCursorCenter = halfSize;
+  }else if(_xBrushCursorCenter + halfSize >= _display.width()){
+    _xBrushCursorCenter = _display.width() - halfSize - 1;
+  }
+
+  if(_yBrushCursorCenter - halfSize < 0){
+    _yBrushCursorCenter = halfSize;
+  }else if(_yBrushCursorCenter + halfSize >= _display.height()){
+    _yBrushCursorCenter = _display.height() - halfSize - 1;
   }
 }
 
