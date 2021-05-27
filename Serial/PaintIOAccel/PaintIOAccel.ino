@@ -184,6 +184,9 @@ void loop() {
   delay(20);
 }
 
+/**
+ * Draws the brush cursor location on the OLED
+ */
 void drawBrushCursor(float xCursorCenter, float yCursorCenter, int cursorSize){
   int halfSize = cursorSize / 2;
   int xCursorLeft = xCursorCenter - halfSize;
@@ -225,8 +228,8 @@ void drawBrushCursor(float xCursorCenter, float yCursorCenter, int cursorSize){
 
   // don't draw crosshair for triangle (it looks bad!)
   if(_curBrushType != TRIANGLE){
-    _display.drawLine(_xBrushCursorCenter - halfSize, _yBrushCursorCenter, _xBrushCursorCenter + halfSize, _yBrushCursorCenter, lineColor);
-    _display.drawLine(_xBrushCursorCenter, _yBrushCursorCenter - halfSize, _xBrushCursorCenter, _yBrushCursorCenter  + halfSize, lineColor);
+    _display.drawLine(xCursorCenter - halfSize, yCursorCenter, xCursorCenter + halfSize, yCursorCenter, lineColor);
+    _display.drawLine(xCursorCenter, yCursorCenter - halfSize, xCursorCenter, yCursorCenter  + halfSize, lineColor);
   }
 }
 

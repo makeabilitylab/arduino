@@ -133,7 +133,16 @@ void loop() {
   float yFrac = yVal / (float)(MAX_ANALOG_VAL);
   float sizeFrac = sizeVal / (float)(MAX_ANALOG_VAL);
 
-  // TODO: add in display of where brush cursor is
+  // draw brush info
+  drawBrushInfo(xFrac, yFrac, sizeFrac);
+
+  // draw brush location
+  const int brushCursorSize = 10;
+  const int halfSize = brushCursorSize / 2;
+  float xBrushCursorCenter = halfSize + xFrac * (_display.width() - brushCursorSize);
+  float yBrushCursorCenter = halfSize + yFrac * (_display.height() - brushCursorSize);
+  
+  drawBrushCursor(xBrushCursorCenter, yBrushCursorCenter, brushCursorSize);
 
   Serial.print(xFrac, 4);
   Serial.print(",");
@@ -145,8 +154,56 @@ void loop() {
   Serial.print(", ");
   Serial.println(_curBrushFillMode);
 
-  drawBrushInfo(xFrac, yFrac, sizeFrac);
   delay(10);
+}
+
+/**
+ * Draws the brush cursor location on the OLED
+ */
+void drawBrushCursor(float xCursorCenter, float yCursorCenter, int cursorSize){
+  int halfSize = cursorSize / 2;
+  int xCursorLeft = xCursorCenter - halfSize;
+  int yCursorTop = yCursorCenter - halfSize;
+
+  int fillColor = SSD1306_BLACK;
+  int outlineColor = SSD1306_WHITE;
+
+  if(_curBrushFillMode == FILL){
+    fillColor = SSD1306_WHITE;
+    outlineColor = SSD1306_BLACK;
+  }
+
+  if(_curBrushType == CIRCLE){
+    // Draw brush location
+    _display.fillCircle(xCursorCenter, yCursorCenter, halfSize, fillColor);
+    _display.drawCircle(xCursorCenter, yCursorCenter, halfSize, outlineColor);
+  }else if(_curBrushType == SQUARE){
+    _display.fillRect(xCursorLeft, yCursorTop, cursorSize + 1, cursorSize + 1, fillColor);
+    _display.drawRect(xCursorLeft, yCursorTop, cursorSize + 1, cursorSize + 1, outlineColor);
+  }else if(_curBrushType == TRIANGLE){
+    int x1 = xCursorCenter - halfSize;
+    int y1 = yCursorCenter + halfSize;
+
+    int x2 = xCursorCenter;
+    int y2 = yCursorCenter - halfSize;
+
+    int x3 = xCursorCenter + halfSize;
+    int y3 = y1;
+
+    _display.fillTriangle(x1, y1, x2, y2, x3, y3, fillColor);
+    _display.drawTriangle(x1, y1, x2, y2, x3, y3, outlineColor);
+  }
+
+  int lineColor = SSD1306_WHITE;
+  if(_curBrushFillMode == FILL){
+    lineColor = SSD1306_BLACK;
+  }
+
+  // don't draw crosshair for triangle (it looks bad!)
+  if(_curBrushType != TRIANGLE){
+    _display.drawLine(xCursorCenter - halfSize, yCursorCenter, xCursorCenter + halfSize, yCursorCenter, lineColor);
+    _display.drawLine(xCursorCenter, yCursorCenter - halfSize, xCursorCenter, yCursorCenter  + halfSize, lineColor);
+  }
 }
 
 void drawBrushInfo(float xFrac, float yFrac, float sizeFrac){
@@ -221,7 +278,7 @@ void drawBrushInfo(float xFrac, float yFrac, float sizeFrac){
 
 /**
  * Checks the serial port for new data. Expects comma separated text lines with
- * <shape type>, <shape size fraction>, and <draw mode>
+ * <shape type> and <fill mode>
  */
 void checkAndParseSerial(){
   // Check to see if there is any incoming serial data
