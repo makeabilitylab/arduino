@@ -85,21 +85,8 @@ void loop() {
   _y = yAnalogVal / (float)MAX_ANALOG_VAL;
 
   // Set new circle location based on accel
-  int xBall = _radius + _x * _display.width() - 2 * _radius;
-  int yBall = _radius + _y * _display.height() - 2 * _radius;
-
-  // Check boundaries
-//  if(xBall - _radius < 0){
-//    xBall = _radius;
-//  }else if(xBall + _radius >= _display.width()){
-//    xBall = _display.width() - _radius;
-//  }
-//
-//  if(yBall - _radius < 0){
-//    yBall = _radius;
-//  }else if(_y + _radius >= _display.height()){
-//    yBall = _display.height() - _radius;
-//  }
+  int xBall = _radius + _x * (_display.width() - 2 * _radius);
+  int yBall = _radius + _y * (_display.height() - 2 * _radius);
 
   // Display this normalized location to screen
   _display.setCursor(0, 0);
