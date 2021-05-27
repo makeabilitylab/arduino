@@ -158,7 +158,7 @@ void loop() {
   Serial.print(sizeFrac, 4);
   Serial.print(",");
   Serial.print(_curBrushType);
-  Serial.print(", ");
+  Serial.print(",");
   Serial.println(_curBrushFillMode);
 
   _display.display();
