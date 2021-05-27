@@ -73,31 +73,33 @@ void setup() {
 
 void loop() {
 
-  // clear display, prepare for next render
+  // Clear display, prepare for next render
   _display.clearDisplay();
 
-  int analogVal1 = analogRead(X_ANALOG_INPUT_PIN);
-  int analogVal2 = analogRead(Y_ANALOG_INPUT_PIN);
+  // Read the analog values
+  int xAnalogVal = analogRead(X_ANALOG_INPUT_PIN);
+  int yAnalogVal = analogRead(Y_ANALOG_INPUT_PIN);
 
-  // set new circle location based on accel
-  _x = analogVal1 / (float)MAX_ANALOG_VAL;
-  _y = analogVal2 / (float)MAX_ANALOG_VAL;
+  // Calculate normalized x,y location
+  _x = xAnalogVal / (float)MAX_ANALOG_VAL;
+  _y = yAnalogVal / (float)MAX_ANALOG_VAL;
 
+  // Set new circle location based on accel
   int xBall = _radius + _x * _display.width() - 2 * _radius;
   int yBall = _radius + _y * _display.height() - 2 * _radius;
 
   // Check boundaries
-  if(xBall - _radius < 0){
-    xBall = _radius;
-  }else if(xBall + _radius >= _display.width()){
-    xBall = _display.width() - _radius;
-  }
-
-  if(yBall - _radius < 0){
-    yBall = _radius;
-  }else if(_y + _radius >= _display.height()){
-    yBall = _display.height() - _radius;
-  }
+//  if(xBall - _radius < 0){
+//    xBall = _radius;
+//  }else if(xBall + _radius >= _display.width()){
+//    xBall = _display.width() - _radius;
+//  }
+//
+//  if(yBall - _radius < 0){
+//    yBall = _radius;
+//  }else if(_y + _radius >= _display.height()){
+//    yBall = _display.height() - _radius;
+//  }
 
   // Display this normalized location to screen
   _display.setCursor(0, 0);
@@ -107,15 +109,15 @@ void loop() {
   _display.print("Y: ");
   _display.print(_y, 4);
 
-  // Transmit over serial
-  Serial.print(_x, 4);
-  Serial.print(", ");
-  Serial.println(_y, 4);
-
   _display.fillCircle(xBall, yBall, _radius, SSD1306_WHITE);
 
   // Render buffer to screen
   _display.display();
+
+  // Transmit over serial
+  Serial.print(_x, 4);
+  Serial.print(", ");
+  Serial.println(_y, 4);
   
   if(DELAY_LOOP_MS > 0){
     delay(DELAY_LOOP_MS);
