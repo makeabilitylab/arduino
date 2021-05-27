@@ -133,10 +133,12 @@ void loop() {
   float yFrac = yVal / (float)(MAX_ANALOG_VAL);
   float sizeFrac = sizeVal / (float)(MAX_ANALOG_VAL);
 
-  // draw brush info
-  drawBrushInfo(xFrac, yFrac, sizeFrac);
+  _display.clearDisplay();
+    
+  // draw brush info to OLED
+  drawBrushInfo(sizeFrac);
 
-  // draw brush location
+  // draw brush location to OLED
   const int brushCursorSize = 10;
   const int halfSize = brushCursorSize / 2;
   float xBrushCursorCenter = halfSize + xFrac * (_display.width() - brushCursorSize);
@@ -144,6 +146,11 @@ void loop() {
   
   drawBrushCursor(xBrushCursorCenter, yBrushCursorCenter, brushCursorSize);
 
+//  Serial.print("xBrushCursorCenter: ");
+//  Serial.print(xBrushCursorCenter);
+//  Serial.print("yBrushCursorCenter: ");
+//  Serial.println(yBrushCursorCenter);
+  
   Serial.print(xFrac, 4);
   Serial.print(",");
   Serial.print(yFrac, 4);
@@ -154,6 +161,7 @@ void loop() {
   Serial.print(", ");
   Serial.println(_curBrushFillMode);
 
+  _display.display();
   delay(10);
 }
 
@@ -206,12 +214,13 @@ void drawBrushCursor(float xCursorCenter, float yCursorCenter, int cursorSize){
   }
 }
 
-void drawBrushInfo(float xFrac, float yFrac, float sizeFrac){
+/**
+ * Draw information about the brush to the screen
+ */
+void drawBrushInfo(float sizeFrac){
   const int CHAR_HEIGHT = 8;
   const int MAX_MARGIN = (2 * CHAR_HEIGHT) + 2;
   const int MAX_BRUSH_SIZE = min(_display.width() - MAX_MARGIN, _display.height() - MAX_MARGIN);
-  
-  _display.clearDisplay();
 
   int brushSize = sizeFrac * MAX_BRUSH_SIZE;
   int halfBrushSize = brushSize / 2;
@@ -272,8 +281,6 @@ void drawBrushInfo(float xFrac, float yFrac, float sizeFrac){
   _display.getTextBounds("X.XXX", 0, 0, &x1, &y1, &wText, &hText);
   _display.setCursor(xCenter - wText / 2, yCenter + halfBrushSize + 2);
   _display.print(sizeFrac, 3);
-
-  _display.display();
 }
 
 /**
