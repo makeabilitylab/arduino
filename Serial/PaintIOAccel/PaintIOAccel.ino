@@ -301,7 +301,7 @@ void drawBrushInfo(float xFrac, float yFrac, float sizeFrac){
 
 /**
  * Checks the serial port for new data. Expects comma separated text lines with
- * <shape type>, <shape size fraction>, and <draw mode>
+ * <shape type> and <fill mode>
  */
 void checkAndParseSerial(){
   // Check to see if there is any incoming serial data
