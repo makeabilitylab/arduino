@@ -28,15 +28,15 @@ const int DELAY_MS = 5;
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-const int CHAR_SIZE = 3;
-const int DEFAULT_CHAR_WIDTH = 5;
-const int DEFAULT_CHAR_HEIGHT = 8;
+const int CHAR_SIZE = 3;           // set font size to 3
+const int DEFAULT_CHAR_WIDTH = 5;  // default font is 5 pixels wide at size 1
+const int DEFAULT_CHAR_HEIGHT = 8; // default font is 8 pixels wide at size 1
 
-int _charWidth = DEFAULT_CHAR_WIDTH * CHAR_SIZE;
-int _charHeight = DEFAULT_CHAR_HEIGHT * CHAR_SIZE;
+int _charWidth = DEFAULT_CHAR_WIDTH * CHAR_SIZE;   // calculate char width at char size
+int _charHeight = DEFAULT_CHAR_HEIGHT * CHAR_SIZE; // calculate char width at char size
 
-float _faceX = 0;
-float _faceY = 0;
+float _faceX = 0; // normalized x position of face
+float _faceY = 0; // normalize y position of face
 
 void setup() {
   Serial.begin(115200);
@@ -56,7 +56,6 @@ void setup() {
 }
 
 void loop() {
-  // Check to see if there is any incoming serial data
   // Check to see if there is any incoming serial data
   if(Serial.available() > 0){
     // If we're here, then serial data has been received
@@ -94,10 +93,8 @@ void loop() {
  * Draws a face at the given x,y fractions [0, 1] mapped to screen
  */
 void drawFace(float xFrac, float yFrac){
-
   int x = xFrac * (_display.width() - _charWidth);
   int y = yFrac * (_display.height() - _charHeight);
   
-  //_display.setCursor(x, y);
   _display.drawChar(x, y, (unsigned char)2, SSD1306_WHITE, SSD1306_BLACK, CHAR_SIZE);
 }
