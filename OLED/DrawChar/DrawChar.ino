@@ -7,7 +7,7 @@
  *  - Arduino Leonardo
  * 
  * For our OLED tutorials, see:
- * https://makeabilitylab.github.io/physcomp/
+ * https://makeabilitylab.github.io/physcomp/advancedio/oled.html
  * 
  * Adafruit Gfx Library:
  * https://learn.adafruit.com/adafruit-gfx-graphics-library/overview 
@@ -50,7 +50,7 @@ void setup() {
   }
   
   _display.clearDisplay();
-  _display.setTextSize(3);      // Normal 1:1 pixel scale
+  _display.setTextSize(3);      
   _display.setTextColor(SSD1306_WHITE); // Draw white text
   _display.setCursor(0, 0);     // Start at top-left corner
 
