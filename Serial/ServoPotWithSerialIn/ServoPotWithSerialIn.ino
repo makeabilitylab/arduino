@@ -9,7 +9,7 @@
  * Each value must be terminated by end of line.
  * 
  * See also our OLED version:
- * https://github.com/makeabilitylab/arduino/tree/master/Basics/servo/ServoPotWithSerialInOLED
+ * https://github.com/makeabilitylab/arduino/tree/master/Serial/ServoPotWithSerialInOLED
  * 
  * See the Arduino servo library:
  * https://www.arduino.cc/reference/en/libraries/servo/
