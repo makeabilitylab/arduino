@@ -2,15 +2,14 @@
 /**
  * Control a servo motor angle with either a potentiometer input or serial input, 
  * which is selectable by button input on Pin 4. If serial is selected, the
- * built-in LED turns on. Outputs the servo angles and which input modes are 
- * selected on the OLED using i2c.
+ * built-in LED turns on.
  * 
  * The serial stream can either be an integer between 0 - 180 (inclusive) or a floating point 
  * between [0, 1] (inclusive). The latter will be converted to an angle between 0 - 180
  * Each value must be terminated by end of line.
  * 
- * See also our non-OLED version:
- * https://github.com/makeabilitylab/arduino/tree/master/Basics/servo/ServoPotWithSerial
+ * See also our OLED version:
+ * https://github.com/makeabilitylab/arduino/tree/master/Basics/servo/ServoPotWithSerialInOLED
  * 
  * See the Arduino servo library:
  * https://www.arduino.cc/reference/en/libraries/servo/
@@ -21,19 +20,6 @@
  *
  */
 #include <Servo.h> 
-
-// Includes for OLED
-#include <SPI.h>
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-
-// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-#define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
-Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 const int INPUT_MODE_SELECTION_PIN = 4;
 const int MODE_INDICATOR_LED_PIN = LED_BUILTIN;
@@ -54,6 +40,7 @@ enum ServoInputMode {
 
 ServoInputMode _servoInputMode = SERIAL_INPUT;
 int _lastModeSelectionButtonVal = HIGH;
+
 int _serialServoAngle = -1;
  
 void setup() 
@@ -62,17 +49,7 @@ void setup()
   pinMode(INPUT_MODE_SELECTION_PIN, INPUT_PULLUP);
   pinMode(MODE_INDICATOR_LED_PIN, OUTPUT);
   
-  _servo.attach(SERVO_OUTPUT_PIN);
-
-  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  if(!_display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
-    Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
-  }
-
-  _display.clearDisplay();      
-  _display.setTextColor(SSD1306_WHITE); // Draw white text
-  _display.setCursor(0, 0);     // Start at top-left corner
+  _servo.attach(SERVO_OUTPUT_PIN);  
 } 
  
 void loop() 
@@ -111,7 +88,7 @@ void loop()
       _serialServoAngle = rcvdSerialData.toInt();
     }
 
-    serialServoAngle = constrain(_serialServoAngle, MIN_SERVO_ANGLE, MAX_SERVO_ANGLE);
+    _serialServoAngle = constrain(_serialServoAngle, MIN_SERVO_ANGLE, MAX_SERVO_ANGLE);
 
     // Echo back data
     Serial.print("# Arduino Received: '");
@@ -120,7 +97,7 @@ void loop()
     Serial.println(_serialServoAngle);
   }
   
-  // Read pot value and convert to servo angle
+  // Read pot value and conver to servo angle
   int potVal = analogRead(POTENTIOMETER_INPUT_PIN); 
   int potServoAngle = map(potVal, 0, MAX_ANALOG_VAL, MIN_SERVO_ANGLE, MAX_SERVO_ANGLE);
 
@@ -130,47 +107,4 @@ void loop()
   }else{
     _servo.write(_serialServoAngle);  
   }
-
-  // Print out data to the OLED
-  _display.clearDisplay();
-  drawServoAngle(0, "POT", potServoAngle, _servoInputMode == POTENTIOMETER_INPUT);
-  drawServoAngle(_display.width() / 2, "SERIAL", 
-        _serialServoAngle, _servoInputMode == SERIAL_INPUT);
-
-  // draw dotted line between POT and SERIAL readings
-  const int xScreenMidpoint = _display.width() / 2;
-  for(int y = 0; y < _display.height(); y += 3){
-    _display.drawPixel(xScreenMidpoint, y, SSD1306_WHITE);
-  }
-   
-  _display.display();  
 } 
-
-void drawServoAngle(int xLeft, String strText, int servoAngle, bool isSelected){
-  int16_t x1, y1;
-  uint16_t textWidth, textHeight;
-  
-  _display.setTextSize(1);
-  int halfScreenSize = _display.width() / 2;
-  _display.getTextBounds(strText, 0, 0, &x1, &y1, &textWidth, &textHeight);
-  int xText = xLeft + halfScreenSize / 2 - textWidth / 2;
-  int yText = 8;
-  _display.setCursor(xText, yText);
-  _display.print(strText);
-
-  const int bbMargin = 2;
-  if(isSelected){
-    const int roundedRectRadius = 2;
-    _display.drawRoundRect(xText - bbMargin - 1, yText - bbMargin, 
-              textWidth + 2 * bbMargin, textHeight + 2 * bbMargin, 
-              roundedRectRadius, SSD1306_WHITE);
-  }
-
-  _display.setTextSize(3);
-  yText = yText + textHeight + 7;
-  String strAngle = (String)servoAngle;
-  _display.getTextBounds(strAngle, 0, 0, &x1, &y1, &textWidth, &textHeight);
-  xText = xLeft + halfScreenSize / 2 - textWidth / 2;
-  _display.setCursor(xText, yText);
-  _display.print(strAngle);
-}
