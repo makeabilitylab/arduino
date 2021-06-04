@@ -4,6 +4,9 @@
  * which is selectable by button input on Pin 4. If serial is selected, the
  * built-in LED turns on.
  * 
+ * See also our OLED version:
+ * https://github.com/makeabilitylab/arduino/tree/master/Basics/servo/ServoPotWithSerialOLED
+ * 
  * See the Arduino servo library:
  * https://www.arduino.cc/reference/en/libraries/servo/
  * 

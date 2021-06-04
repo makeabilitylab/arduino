@@ -2,7 +2,11 @@
 /**
  * Control a servo motor angle with either a potentiometer input or serial input, 
  * which is selectable by button input on Pin 4. If serial is selected, the
- * built-in LED turns on.
+ * built-in LED turns on. Outputs the servo angles and which input modes are 
+ * selected on the OLED using i2c.
+ * 
+ * See also our non-OLED version:
+ * https://github.com/makeabilitylab/arduino/tree/master/Basics/servo/ServoPotWithSerial
  * 
  * See the Arduino servo library:
  * https://www.arduino.cc/reference/en/libraries/servo/
