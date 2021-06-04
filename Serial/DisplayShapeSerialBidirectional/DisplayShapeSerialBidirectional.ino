@@ -103,7 +103,7 @@ void checkAndParseSerial(){
   // Check to see if there is any incoming serial data
   if(Serial.available() > 0){
     // If we're here, then serial data has been received
-    // Read data off the serial port until we get to the endline delimeter ('\n')
+    // Read data off the serial port until we get to the endline delimiter ('\n')
     // Store all of this data into a string
     String rcvdSerialData = Serial.readStringUntil('\n'); 
 

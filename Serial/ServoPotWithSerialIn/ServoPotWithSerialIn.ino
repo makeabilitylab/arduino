@@ -74,7 +74,7 @@ void loop()
 
   // Check if serial data exists, if so read it in
   if(Serial.available() > 0){
-    // Read data off the serial port until we get to the endline delimeter ('\n')
+    // Read data off the serial port until we get to the endline delimiter ('\n')
     // Store all of this data into a string
     String rcvdSerialData = Serial.readStringUntil('\n'); 
 
