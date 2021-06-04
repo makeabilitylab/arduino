@@ -4,6 +4,10 @@
  * which is selectable by button input on Pin 4. If serial is selected, the
  * built-in LED turns on.
  * 
+ * The serial stream can either be an integer between 0 - 180 (inclusive) or a floating point 
+ * between [0, 1] (inclusive). The latter will be converted to an angle between 0 - 180
+ * Each value must be terminated by end of line.
+ * 
  * See also our OLED version:
  * https://github.com/makeabilitylab/arduino/tree/master/Basics/servo/ServoPotWithSerialOLED
  * 
@@ -36,6 +40,8 @@ enum ServoInputMode {
 
 ServoInputMode _servoInputMode = SERIAL_INPUT;
 int _lastModeSelectionButtonVal = HIGH;
+
+int _serialServoAngle = -1;
  
 void setup() 
 { 
@@ -67,7 +73,6 @@ void loop()
   }
 
   // Check if serial data exists, if so read it in
-  int serialServoAngle = -1;
   if(Serial.available() > 0){
     // Read data off the serial port until we get to the endline delimeter ('\n')
     // Store all of this data into a string
@@ -78,18 +83,18 @@ void loop()
     int indexOfDecimal = rcvdSerialData.indexOf('.');
     if(indexOfDecimal != -1){
       float serialServoAngleF = rcvdSerialData.toFloat();
-      serialServoAngle = (int)serialServoAngleF; // truncate
+      _serialServoAngle = (int)(serialServoAngleF * MAX_SERVO_ANGLE); // truncate
     }else{
-      serialServoAngle = rcvdSerialData.toInt();
+      _serialServoAngle = rcvdSerialData.toInt();
     }
 
-    serialServoAngle = constrain(serialServoAngle, MIN_SERVO_ANGLE, MAX_SERVO_ANGLE);
+    _serialServoAngle = constrain(serialServoAngle, MIN_SERVO_ANGLE, MAX_SERVO_ANGLE);
 
     // Echo back data
     Serial.print("# Arduino Received: '");
     Serial.print(rcvdSerialData);
     Serial.print("' Converted to: ");
-    Serial.println(serialServoAngle);
+    Serial.println(_serialServoAngle);
   }
   
   // Read pot value and conver to servo angle
@@ -100,6 +105,6 @@ void loop()
   if(_servoInputMode == POTENTIOMETER_INPUT){
     _servo.write(potServoAngle);  
   }else{
-    _servo.write(serialServoAngle);  
+    _servo.write(_serialServoAngle);  
   }
 } 

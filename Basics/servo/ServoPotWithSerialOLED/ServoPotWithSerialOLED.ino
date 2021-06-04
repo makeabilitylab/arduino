@@ -5,6 +5,10 @@
  * built-in LED turns on. Outputs the servo angles and which input modes are 
  * selected on the OLED using i2c.
  * 
+ * The serial stream can either be an integer between 0 - 180 (inclusive) or a floating point 
+ * between [0, 1] (inclusive). The latter will be converted to an angle between 0 - 180
+ * Each value must be terminated by end of line.
+ * 
  * See also our non-OLED version:
  * https://github.com/makeabilitylab/arduino/tree/master/Basics/servo/ServoPotWithSerial
  * 
@@ -50,6 +54,7 @@ enum ServoInputMode {
 
 ServoInputMode _servoInputMode = SERIAL_INPUT;
 int _lastModeSelectionButtonVal = HIGH;
+int _serialServoAngle = -1;
  
 void setup() 
 { 
@@ -91,7 +96,6 @@ void loop()
   }
 
   // Check if serial data exists, if so read it in
-  int serialServoAngle = -1;
   if(Serial.available() > 0){
     // Read data off the serial port until we get to the endline delimeter ('\n')
     // Store all of this data into a string
@@ -102,18 +106,18 @@ void loop()
     int indexOfDecimal = rcvdSerialData.indexOf('.');
     if(indexOfDecimal != -1){
       float serialServoAngleF = rcvdSerialData.toFloat();
-      serialServoAngle = (int)serialServoAngleF; // truncate
+      _serialServoAngle = (int)(serialServoAngleF * MAX_SERVO_ANGLE); // truncate
     }else{
-      serialServoAngle = rcvdSerialData.toInt();
+      _serialServoAngle = rcvdSerialData.toInt();
     }
 
-    serialServoAngle = constrain(serialServoAngle, MIN_SERVO_ANGLE, MAX_SERVO_ANGLE);
+    serialServoAngle = constrain(_serialServoAngle, MIN_SERVO_ANGLE, MAX_SERVO_ANGLE);
 
     // Echo back data
     Serial.print("# Arduino Received: '");
     Serial.print(rcvdSerialData);
     Serial.print("' Converted to: ");
-    Serial.println(serialServoAngle);
+    Serial.println(_serialServoAngle);
   }
   
   // Read pot value and convert to servo angle
@@ -124,14 +128,14 @@ void loop()
   if(_servoInputMode == POTENTIOMETER_INPUT){
     _servo.write(potServoAngle);  
   }else{
-    _servo.write(serialServoAngle);  
+    _servo.write(_serialServoAngle);  
   }
 
   // Print out data to the OLED
   _display.clearDisplay();
   drawServoAngle(0, "POT", potServoAngle, _servoInputMode == POTENTIOMETER_INPUT);
   drawServoAngle(_display.width() / 2, "SERIAL", 
-        serialServoAngle, _servoInputMode == SERIAL_INPUT);
+        _serialServoAngle, _servoInputMode == SERIAL_INPUT);
 
   // draw dotted line between POT and SERIAL readings
   const int xScreenMidpoint = _display.width() / 2;
