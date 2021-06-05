@@ -4,6 +4,8 @@
  * be an integer between 0 - 180 (inclusive) or a floating point between [0, 1] (inclusive).
  * The latter will be converted to an angle between 0 - 180
  * 
+ * Shows the current servo angle on the OLED
+ * 
  * See the Arduino servo library:
  * https://www.arduino.cc/reference/en/libraries/servo/
  * 
@@ -13,6 +15,19 @@
  *
  */
 #include <Servo.h> 
+
+// Includes for OLED
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+#define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
+Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 const int SERVO_OUTPUT_PIN = 9;
 const int MAX_ANALOG_VAL = 1023;
@@ -58,5 +73,22 @@ void loop()
 
     // Write out new servo angle
     _servo.write(_serialServoAngle);
+
+    displayServoAngle(_serialServoAngle);
   }
 } 
+
+void displayServoAngle(int servoAngle){
+  // Display the angle of the servo on the OLED
+  _display.clearDisplay(); 
+  _display.setTextSize(4);
+  int16_t x1, y1;
+  uint16_t textWidth, textHeight;
+  String strAngle = (String)servoAngle;
+  _display.getTextBounds(strAngle, 0, 0, &x1, &y1, &textWidth, &textHeight);
+  uint16_t yText = _display.height() / 2 - textHeight / 2;
+  uint16_t xText = _display.width() / 2 - textWidth / 2;
+  _display.setCursor(xText, yText);
+  _display.print(strAngle);
+  _display.display();
+}
