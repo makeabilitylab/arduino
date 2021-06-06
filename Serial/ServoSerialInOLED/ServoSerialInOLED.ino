@@ -1,4 +1,3 @@
-
 /**
  * Control a servo motor angle with serial input. The serial stream can either
  * be an integer between 0 - 180 (inclusive) or a floating point between [0, 1] (inclusive).
