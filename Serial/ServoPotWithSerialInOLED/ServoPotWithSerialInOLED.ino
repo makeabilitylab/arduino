@@ -111,7 +111,7 @@ void loop()
       _serialServoAngle = rcvdSerialData.toInt();
     }
 
-    serialServoAngle = constrain(_serialServoAngle, MIN_SERVO_ANGLE, MAX_SERVO_ANGLE);
+    _serialServoAngle = constrain(_serialServoAngle, MIN_SERVO_ANGLE, MAX_SERVO_ANGLE);
 
     // Echo back data
     Serial.print("# Arduino Received: '");
