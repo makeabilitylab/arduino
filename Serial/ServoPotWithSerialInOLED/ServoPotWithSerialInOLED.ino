@@ -1,4 +1,3 @@
-
 /**
  * Control a servo motor angle with either a potentiometer input or serial input, 
  * which is selectable by button input on Pin 4. If serial is selected, the
@@ -41,8 +40,8 @@ const int POTENTIOMETER_INPUT_PIN = A0;
 const int SERVO_OUTPUT_PIN = 9;
 const int MAX_ANALOG_VAL = 1023;
 
-const int MIN_SERVO_ANGLE = 0;
-const int MAX_SERVO_ANGLE = 180;
+const int MIN_SERVO_ANGLE = 40;
+const int MAX_SERVO_ANGLE = 85;
 
 Servo _servo; 
 
@@ -54,7 +53,7 @@ enum ServoInputMode {
 
 ServoInputMode _servoInputMode = SERIAL_INPUT;
 int _lastModeSelectionButtonVal = HIGH;
-int _serialServoAngle = -1;
+int _serialServoAngle = MIN_SERVO_ANGLE;
  
 void setup() 
 { 
@@ -106,7 +105,8 @@ void loop()
     int indexOfDecimal = rcvdSerialData.indexOf('.');
     if(indexOfDecimal != -1){
       float serialServoAngleF = rcvdSerialData.toFloat();
-      _serialServoAngle = (int)(serialServoAngleF * MAX_SERVO_ANGLE); // truncate
+      _serialServoAngle = MIN_SERVO_ANGLE + (int)(serialServoAngleF * (MAX_SERVO_ANGLE - MIN_SERVO_ANGLE));
+      //_serialServoAngle = (MAX_SERVO_ANGLE - _serialServoAngle) + MIN_SERVO_ANGLE;
     }else{
       _serialServoAngle = rcvdSerialData.toInt();
     }
