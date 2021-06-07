@@ -43,7 +43,7 @@ void loop()
     int indexOfDecimal = rcvdSerialData.indexOf('.');
     if(indexOfDecimal != -1){
       float serialServoAngleF = rcvdSerialData.toFloat();
-      _serialServoAngle = (int)(serialServoAngleF * MAX_SERVO_ANGLE); // truncate
+      _serialServoAngle = MIN_SERVO_ANGLE + (int)(serialServoAngleF * (MAX_SERVO_ANGLE - MIN_SERVO_ANGLE));
     }else{
       _serialServoAngle = rcvdSerialData.toInt();
     }

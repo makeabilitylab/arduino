@@ -74,7 +74,7 @@ void loop()
 
   // Check if serial data exists, if so read it in
   if(Serial.available() > 0){
-    // Read data off the serial port until we get to the endline delimiter ('\n')
+    // Read data off the serial port until we get to the endline delimeter ('\n')
     // Store all of this data into a string
     String rcvdSerialData = Serial.readStringUntil('\n'); 
 
@@ -83,7 +83,7 @@ void loop()
     int indexOfDecimal = rcvdSerialData.indexOf('.');
     if(indexOfDecimal != -1){
       float serialServoAngleF = rcvdSerialData.toFloat();
-      _serialServoAngle = (int)(serialServoAngleF * MAX_SERVO_ANGLE); // truncate
+      _serialServoAngle = MIN_SERVO_ANGLE + (int)(serialServoAngleF * (MAX_SERVO_ANGLE - MIN_SERVO_ANGLE));
     }else{
       _serialServoAngle = rcvdSerialData.toInt();
     }
