@@ -40,8 +40,8 @@ const int POTENTIOMETER_INPUT_PIN = A0;
 const int SERVO_OUTPUT_PIN = 9;
 const int MAX_ANALOG_VAL = 1023;
 
-const int MIN_SERVO_ANGLE = 40;
-const int MAX_SERVO_ANGLE = 85;
+const int MIN_SERVO_ANGLE = 0;
+const int MAX_SERVO_ANGLE = 180;
 
 Servo _servo; 
 
@@ -106,7 +106,7 @@ void loop()
     if(indexOfDecimal != -1){
       float serialServoAngleF = rcvdSerialData.toFloat();
       _serialServoAngle = MIN_SERVO_ANGLE + (int)(serialServoAngleF * (MAX_SERVO_ANGLE - MIN_SERVO_ANGLE));
-      //_serialServoAngle = (MAX_SERVO_ANGLE - _serialServoAngle) + MIN_SERVO_ANGLE;
+      //_serialServoAngle = (MAX_SERVO_ANGLE - _serialServoAngle) + MIN_SERVO_ANGLE; // reverse it
     }else{
       _serialServoAngle = rcvdSerialData.toInt();
     }
