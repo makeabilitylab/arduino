@@ -1,5 +1,5 @@
 /**
- * A pong Flappy Bird game for the OLED display. You can either use a button
+ * A Flappy Bird game for the OLED display. You can either use a button
  * to flap or serial input. For serial input, current reads two floats off serial (x, y), 
  * which are normalized to be between [0, 1] inclusive, and only uses the y position to 
  * set bird position. 
