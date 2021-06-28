@@ -36,13 +36,30 @@ const int MAX_SERVO_ANGLE = 180;
 
 Servo _servo; 
 int _serialServoAngle = -1;
- 
+const long BAUD_RATE = 115200;
+
 void setup() 
 { 
-  Serial.begin(115200);
-  
-  _servo.attach(SERVO_OUTPUT_PIN);  
-} 
+  Serial.begin(BAUD_RATE);  
+  _servo.attach(SERVO_OUTPUT_PIN); 
+
+  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  if(!_display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
+  }
+
+  _display.clearDisplay();      
+  _display.setTextColor(SSD1306_WHITE); // Draw white text
+  _display.setCursor(0, 0);     // Start at top-left corner
+
+  _display.print("Waiting to receive\ndata from serial...");
+  _display.println("\n");
+  _display.print("Baud rate:");
+  _display.print(BAUD_RATE);
+  _display.print(" bps");
+  _display.display();
+}
  
 void loop() 
 { 
