@@ -15,7 +15,7 @@
 
 const int NUM_NEOPIXELS = 7;
 const int NEOPIXEL_PIN_OUTPUT = A0;
-const unsigned int MAX_ANALOG_INPUT = 4095; // change to 1023 for 10-bit ADCs like Uno, Leonardo, etc.
+
 const unsigned long MAX_HUE_VALUE = 65535; // Hue is a 16-bit number
 const unsigned int MAX_BRIGHTNESS_VALUE = 255;
 const unsigned int MAX_SATURATION_VALUE = 255;
