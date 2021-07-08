@@ -20,8 +20,8 @@ const int PHOTORESISTOR_INPUT_PIN = A0;
 const int HUE_POT_INPUT_PIN = A1;
 const int BRIGHTNESS_POT_INPUT_PIN = A2;
 
-const int MODE_SWITCH_BUTTON_INPUT_PIN = 2;
-const int MODE_SWITCH_BUTTON_LED_OUTPUT_PIN = 3;
+const int MODE_SWITCH_BUTTON_INPUT_PIN = 7;
+const int MODE_SWITCH_BUTTON_LED_OUTPUT_PIN = 9;
 
 const unsigned int MAX_ANALOG_INPUT = 1023; 
 
@@ -44,6 +44,12 @@ const unsigned int MAX_BRIGHTNESS_VALUE = 255;
 const unsigned int MAX_SATURATION_VALUE = 255;
 
 const unsigned int TURN_ON_DARKNESS_THRESHOLD = 550;
+
+unsigned long _newStateEnteredTimestamp = 0;
+const unsigned int FLASH_ON_MS = 500;
+const unsigned int FLASH_OFF_MS = 300;
+unsigned long _lastFlashTimestamp = 0;
+unsigned int _flashNum = 0;
 
 // Argument 1 = Number of pixels in NeoPixel strip
 // Argument 2 = Arduino pin number (most are valid)
@@ -72,6 +78,10 @@ void setup() {
   _neopixel.show();            // Turn OFF all pixels ASAP
   _neopixel.setBrightness(50); // Set brightness to about 1/5 (max = 255)
 
+  pinMode(NEOPIXEL_OUTPUT_PIN, OUTPUT);
+  pinMode(PHOTORESISTOR_INPUT_PIN, INPUT);
+  pinMode(HUE_POT_INPUT_PIN, INPUT);
+  pinMode(BRIGHTNESS_POT_INPUT_PIN, INPUT);
   pinMode(MODE_SWITCH_BUTTON_INPUT_PIN, INPUT_PULLUP);
   pinMode(MODE_SWITCH_BUTTON_LED_OUTPUT_PIN, OUTPUT);
 }
@@ -85,15 +95,42 @@ void loop() {
     if(_nightLightMode == NUM_NITE_LIGHT_MODES){
       _nightLightMode = AUTO_ON_DARKNESS_LEVEL;
     }
+  }else if(buttonVal == HIGH && _lastModeSwitchButtonVal != buttonVal){
+    _newStateEnteredTimestamp = millis();
+    _lastFlashTimestamp = millis();
+    _flashNum = (int)_nightLightMode * 2;
+    Serial.println((String)"_newStateEnteredTimestamp=" + _newStateEnteredTimestamp +
+                  " _lastFlashTimestamp=" + _lastFlashTimestamp +
+                  " _flashNum=" + _flashNum);
   }
   _lastModeSwitchButtonVal = buttonVal;
 
-  
   digitalWrite(MODE_SWITCH_BUTTON_LED_OUTPUT_PIN, !buttonVal);
-  
 
+  if(_flashNum > 0 && millis() - _newStateEnteredTimestamp > 1000){
+    unsigned long timeSinceLastFlash = millis() - _lastFlashTimestamp;
+    Serial.println((String)"_flashNum=" + _flashNum +
+                  " timeSinceLastFlash=" + timeSinceLastFlash);
+    if(_flashNum % 2 == 0 &&  timeSinceLastFlash > FLASH_ON_MS){
+      digitalWrite(MODE_SWITCH_BUTTON_LED_OUTPUT_PIN, LOW);
+      _lastFlashTimestamp = millis();
+      _flashNum--;
+      Serial.println((String)"FLASH OFF: _flashNum=" + _flashNum +
+                  " timeSinceLastFlash=" + timeSinceLastFlash +
+                  " FLASH_ON_MS=" + FLASH_ON_MS);
+    }else if(_flashNum % 2 == 1 && timeSinceLastFlash > FLASH_OFF_MS){
+      digitalWrite(MODE_SWITCH_BUTTON_LED_OUTPUT_PIN, HIGH);
+      _lastFlashTimestamp = millis();
+      _flashNum--;
+      Serial.println((String)"FLASH ON: _flashNum=" + _flashNum +
+                  " timeSinceLastFlash=" + timeSinceLastFlash +
+                  " FLASH_OFF_MS=" + FLASH_OFF_MS);
+                
+    }
+    
+  }
+  
   int photoCellVal = analogRead(PHOTORESISTOR_INPUT_PIN);
-  Serial.println((String)photoCellVal + ", " + _nightLightMode);
 
   if(photoCellVal >= TURN_ON_DARKNESS_THRESHOLD || _nightLightMode == ALWAYS_ON){
 
@@ -112,11 +149,21 @@ void loop() {
     uint32_t rgbColor = _neopixel.ColorHSV(hue, saturation, brightness);
     _neopixel.fill(rgbColor, 0, NUM_NEOPIXELS);
     _neopixel.show();
+
+//    Serial.println((String)"potHueValue=" + potHueValue + 
+//                    " potBrightnessValue=" + potBrightnessValue + 
+//                    " photoCellVal=" + photoCellVal + 
+//                    " nightLightMode=" + _nightLightMode +
+//                    " (h, s, b)=(" + hue + ", " + saturation + ", " + brightness + ")");
   }else{
     // Turn off the neopixels, which we can do either by _neopixel.fill() (no args)
     // or by calling .clear()
     _neopixel.clear();
     _neopixel.show();
+
+//    Serial.println((String)"photoCellVal=" + photoCellVal + 
+//                    " TURN_ON_DARKNESS_THRESHOLD=" + TURN_ON_DARKNESS_THRESHOLD + 
+//                    " nightLightMode=" + _nightLightMode);
   }
 
   delay(10);
