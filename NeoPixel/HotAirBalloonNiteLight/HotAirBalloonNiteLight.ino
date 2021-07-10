@@ -43,13 +43,20 @@ const unsigned long MAX_HUE_VALUE = 65535; // Hue is a 16-bit number
 const unsigned int MAX_BRIGHTNESS_VALUE = 255;
 const unsigned int MAX_SATURATION_VALUE = 255;
 
+// Set threshold to turn on the nightlight based on ambient light (photoresistor value)
+// Threshold used by AUTO_ON_DARKNESS_LEVEL nightlight mode
 const unsigned int TURN_ON_DARKNESS_THRESHOLD = 550;
 
+// Set the threshold to turn off the night light if ambient light is too bright
+// This threshold is used by the BRIGHTNESS_INVERSE_PROPORTIONAL_TO_DARKNESS mode
+const unsigned int TURN_OFF_DARKNESS_THRESHOLD = 150; 
+
 unsigned long _newStateEnteredTimestamp = 0;
-const unsigned int FLASH_ON_MS = 500;
-const unsigned int FLASH_OFF_MS = 300;
+const unsigned int START_FLASH_AFTER_NEW_STATE_THRESHOLD = 100;
+const unsigned int FLASH_ON_MS = 400;
+const unsigned int FLASH_OFF_MS = 200;
 unsigned long _lastFlashTimestamp = 0;
-unsigned int _flashNum = 0;
+int _flashNum = -1;
 
 // Argument 1 = Number of pixels in NeoPixel strip
 // Argument 2 = Arduino pin number (most are valid)
@@ -62,9 +69,9 @@ unsigned int _flashNum = 0;
 Adafruit_NeoPixel _neopixel(NUM_NEOPIXELS, NEOPIXEL_OUTPUT_PIN, NEO_GRB + NEO_KHZ800);
 
 enum NiteLightMode {
-  AUTO_ON_DARKNESS_LEVEL, // turns on automatically in dark
-  BRIGHTNESS_INVERSE_PROPORTIONAL_TO_DARKNESS, // brightness proportional to darkness
-  ALWAYS_ON,
+  AUTO_ON_DARKNESS_LEVEL, // turns on automatically in dark, brightness controlled by POT
+  BRIGHTNESS_INVERSE_PROPORTIONAL_TO_DARKNESS, // brightness controlled by POT but proportional to darkness
+  ALWAYS_ON,  // ignores photocell, brightness controlled by POT
   NUM_NITE_LIGHT_MODES,
 };
 
@@ -90,50 +97,72 @@ void loop() {
 
   int buttonVal = digitalRead(MODE_SWITCH_BUTTON_INPUT_PIN);
   if(buttonVal == LOW && _lastModeSwitchButtonVal != buttonVal){
+
+    // If button just pressed, turn on button LED
+    digitalWrite(MODE_SWITCH_BUTTON_LED_OUTPUT_PIN, HIGH); 
+
+    // Increment the night light mode
     _nightLightMode = (NiteLightMode)(_nightLightMode + 1);
 
     if(_nightLightMode == NUM_NITE_LIGHT_MODES){
       _nightLightMode = AUTO_ON_DARKNESS_LEVEL;
     }
+    
   }else if(buttonVal == HIGH && _lastModeSwitchButtonVal != buttonVal){
+    // Button just released, turn off button LED
+    digitalWrite(MODE_SWITCH_BUTTON_LED_OUTPUT_PIN, LOW);
+
+    // Setup state flashing variables (to give feedback to user about which state
+    // we are in). We'll flash once for night light mode 1, twice for night light mode 2, etc.
     _newStateEnteredTimestamp = millis();
     _lastFlashTimestamp = millis();
     _flashNum = (int)_nightLightMode * 2;
-    Serial.println((String)"_newStateEnteredTimestamp=" + _newStateEnteredTimestamp +
-                  " _lastFlashTimestamp=" + _lastFlashTimestamp +
-                  " _flashNum=" + _flashNum);
+    
+//    Serial.println((String)"_nightLightMode=" + _nightLightMode + 
+//                  " _newStateEnteredTimestamp=" + _newStateEnteredTimestamp +
+//                  " _lastFlashTimestamp=" + _lastFlashTimestamp +
+//                  " _flashNum=" + _flashNum);
   }
   _lastModeSwitchButtonVal = buttonVal;
 
-  digitalWrite(MODE_SWITCH_BUTTON_LED_OUTPUT_PIN, !buttonVal);
-
-  if(_flashNum > 0 && millis() - _newStateEnteredTimestamp > 1000){
+  // Flash the button LED given the night light mode and flash num
+  if(_flashNum >= 0 && millis() - _newStateEnteredTimestamp > START_FLASH_AFTER_NEW_STATE_THRESHOLD){
     unsigned long timeSinceLastFlash = millis() - _lastFlashTimestamp;
-    Serial.println((String)"_flashNum=" + _flashNum +
-                  " timeSinceLastFlash=" + timeSinceLastFlash);
-    if(_flashNum % 2 == 0 &&  timeSinceLastFlash > FLASH_ON_MS){
+//    Serial.println((String)"_flashNum=" + _flashNum +
+//                  " timeSinceLastFlash=" + timeSinceLastFlash);
+    if(_flashNum % 2 == 0 && timeSinceLastFlash > FLASH_ON_MS){
       digitalWrite(MODE_SWITCH_BUTTON_LED_OUTPUT_PIN, LOW);
+      Serial.println((String)"FLASH OFF: _nightLightMode=" + _nightLightMode +
+                  " _flashNum=" + _flashNum +
+                  " timeSinceLastFlash=" + timeSinceLastFlash +
+                  " millis()=" + millis() + 
+                  " FLASH_ON_MS=" + FLASH_ON_MS + 
+                  " FLASH_OFF_MS=" + FLASH_OFF_MS);
       _lastFlashTimestamp = millis();
       _flashNum--;
-      Serial.println((String)"FLASH OFF: _flashNum=" + _flashNum +
-                  " timeSinceLastFlash=" + timeSinceLastFlash +
-                  " FLASH_ON_MS=" + FLASH_ON_MS);
     }else if(_flashNum % 2 == 1 && timeSinceLastFlash > FLASH_OFF_MS){
       digitalWrite(MODE_SWITCH_BUTTON_LED_OUTPUT_PIN, HIGH);
+//      Serial.println((String)"FLASH ON: _nightLightMode=" + _nightLightMode +
+//                  " _flashNum=" + _flashNum +
+//                  " timeSinceLastFlash=" + timeSinceLastFlash +
+//                  " millis()=" + millis() + 
+//                  " FLASH_ON_MS=" + FLASH_ON_MS + 
+//                  " FLASH_OFF_MS=" + FLASH_OFF_MS);
       _lastFlashTimestamp = millis();
       _flashNum--;
-      Serial.println((String)"FLASH ON: _flashNum=" + _flashNum +
-                  " timeSinceLastFlash=" + timeSinceLastFlash +
-                  " FLASH_OFF_MS=" + FLASH_OFF_MS);
-                
     }
-    
   }
-  
+
+  // Read the photoresistor setup as a "darkness" configuration, see:
+  // https://makeabilitylab.github.io/physcomp/sensors/photoresistors.html#using-photoresistors-with-microcontrollers
   int photoCellVal = analogRead(PHOTORESISTOR_INPUT_PIN);
 
-  if(photoCellVal >= TURN_ON_DARKNESS_THRESHOLD || _nightLightMode == ALWAYS_ON){
+  // If the photoresistor darkness threshold is surpassed or the night light mode is always on
+  if((_nightLightMode == AUTO_ON_DARKNESS_LEVEL && photoCellVal >= TURN_ON_DARKNESS_THRESHOLD) || 
+      _nightLightMode == BRIGHTNESS_INVERSE_PROPORTIONAL_TO_DARKNESS ||
+      _nightLightMode == ALWAYS_ON){
 
+    // Read the hue and brightness pots
     int potHueValue = analogRead(HUE_POT_INPUT_PIN);
     delay(1);
     int potBrightnessValue = analogRead(BRIGHTNESS_POT_INPUT_PIN);
@@ -142,19 +171,24 @@ void loop() {
     unsigned int saturation = 255;
     unsigned int brightness = map(potBrightnessValue, 0, MAX_ANALOG_INPUT, 0, MAX_BRIGHTNESS_VALUE);
 
+    // Moderate the brightness by the photoresistor value if that mode is set
     if(_nightLightMode == BRIGHTNESS_INVERSE_PROPORTIONAL_TO_DARKNESS){
       brightness = brightness * (photoCellVal / (float)MAX_ANALOG_INPUT);
+
+      if(photoCellVal < TURN_OFF_DARKNESS_THRESHOLD){
+        brightness = 0;
+      }
     }
     
     uint32_t rgbColor = _neopixel.ColorHSV(hue, saturation, brightness);
     _neopixel.fill(rgbColor, 0, NUM_NEOPIXELS);
     _neopixel.show();
 
-//    Serial.println((String)"potHueValue=" + potHueValue + 
-//                    " potBrightnessValue=" + potBrightnessValue + 
-//                    " photoCellVal=" + photoCellVal + 
-//                    " nightLightMode=" + _nightLightMode +
-//                    " (h, s, b)=(" + hue + ", " + saturation + ", " + brightness + ")");
+    Serial.println((String)"potHueValue=" + potHueValue + 
+                    " potBrightnessValue=" + potBrightnessValue + 
+                    " photoCellVal=" + photoCellVal + 
+                    " nightLightMode=" + _nightLightMode +
+                    " (h, s, b)=(" + hue + ", " + saturation + ", " + brightness + ")");
   }else{
     // Turn off the neopixels, which we can do either by _neopixel.fill() (no args)
     // or by calling .clear()
