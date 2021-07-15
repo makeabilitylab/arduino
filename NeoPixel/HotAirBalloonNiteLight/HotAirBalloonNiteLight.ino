@@ -72,8 +72,13 @@ enum NiteLightMode {
   AUTO_ON_DARKNESS_LEVEL, // turns on automatically in dark, brightness controlled by POT
   BRIGHTNESS_INVERSE_PROPORTIONAL_TO_DARKNESS, // brightness controlled by POT but proportional to darkness
   ALWAYS_ON,  // ignores photocell, brightness controlled by POT
+  CROSS_FADE, // Cross-fades across colors
   NUM_NITE_LIGHT_MODES,
 };
+
+unsigned int _crossFadeVal = 0;
+const int MIN_CROSS_FADE_STEP = 1;
+const int MAX_CROSS_FADE_STEP = 300;
 
 NiteLightMode _nightLightMode = AUTO_ON_DARKNESS_LEVEL;
 unsigned int _lastModeSwitchButtonVal = HIGH; // pull-up resistor config, so default is HIGH
@@ -160,6 +165,7 @@ void loop() {
   // If the photoresistor darkness threshold is surpassed or the night light mode is always on
   if((_nightLightMode == AUTO_ON_DARKNESS_LEVEL && photoCellVal >= TURN_ON_DARKNESS_THRESHOLD) || 
       _nightLightMode == BRIGHTNESS_INVERSE_PROPORTIONAL_TO_DARKNESS ||
+      _nightLightMode == CROSS_FADE ||
       _nightLightMode == ALWAYS_ON){
 
     // Read the hue and brightness pots
@@ -168,6 +174,18 @@ void loop() {
     int potBrightnessValue = analogRead(BRIGHTNESS_POT_INPUT_PIN);
   
     unsigned long hue = map(potHueValue, 0, MAX_ANALOG_INPUT, 0, MAX_HUE_VALUE);
+
+    // if we are in cross fade, then use potHueValue to set cross fade speed
+    if(_nightLightMode == CROSS_FADE){
+      unsigned int crossFadeStep = map(potHueValue, 0, MAX_ANALOG_INPUT, MIN_CROSS_FADE_STEP, MAX_CROSS_FADE_STEP);;
+      _crossFadeVal += crossFadeStep;
+
+      if(_crossFadeVal > MAX_HUE_VALUE){
+        _crossFadeVal = 0;
+      }
+      hue = _crossFadeVal;
+    }
+    
     unsigned int saturation = 255;
     unsigned int brightness = map(potBrightnessValue, 0, MAX_ANALOG_INPUT, 0, MAX_BRIGHTNESS_VALUE);
 
