@@ -14,11 +14,12 @@
 #include <Adafruit_NeoPixel.h>
 
 const int NUM_NEOPIXELS = 7;
-const int NEOPIXEL_PIN_OUTPUT = A0;
+const int NEOPIXEL_PIN_OUTPUT = 2;
 
 const unsigned long MAX_HUE_VALUE = 65535; // Hue is a 16-bit number
 const unsigned int MAX_BRIGHTNESS_VALUE = 255;
 const unsigned int MAX_SATURATION_VALUE = 255;
+const unsigned int BRIGHTNESS_VALUE = MAX_BRIGHTNESS_VALUE;
 
 unsigned long _hue = 0;
 const unsigned long _hueStep = 50;
@@ -55,7 +56,7 @@ void loop() {
   // https://learn.adafruit.com/adafruit-neopixel-uberguide/arduino-library-use#hsv-hue-saturation-value-colors-dot-dot-dot-3024464-41
 
   const int saturation = MAX_SATURATION_VALUE;
-  const int brightness = 100;
+  const int brightness = BRIGHTNESS_VALUE;
   uint32_t rgbColor = _neopixel.ColorHSV(_hue, saturation, brightness);
   
   _neopixel.fill(rgbColor, 0, NUM_NEOPIXELS);
