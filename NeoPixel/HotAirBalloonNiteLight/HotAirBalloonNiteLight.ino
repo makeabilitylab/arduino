@@ -17,8 +17,11 @@ const int NUM_NEOPIXELS = 7;
 const int NEOPIXEL_OUTPUT_PIN = 5;
 
 const int PHOTORESISTOR_INPUT_PIN = A0;
+
+// Potentiometer input for setting hue and brightness
 const int HUE_POT_INPUT_PIN = A1;
 const int BRIGHTNESS_POT_INPUT_PIN = A2;
+const boolean REVERSE_POTS = true;
 
 const int MODE_SWITCH_BUTTON_INPUT_PIN = 7;
 const int MODE_SWITCH_BUTTON_LED_OUTPUT_PIN = 9;
@@ -172,6 +175,11 @@ void loop() {
     int potHueValue = analogRead(HUE_POT_INPUT_PIN);
     delay(1);
     int potBrightnessValue = analogRead(BRIGHTNESS_POT_INPUT_PIN);
+
+    if(REVERSE_POTS){
+      potHueValue = MAX_ANALOG_INPUT - potHueValue;
+      potBrightnessValue = MAX_ANALOG_INPUT - potBrightnessValue;
+    }
   
     unsigned long hue = map(potHueValue, 0, MAX_ANALOG_INPUT, 0, MAX_HUE_VALUE);
 
@@ -213,9 +221,9 @@ void loop() {
     _neopixel.clear();
     _neopixel.show();
 
-//    Serial.println((String)"photoCellVal=" + photoCellVal + 
-//                    " TURN_ON_DARKNESS_THRESHOLD=" + TURN_ON_DARKNESS_THRESHOLD + 
-//                    " nightLightMode=" + _nightLightMode);
+    Serial.println((String)"Night Light OFF: photoCellVal=" + photoCellVal + 
+                    " TURN_ON_DARKNESS_THRESHOLD=" + TURN_ON_DARKNESS_THRESHOLD + 
+                    " nightLightMode=" + _nightLightMode);
   }
 
   delay(10);
