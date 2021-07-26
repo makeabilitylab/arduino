@@ -124,7 +124,7 @@ void loop() {
     // we are in). We'll flash once for night light mode 1, twice for night light mode 2, etc.
     _newStateEnteredTimestamp = millis();
     _lastFlashTimestamp = millis();
-    _flashNum = (int)_nightLightMode * 2;
+    _flashNum = (int)(_nightLightMode + 1) * 2;
     
 //    Serial.println((String)"_nightLightMode=" + _nightLightMode + 
 //                  " _newStateEnteredTimestamp=" + _newStateEnteredTimestamp +
