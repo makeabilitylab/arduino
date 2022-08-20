@@ -1,4 +1,6 @@
-The hot air balloon night light has four modes. Typically, the left potentiometer (knob) controls the hue (color) of the light and the right potentiometer controls the brightness; however, this is dependent on the night light's mode. To set the mode, press the red button. The button will flash to indicate which mode it's in (e.g., two flashes mean the night light just got set to Mode 2).
+The hot air balloon night light has four modes. Typically, the left potentiometer (knob) controls the hue (color) of the light and the right potentiometer controls the brightness; however, this is dependent on the night light's mode. 
+
+To set the **mode**, press the red button. The button will flash to indicate which mode it's in (e.g., two flashes mean the night light just got set to Mode 2).
 
 1. **Mode 1: Auto-on/off**. By default, when you first plug in the night light, we enter Mode 1. Here, the night light turns on automatically when it's dark and the left knob controls color and the right controls brightness.
 
