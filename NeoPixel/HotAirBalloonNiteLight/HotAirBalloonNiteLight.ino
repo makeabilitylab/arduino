@@ -54,6 +54,8 @@ const unsigned int TURN_ON_DARKNESS_THRESHOLD = 550;
 // This threshold is used by the BRIGHTNESS_INVERSE_PROPORTIONAL_TO_DARKNESS mode
 const unsigned int TURN_OFF_DARKNESS_THRESHOLD = 150; 
 
+// We flash the button's internal LED on and off when we enter a new state
+// to help the user understand which state we're in
 unsigned long _newStateEnteredTimestamp = 0;
 const unsigned int START_FLASH_AFTER_NEW_STATE_THRESHOLD = 100;
 const unsigned int FLASH_ON_MS = 400;
@@ -71,19 +73,25 @@ int _flashNum = -1;
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 Adafruit_NeoPixel _neopixel(NUM_NEOPIXELS, NEOPIXEL_OUTPUT_PIN, NEO_GRB + NEO_KHZ800);
 
+// The night light mode is controlled by the button (on MODE_SWITCH_BUTTON_INPUT_PIN)
+// Each time the button is pressed, the next mode is selected. The button's internal
+// LED will blink N number of times where N = state number
 enum NiteLightMode {
   AUTO_ON_DARKNESS_LEVEL, // turns on automatically in dark, brightness controlled by POT
   BRIGHTNESS_INVERSE_PROPORTIONAL_TO_DARKNESS, // brightness controlled by POT but proportional to darkness
   ALWAYS_ON,  // ignores photocell, brightness controlled by POT
-  CROSS_FADE, // Cross-fades across colors
+  CROSS_FADE, // Cross-fades across colors, brightness controlled by POT
   NUM_NITE_LIGHT_MODES,
 };
 
+NiteLightMode _nightLightMode = AUTO_ON_DARKNESS_LEVEL; // night lite mode default
+
+// When in the CROSS_FADE mode, the crossfade speed is controlled by 
+// POT1 (the HUE_POT_INPUT_PIN)
 unsigned int _crossFadeVal = 0;
 const int MIN_CROSS_FADE_STEP = 1;
 const int MAX_CROSS_FADE_STEP = 300;
 
-NiteLightMode _nightLightMode = AUTO_ON_DARKNESS_LEVEL;
 unsigned int _lastModeSwitchButtonVal = HIGH; // pull-up resistor config, so default is HIGH
 
 void setup() {
@@ -103,6 +111,7 @@ void setup() {
 
 void loop() {
 
+  // Check to see if the button is down. If so, advance the mode
   int buttonVal = digitalRead(MODE_SWITCH_BUTTON_INPUT_PIN);
   if(buttonVal == LOW && _lastModeSwitchButtonVal != buttonVal){
 
@@ -136,8 +145,6 @@ void loop() {
   // Flash the button LED given the night light mode and flash num
   if(_flashNum >= 0 && millis() - _newStateEnteredTimestamp > START_FLASH_AFTER_NEW_STATE_THRESHOLD){
     unsigned long timeSinceLastFlash = millis() - _lastFlashTimestamp;
-//    Serial.println((String)"_flashNum=" + _flashNum +
-//                  " timeSinceLastFlash=" + timeSinceLastFlash);
     if(_flashNum % 2 == 0 && timeSinceLastFlash > FLASH_ON_MS){
       digitalWrite(MODE_SWITCH_BUTTON_LED_OUTPUT_PIN, LOW);
       Serial.println((String)"FLASH OFF: _nightLightMode=" + _nightLightMode +
@@ -150,12 +157,7 @@ void loop() {
       _flashNum--;
     }else if(_flashNum % 2 == 1 && timeSinceLastFlash > FLASH_OFF_MS){
       digitalWrite(MODE_SWITCH_BUTTON_LED_OUTPUT_PIN, HIGH);
-//      Serial.println((String)"FLASH ON: _nightLightMode=" + _nightLightMode +
-//                  " _flashNum=" + _flashNum +
-//                  " timeSinceLastFlash=" + timeSinceLastFlash +
-//                  " millis()=" + millis() + 
-//                  " FLASH_ON_MS=" + FLASH_ON_MS + 
-//                  " FLASH_OFF_MS=" + FLASH_OFF_MS);
+
       _lastFlashTimestamp = millis();
       _flashNum--;
     }
