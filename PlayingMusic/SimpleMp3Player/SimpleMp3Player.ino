@@ -27,7 +27,10 @@
 
 #include <SPI.h>
 #include <SD.h> // https://www.arduino.cc/reference/en/libraries/sd/
-#include <Adafruit_VS1053.h> // https://github.com/adafruit/Adafruit_VS1053_Library/blob/master/Adafruit_VS1053.h
+
+// https://github.com/adafruit/Adafruit_VS1053_Library/blob/master/Adafruit_VS1053.h
+// https://github.com/adafruit/Adafruit_VS1053_Library/blob/master/Adafruit_VS1053.cpp
+#include <Adafruit_VS1053.h> 
 
 // Specifically for use with the Adafruit Feather, the pins are pre-set here!
 
@@ -302,14 +305,18 @@ void playPrevSound(){
 }
 
 void startPlayingSound(int curSoundFileIndex){
-  // Stopping interrupts here just in case this is the cause of the freezing problem
+  // We *must* call noInterrupts() here before trying to stop the music
+  // If not, we will intermittently run into a freezing problem with the startPlayingFile
+  // call. It happens consistently but infrequently enough to be hard to test and track down.
+  //
   // I arrived at stopping interrupts by sleuthing the VS_1053 source code
   // https://github.com/adafruit/Adafruit_VS1053_Library/blob/master/Adafruit_VS1053.cpp
   noInterrupts();
   _musicPlayer.stopPlaying();
   delay(50);
 
-  // I had to insert this explicit close to get the music player to reliably work over time
+  // I also inserted this explicit close to get the music player to try and fix
+  // the freezing problem. Not sure if it actually helps.
   // See: "VS1053 frequently crashes when changing audio files Post" 
   // https://forums.adafruit.com/viewtopic.php?p=268476#p268476
   _musicPlayer.currentTrack.close();
@@ -321,8 +328,8 @@ void startPlayingSound(int curSoundFileIndex){
     Serial.println("The music player has NOT stopped");
   }
   printMemory();
-  interrupts();
-  Serial.println("Interrupts enabled");
+  //interrupts();
+  //Serial.println("Interrupts enabled");
 
   // GitHub Issue post suggests that softReset() might help freezing problem
   // https://github.com/adafruit/Adafruit_VS1053_Library/issues/4
