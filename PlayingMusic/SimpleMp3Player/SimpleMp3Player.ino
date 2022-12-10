@@ -338,7 +338,7 @@ void startPlayingSound(int curSoundFileIndex){
   // delay(50);
 
   Serial.println("The next song to play is " + _soundFiles[curSoundFileIndex] + " at index " + curSoundFileIndex);
-  Serial.println("Calling _musicPlayer.startPlayingFile...")
+  Serial.println("Calling _musicPlayer.startPlayingFile...");
   delay(50);
 
   // Sometimes we crash right here!
