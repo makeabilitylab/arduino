@@ -255,8 +255,7 @@ void playPrevSound(){
 }
 
 void startPlayingSound(int curSoundFileIndex){
-  // Without stopping interrupts explicitly, sometimes this command was failing
-  // or putting the music player in a strange state
+  // Stopping interrupts here just in case this is the cause of the freezing problem
   // I arrived at stopping interrupts by sleuthing the VS_1053 source code
   // https://github.com/adafruit/Adafruit_VS1053_Library/blob/master/Adafruit_VS1053.cpp
   noInterrupts();
@@ -271,13 +270,10 @@ void startPlayingSound(int curSoundFileIndex){
   
   if(!_musicPlayer.playingMusic){ // using this rather than stopped()
     Serial.println("The music player has stopped");
-    Serial.println("Hello!");
   }else{
     Serial.println("The music player has NOT stopped");
   }
-  delay(100);
   printMemory();
-  Serial.println("Delay 100!");
   interrupts();
   Serial.println("Interrupts enabled");
 
