@@ -281,6 +281,19 @@ void startPlayingSound(int curSoundFileIndex){
   interrupts();
   Serial.println("Interrupts enabled");
 
+  // GitHub Issue post suggests that softReset() might help freezing problem
+  // https://github.com/adafruit/Adafruit_VS1053_Library/issues/4
+  // Unfortunately, that does not seem to work...
+  // Serial.println("Performing a softReset()");
+  // _musicPlayer.softReset();
+  // delay(50);
+
+  // How about a hard reset? This also does not appear to fix the problem
+  // So commenting out for now...
+  // Serial.println("Performing a reset()");
+  // _musicPlayer.reset();
+  // delay(50);
+
   Serial.println("The next song to play is " + _soundFiles[curSoundFileIndex] + " at index " + curSoundFileIndex);
   delay(50);
 
