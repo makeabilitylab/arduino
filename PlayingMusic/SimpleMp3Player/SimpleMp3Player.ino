@@ -1,6 +1,12 @@
 /**
  * Reads the SD card for all .mp3 files and starts playing them
- * Use Serial 'n' for next song and 'b' for previous song
+ * If connected to Serial, open Serial Monitor and use the following commands:
+ *  - Type 'n' for next song 
+ *  - Type 'b' for previous song
+ *  - Type 'p' to pause or unpause
+ *
+ * You can also connect buttons to pins 13 and 12 (with internal pullup configuration)
+ * By default, pin 13 goes to the next song and pin 12 to the prev song
  *
  * TODO: Intermittently crashes. Not sure why. Still investigating.
  * 
@@ -11,6 +17,7 @@
  * Maybe try other boards like:
  *  - Adafruit Feather MO: https://www.adafruit.com/product/3403
  *  - Adafruit Feather M4: https://www.adafruit.com/product/3857
+ *
  * By Jon E. Froehlich
  * @jonfroehlich
  * http://makeabilitylab.io
@@ -31,15 +38,22 @@ String *_soundFiles = NULL;
 int _curSoundFileIndex = 0;
 int _numSoundFiles = 0;
 
+const int NEXT_BUTTON_PIN = 13;
+const int PREV_BUTTON_PIN = 12;
+
 void setup() {
   Serial.begin(115200);
+
+  pinMode(NEXT_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(PREV_BUTTON_PIN, INPUT_PULLUP);
 
   // if you're using Bluefruit or LoRa/RFM Feather, disable the radio module
   // pinMode(8, INPUT_PULLUP);
   printMemory();
 
   // Wait for serial port to be opened, remove this line for 'standalone' operation
-  while (!Serial) { delay(1); }
+  // while (!Serial) { delay(1); }
+
   delay(500);
   Serial.println("\n\nAdafruit VS1053 Feather Test");
   
@@ -67,7 +81,7 @@ void setup() {
   _soundFiles = getSoundFiles(_fileRoot, ".mp3"); 
   
   // Set volume for left, right channels. lower numbers == louder volume!
-  _musicPlayer.setVolume(25,25);
+  _musicPlayer.setVolume(30,30);
   
 #if defined(__AVR_ATmega32U4__) 
   // Timer interrupts are not suggested, better to use DREQ interrupt!
@@ -174,6 +188,15 @@ void loop() {
     Serial.print(".");
   }
 
+  int nextBtnState = digitalRead(NEXT_BUTTON_PIN);
+  int prevBtnState = digitalRead(PREV_BUTTON_PIN);
+
+  if(nextBtnState == LOW){
+    playNextSound();
+  }else if(prevBtnState == LOW){
+    playPrevSound();
+  }
+
   if (Serial.available()) {
     char c = Serial.read();
     
@@ -194,32 +217,41 @@ void loop() {
     }
 
     if (c == 'n'){
-      Serial.println();
-      Serial.println("Stop playing current song...");
-      Serial.println("Stopping " + _soundFiles[_curSoundFileIndex] + " at index " + (String)_curSoundFileIndex);
-
-      _curSoundFileIndex++;
-      if(_curSoundFileIndex >= _numSoundFiles){
-        _curSoundFileIndex = 0;
-      }
-      
-      startPlayingSound(_curSoundFileIndex);
+      playNextSound();
     }
 
     if (c == 'b'){
-      Serial.println();
-      Serial.println("Stop playing current song...");
-      Serial.println("Stopping " + _soundFiles[_curSoundFileIndex] + " at index " + (String)_curSoundFileIndex);
-
-      _curSoundFileIndex--;
-      if(_curSoundFileIndex < 0){
-        _curSoundFileIndex = _numSoundFiles - 1;
-      }
-
-      startPlayingSound(_curSoundFileIndex);
+      playPrevSound();
     }
   }
   delay(100);
+}
+
+void playNextSound(){
+  Serial.println();
+  Serial.println("Stop playing current song...");
+  Serial.println("Stopping " + _soundFiles[_curSoundFileIndex] + " at index " + (String)_curSoundFileIndex);
+
+  _curSoundFileIndex++;
+  if(_curSoundFileIndex >= _numSoundFiles){
+    _curSoundFileIndex = 0;
+  }
+  
+  startPlayingSound(_curSoundFileIndex);
+
+}
+
+void playPrevSound(){
+  Serial.println();
+  Serial.println("Stop playing current song...");
+  Serial.println("Stopping " + _soundFiles[_curSoundFileIndex] + " at index " + (String)_curSoundFileIndex);
+
+  _curSoundFileIndex--;
+  if(_curSoundFileIndex < 0){
+    _curSoundFileIndex = _numSoundFiles - 1;
+  }
+
+  startPlayingSound(_curSoundFileIndex);
 }
 
 void startPlayingSound(int curSoundFileIndex){
@@ -293,25 +325,26 @@ void printDirectory(File dir, int numTabs) {
    }
 }
 
-// #ifdef __arm__
-// // should use uinstd.h to define sbrk but Due causes a conflict
-// extern "C" char* sbrk(int incr);
-// #else  // __ARM__
-// extern char *__brkval;
-// #endif  // __arm__
+// From
+// https://learn.adafruit.com/memories-of-an-arduino/measuring-free-memory
+// https://github.com/mpflaga/Arduino-MemoryFree
+#ifdef __arm__
+// should use uinstd.h to define sbrk but Due causes a conflict
+extern "C" char* sbrk(int incr);
+#else  // __ARM__
+extern char *__brkval;
+#endif  // __arm__
 
-// int freeMemory() {
-//   char top;
-// #ifdef __arm__
-//   return &top - reinterpret_cast<char*>(sbrk(0));
-// #elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
-//   return &top - __brkval;
-// #else  // __arm__
-//   return __brkval ? &top - __brkval : &top - __malloc_heap_start;
-// #endif  // __arm__
-// }
-
-int freeMemory() { return -1; }
+int freeMemory() {
+  char top;
+#ifdef __arm__
+  return &top - reinterpret_cast<char*>(sbrk(0));
+#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
+  return &top - __brkval;
+#else  // __arm__
+  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
+#endif  // __arm__
+}
 
 void printMemory(){
   int freeMem = freeMemory();
