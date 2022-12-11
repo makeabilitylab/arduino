@@ -90,6 +90,11 @@ int _numSoundFiles = 0;
 
 const int NEXT_BUTTON_PIN = 13;
 const int PREV_BUTTON_PIN = 12;
+const int VOLUME_POT_PIN = A0;
+
+// Max ADC on the NRF52840 is 12-bit (4096)
+// See: https://learn.adafruit.com/introducing-the-adafruit-nrf52840-feather/pinouts#analog-inputs-3014279
+const int MAX_ADC_VAL = 4096; 
 
 void setup() {
   Serial.begin(115200);
@@ -237,6 +242,11 @@ void loop() {
 
   int nextBtnState = digitalRead(NEXT_BUTTON_PIN);
   int prevBtnState = digitalRead(PREV_BUTTON_PIN);
+  int volumePotVal = analogRead(VOLUME_POT_PIN);
+
+  // TODO switch from linear mapping to logarithmic if using a linear pot
+  uint8_t soundVolume = (uint8_t)map(volumePotVal, 0, MAX_ADC_VAL, 0, 255);
+  _musicPlayer.setVolume(soundVolume, soundVolume);
 
   if(nextBtnState == LOW){
     playNextSound();
