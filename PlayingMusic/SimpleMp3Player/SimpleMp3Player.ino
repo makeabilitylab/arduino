@@ -7,8 +7,6 @@
  *
  * You can also connect buttons to pins 13 and 12 (with internal pullup configuration)
  * By default, pin 13 goes to the next song and pin 12 to the prev song
- *
- * TODO: Intermittently crashes. Not sure why. Still investigating.
  * 
  * Built on:
  *  - feather_player in File -> Examples -> Adafruit VS1053 Library -> feather_player
