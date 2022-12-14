@@ -102,8 +102,7 @@ void setup() {
 
   // if you're using Bluefruit or LoRa/RFM Feather, disable the radio module
   // pinMode(8, INPUT_PULLUP);
-  printMemory();
-
+  
   // Wait for serial port to be opened, remove this line for 'standalone' operation
   // while (!Serial) { delay(1); }
 
@@ -160,8 +159,6 @@ void setup() {
     // https://www.arduino.cc/reference/en/language/variables/data-types/string/functions/c_str/
     _musicPlayer.startPlayingFile(_soundFiles[_curSoundFileIndex].c_str());
   }
-
-  printMemory();
 }
 
 // Count the files in the current directory with the given extension
@@ -331,7 +328,7 @@ void startPlayingSound(int curSoundFileIndex){
   }else{
     Serial.println("The music player has NOT stopped");
   }
-  printMemory();
+ 
   //interrupts();
   //Serial.println("Interrupts enabled");
 
@@ -392,31 +389,3 @@ void printDirectory(File dir, int numTabs) {
      entry.close();
    }
 }
-
-// From
-// https://learn.adafruit.com/memories-of-an-arduino/measuring-free-memory
-// https://github.com/mpflaga/Arduino-MemoryFree
-#ifdef __arm__
-// should use uinstd.h to define sbrk but Due causes a conflict
-extern "C" char* sbrk(int incr);
-#else  // __ARM__
-extern char *__brkval;
-#endif  // __arm__
-
-int freeMemory() {
-  char top;
-#ifdef __arm__
-  return &top - reinterpret_cast<char*>(sbrk(0));
-#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
-  return &top - __brkval;
-#else  // __arm__
-  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
-#endif  // __arm__
-}
-
-void printMemory(){
-  int freeMem = freeMemory();
-  Serial.println("Free memory amount: " + (String)freeMem + " bytes");
-}
-
-
