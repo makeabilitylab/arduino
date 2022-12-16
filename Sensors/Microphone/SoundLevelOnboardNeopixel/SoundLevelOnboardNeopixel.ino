@@ -2,6 +2,9 @@
  * Simple VUMeter using an electret microphone (with built-in amp) on A0
  * and the built-in NeoPixel on the Adafruit nRF52840 Feather
  * 
+* Tested on:
+ *  - Adafruit nRF52840: https://learn.adafruit.com/introducing-the-adafruit-nrf52840-feather
+ *
  * By Jon E. Froehlich
  * @jonfroehlich
  * http://makeabilitylab.io
@@ -66,7 +69,14 @@ void loop() {
     _onePixel.fill(rgbColor, 0, 1);
     _onePixel.setBrightness(brightnessVal); 
     _onePixel.show();
-    // Serial.println(peakToPeak);
+
+    // Serial.print(_signalMin);
+    // Serial.print(", ");
+    // Serial.print(_signalMax);
+    // Serial.print(", ");
+    // Serial.print(peakToPeak);
+    // Serial.print(", ");
+    // Serial.println(rgbColor);
 
     _signalMax = 0;
     _signalMin = MAX_ANALOG_IN;
