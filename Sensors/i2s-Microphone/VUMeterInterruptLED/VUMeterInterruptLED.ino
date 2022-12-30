@@ -27,7 +27,7 @@
 uint8_t buffer[I2S_BUFFER_SIZE];                  // Allocate the buffer size
 int *I2Svalues = (int *) buffer;                  // I2Svalues changes to integer type, rather than an unsigned int 8-bit type, same data, groups it differently
 volatile boolean I2SAvailable = false;            // Shouldn't this be a boolean?
-int I2Smax_2ms; 
+int _curI2sMaxVal; 
 
 // Create a NeoPixel object called onePixel that addresses 1 pixel in pin 8
 Adafruit_NeoPixel _onePixel = Adafruit_NeoPixel(1, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
@@ -40,6 +40,8 @@ const unsigned int BRIGHTNESS_VALUE = 20;
 const unsigned int MAX_ANALOG_OUT = 255;
 
 const int SOUND_LEVEL_LED_PIN = 11;
+const int MIN_SOUND_LEVEL = 7000;
+const int MAX_SOUND_LEVEL = 20000;
     
 void setup() {
   Serial.begin(115200);
@@ -67,14 +69,14 @@ void setup() {
 // At 31.25khz, this is every 1962.5 microseconds so make sure any processing here takes less time than that
 // At 15.625kHz, this is every 3925 microseconds (~4ms)
 void onI2SReceive() { 
-  I2Smax_2ms = INFINITY_NEGATIVE;                 // Reset the maximum counter to detect a new peak from this cycle
+  _curI2sMaxVal = INFINITY_NEGATIVE;                 // Reset the maximum counter to detect a new peak from this cycle
   if (I2SAvailable) { Serial.println("POTENTIAL OVERFLOW"); } // This indicates that the program is not keeping up with processing
   I2S.read(buffer, I2S_BUFFER_SIZE);              // Will actually read 256 bytes
   for (int i = 0; i < I2S_BITS_PER_SAMPLE; i++) { // Process the data
     if ((I2Svalues[i]!= 0) && (I2Svalues[i] != -1) ) {  // All 0 or -1 readings need to be discarded (every second reading depending on SEL
       I2Svalues[i] >>= 14;   // convert to 18 bit signed
       int absVal = abs(I2Svalues[i]);
-      if (I2Smax_2ms < absVal) { I2Smax_2ms = absVal; } // Record the new maximum value       
+      if (_curI2sMaxVal < absVal) { _curI2sMaxVal = absVal; } // Record the new maximum value       
     }
   }      
   //Serial.println(I2Smax_2ms);
@@ -83,8 +85,11 @@ void onI2SReceive() {
 
 void loop() {
   if (I2SAvailable) {
-    int hueVal = map(I2Smax_2ms, 7000, 25000, 0, MAX_HUE_VALUE);
-    Serial.print(I2Smax_2ms);
+    const int maxHueVal = MAX_HUE_VALUE * 0.8; // purple is max
+    int hueVal = map(_curI2sMaxVal, MIN_SOUND_LEVEL, MAX_SOUND_LEVEL, 0, maxHueVal);
+    hueVal = constrain(hueVal, 0, maxHueVal);
+
+    Serial.print(_curI2sMaxVal);
     Serial.print(", ");
     // Serial.print(log(I2Smax_2ms));
     // Serial.print(", ");
@@ -98,7 +103,8 @@ void loop() {
     _onePixel.setBrightness(brightness); 
     _onePixel.show();
 
-    int ledBrightnessVal = map(I2Smax_2ms, 7000, 25000, 0, MAX_ANALOG_OUT);
+    int ledBrightnessVal = map(_curI2sMaxVal, MIN_SOUND_LEVEL, MAX_SOUND_LEVEL, 0, MAX_ANALOG_OUT);
+    ledBrightnessVal = constrain(ledBrightnessVal, 0, MAX_ANALOG_OUT);
     analogWrite(SOUND_LEVEL_LED_PIN, ledBrightnessVal);
     
     // Add a second round of processing to pick out a longer term maximum
