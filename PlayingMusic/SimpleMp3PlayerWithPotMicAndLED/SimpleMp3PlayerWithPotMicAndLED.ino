@@ -190,17 +190,19 @@ void loop() {
     // TODO maybe change min here when music is not playing?
     int ledBrightnessVal = map(peakToPeak, 0, MAX_MIC_LEVEL, 5, MAX_ANALOG_OUT);
     long avgMicLevel = _cumulativeMicLevel / _numMicSamples;
-    // Serial.print(_numMicSamples);
-    // Serial.print(", ");
-    // Serial.print(_signalMin);
-    // Serial.print(", ");
-    // Serial.print(_signalMax);
-    // Serial.print(", ");
-    // Serial.print(avgMicLevel);
-    // Serial.print(", ");
-    // Serial.print(peakToPeak);
-    // Serial.print(", ");
-    // Serial.println(ledBrightnessVal);
+
+    // Comment out this Serial.print block when not debugging
+    Serial.print(_numMicSamples);
+    Serial.print(", ");
+    Serial.print(_signalMin);
+    Serial.print(", ");
+    Serial.print(_signalMax);
+    Serial.print(", ");
+    Serial.print(avgMicLevel);
+    Serial.print(", ");
+    Serial.print(peakToPeak);
+    Serial.print(", ");
+    Serial.println(ledBrightnessVal);
     analogWrite(SOUND_LEVEL_LED_PIN, ledBrightnessVal);
 
     _signalMax = 0;
