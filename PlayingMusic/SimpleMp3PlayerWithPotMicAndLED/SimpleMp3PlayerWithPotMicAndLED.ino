@@ -1,13 +1,7 @@
 /**
  * Plays music and lights up an LED corresponding to amplitude.
  * 
- * The microphone does not seem to work as expected when music is playing
- * not sure if it's noise or the interrupts or what. I've tried multiple things
- * to investigate. To test, "stop" the song by sending 's' or 'p' in Serial Monitor
- * and then make noise. You should see the mic respond accordingly. But then
- * when you actually play music, the mic levels are messed up... 
- * 
- * Reads the SD card for all .mp3 files and starts playing them
+ *  * Reads the SD card for all .mp3 files and starts playing them
  * If connected to Serial, open Serial Monitor and use the following commands:
  *  - Type 'n' for next song 
  *  - Type 'b' for previous song
@@ -15,6 +9,18 @@
  *
  * You can also connect buttons to pins 13 and 12 (with internal pullup configuration)
  * By default, pin 13 goes to the next song and pin 12 to the prev song
+ *
+ * --- Engineering Log ----
+ * The microphone does not seem to work as expected when music is playing
+ * not sure if it's noise or the interrupts or what. I've tried multiple things
+ * to investigate. To test, "stop" the song by sending 's' or 'p' in Serial Monitor
+ * and then make noise. You should see the mic respond accordingly. But then
+ * when you actually play music, the mic levels are messed up... 
+ * 
+ * Update (Dec 30): I determined that this was due to noise, likely due to unstable
+ * power on the 3.3V, which would fluctuate when playing mp3s (likely due to featherwing draw)
+ * I'm also going to ry a 100uF capacitor and to try a MAX9814 microphone vs. the MAX4466
+ * that I've been using
  * 
  * Built on:
  *  - feather_player in File -> Examples -> Adafruit VS1053 Library -> feather_player
@@ -64,7 +70,7 @@ const int VOLUME_POT_PIN = A0;
 // ADC = 3600mV/1024 = 3.515625mV.
 const unsigned int MAX_ANALOG_IN = 1023; 
 const unsigned int MAX_ANALOG_OUT = 255;
-const int MIC_INPUT_PIN = A2;
+const int MIC_INPUT_PIN = A5;
 const int MAX_MIC_LEVEL = MAX_ANALOG_IN;
 
 const int MIC_SAMPLE_WINDOW_MS = 40; // Sample window width in ms (50 ms = 20Hz). 
@@ -156,21 +162,24 @@ void setup() {
 
 void loop() {
   
+  int volumePotVal = analogRead(VOLUME_POT_PIN);
+  //volumePotVal = 20;
   // File is playing in the background
   // if (!_musicPlayer.stopped()) {
   //   Serial.print(".");
   // }
 
   // read microphone and set LED
-  //noInterrupts();
+  noInterrupts();
   if(_startSamplingMicTimeMs == -1){
     _startSamplingMicTimeMs = millis();
   }
   int micLevel = analogRead(MIC_INPUT_PIN);
+  micLevel = analogRead(MIC_INPUT_PIN);
   _cumulativeMicLevel += micLevel;
   _numMicSamples++;
   _totalMicSamples++;
-  //interrupts();
+  interrupts();
   //Serial.println(micLevel);
 
   // Serial.print(_numMicSamples);
@@ -190,7 +199,7 @@ void loop() {
     long peakToPeak = _signalMax - _signalMin;
 
     // TODO maybe change min here when music is not playing?
-    int ledBrightnessVal = map(peakToPeak, 0, MAX_MIC_LEVEL, 5, MAX_ANALOG_OUT);
+    int ledBrightnessVal = map(peakToPeak, 0, MAX_MIC_LEVEL, 0, MAX_ANALOG_OUT);
     long avgMicLevel = _cumulativeMicLevel / _numMicSamples;
 
     // Comment out this Serial.print block when not debugging
@@ -203,6 +212,8 @@ void loop() {
     Serial.print(avgMicLevel);
     Serial.print(", ");
     Serial.print(peakToPeak);
+    Serial.print(", ");
+    Serial.print(volumePotVal);
     Serial.print(", ");
     Serial.println(ledBrightnessVal);
     analogWrite(SOUND_LEVEL_LED_PIN, ledBrightnessVal);
@@ -249,7 +260,6 @@ void loop() {
   // read buttons and volume
   int nextBtnState = digitalRead(NEXT_BUTTON_PIN);
   int prevBtnState = digitalRead(PREV_BUTTON_PIN);
-  int volumePotVal = analogRead(VOLUME_POT_PIN);
 
   // TODO switch from linear mapping to logarithmic if using a linear pot
   uint8_t soundVolume = (uint8_t)map(volumePotVal, 0, MAX_ANALOG_IN, 0, 255);
