@@ -188,7 +188,7 @@ void loop() {
     long peakToPeak = _signalMax - _signalMin;
 
     // TODO maybe change min here when music is not playing?
-    int ledBrightnessVal = map(peakToPeak, 700, MAX_MIC_LEVEL, 5, MAX_ANALOG_OUT);
+    int ledBrightnessVal = map(peakToPeak, 0, MAX_MIC_LEVEL, 5, MAX_ANALOG_OUT);
     long avgMicLevel = _cumulativeMicLevel / _numMicSamples;
     // Serial.print(_numMicSamples);
     // Serial.print(", ");
