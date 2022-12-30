@@ -3,7 +3,9 @@
  * 
  * The microphone does not seem to work as expected when music is playing
  * not sure if it's noise or the interrupts or what. I've tried multiple things
- * to investigate
+ * to investigate. To test, "stop" the song by sending 's' or 'p' in Serial Monitor
+ * and then make noise. You should see the mic respond accordingly. But then
+ * when you actually play music, the mic levels are messed up... 
  * 
  * Reads the SD card for all .mp3 files and starts playing them
  * If connected to Serial, open Serial Monitor and use the following commands:
