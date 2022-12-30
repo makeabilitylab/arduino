@@ -9,6 +9,13 @@
  * is from https://learn.adafruit.com/adafruit-i2s-mems-microphone-breakout/arduino-wiring-and-test
  * and also posted in our GitHub here:
  * 
+ * 
+ * Note: To use an i2s peripheral like an i2s microphone, you must use a microcontroller
+ * that have hardware I2S peripheral support such as the Cortex M-series chips like the Arduino Zero, Feather M0, 
+ * or single-board computers like the Raspberry Pi. This code has been tested on an
+ * Adafruit Feather M0 Express: https://www.adafruit.com/product/3403
+ * with the Adafruit i2s MEMs Microphone Breakout for the SPH0645LM4H
+ * https://www.adafruit.com/product/3421  
  */ 
 #include <I2S.h>
 

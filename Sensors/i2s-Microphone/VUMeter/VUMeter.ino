@@ -52,7 +52,7 @@ void loop() {
     samples[i] = sample;
   }
 
-  // ok we hvae the samples, get the mean (avg)
+  // ok we have the samples, get the mean (avg)
   float meanval = 0;
   for (int i=0; i<SAMPLES; i++) {
     meanval += samples[i];
