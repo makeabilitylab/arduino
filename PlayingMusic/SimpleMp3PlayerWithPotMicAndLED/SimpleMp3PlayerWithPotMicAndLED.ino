@@ -19,8 +19,11 @@
  * 
  * Update (Dec 30): I determined that this was due to noise, likely due to unstable
  * power on the 3.3V, which would fluctuate when playing mp3s (likely due to featherwing draw)
- * I'm also going to ry a 100uF capacitor and to try a MAX9814 microphone vs. the MAX4466
- * that I've been using
+ * I'm also going to ry a 100uF capacitor and to try a MAX9814 amp vs. the MAX4466
+ * that I've been using.
+ *
+ * Update 2 (Dec 30): I've now tested with a 100uF capacitor, which *appears* to help. I've
+ * also tested with both a MAX9814 and MAX4466. It appears that the MAX9814 works better!
  * 
  * Built on:
  *  - feather_player in File -> Examples -> Adafruit VS1053 Library -> feather_player
