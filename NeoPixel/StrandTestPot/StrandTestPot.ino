@@ -6,8 +6,10 @@
 // If you're using a 3.3V board like the Adafruit Feather series or Arduino Nano 33 IoT,
 // you may need a level shifter like the 74AHCT125 (https://www.adafruit.com/product/1787)
 // or the LXB0108 for even larger projects (https://www.adafruit.com/products/395).
-// I was able to successfully run this code with a 30 NeoPixel strand and off USB laptop
-// power without a level shifter.
+// I was able to successfully run this code with both a 30 NeoPixel strand and, surprisingly,
+// a 150 NeoPixel strand (5m & 30 pixels/m) off USB laptop power without a level shifter.
+// With the latter, I measured the current draw on USB to be ~370mA max with a stable rate
+// of ~340mA (with all red illuminated) and ~275mA (with all blue illuminated).
 //
 // For more on level shifting, see:
 // - https://learn.adafruit.com/neopixel-levelshifter and the YouTube video https://www.youtube.com/watch?v=y6HiDnyhRa0
@@ -35,7 +37,7 @@
 
 #include <Adafruit_NeoPixel.h>
 
-const int NUM_NEOPIXELS = 30;       // Change this to match your strand length
+const int NUM_NEOPIXELS = 30 * 5;       // Change this to match your strand length
 const int NEOPIXEL_PIN_OUTPUT = 5;  // Change this to match your output pin
 
 const int NUM_NEOPIXELS_POT_PIN = A0;
