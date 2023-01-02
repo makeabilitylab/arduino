@@ -1,4 +1,5 @@
-// TODO
+// Outputs microphone volume as VUMeter on Neopixel Strand. Sets number of
+// NeoPixels and hue based on mic input level.
 //
 // If you're using a 3.3V board like the Adafruit Feather series or Arduino Nano 33 IoT,
 // you may need a level shifter like the 74AHCT125 (https://www.adafruit.com/product/1787)
@@ -92,9 +93,10 @@ void loop() {
   if(millis() - _startSampleTimeMs > MIC_SAMPLE_WINDOW_MS){
     unsigned int peakToPeak = _signalMax - _signalMin;
 
-    int hueVal = map(peakToPeak, 0, MAX_MIC_LEVEL, 0, MAX_HUE_VALUE * .8);
     const int saturation = MAX_SATURATION_VALUE;
     const int brightness = 150;
+
+    int hueVal = map(peakToPeak, 0, MAX_MIC_LEVEL, 0, MAX_HUE_VALUE * .8);
     uint32_t rgbColor = _neopixelStrip.ColorHSV(hueVal, saturation, brightness);
 
     unsigned int numNeoPixelsToIlluminate = map(peakToPeak, 0, MAX_MIC_LEVEL, 0, NUM_NEOPIXELS);
@@ -104,7 +106,6 @@ void loop() {
     //_neopixelStrip.clear();
     _neopixelStrip.fill(rgbColor, 0, numNeoPixelsToIlluminate);
     _neopixelStrip.fill(0, numNeoPixelsToIlluminate, NUM_NEOPIXELS); // clear others
-    //_neopixelStrip.setBrightness(brightnessVal); 
     _neopixelStrip.show();
 
     Serial.print(_signalMin);
