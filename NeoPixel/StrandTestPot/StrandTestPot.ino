@@ -37,7 +37,7 @@
 
 #include <Adafruit_NeoPixel.h>
 
-const int NUM_NEOPIXELS = 30 * 5;       // Change this to match your strand length
+const int NUM_NEOPIXELS = 30;       // Change this to match your strand length
 const int NEOPIXEL_PIN_OUTPUT = 5;  // Change this to match your output pin
 
 const int NUM_NEOPIXELS_POT_PIN = A0;
