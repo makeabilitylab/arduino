@@ -17,7 +17,12 @@
  * Jan 2, 2023: it looks like we cannot use NeoPixels and the VS1053 MP3 playback library at the same time
  * Because the VS1053 library requires interrupts for "background" playback and NeoPixels require that 
  * interrupts are disabled while writing to the strip. See: https://forums.adafruit.com/viewtopic.php?p=250721#p250721
- * They recommend using an LPD8806 strip instead.
+ * They recommend using an LPD8806 strip instead. 
+ *
+ * I've also been investigating using the FastLED library instead of the official Adafruit_NeoPixel library; however,
+ * even here they suggest using a 4-wire LED chipset like the APA102 or LPD8806 because these chipsets don't
+ * have the very specific timing requirements that the NeoPixel (WS2812) strips require. See:
+ * https://github.com/FastLED/FastLED/wiki/Interrupt-problems
  * 
  * Built on:
  *  - feather_player in File -> Examples -> Adafruit VS1053 Library -> feather_player
@@ -205,7 +210,7 @@ void loop() {
     unsigned int numNeoPixelsToIlluminate = map(peakToPeak, 0, MAX_MIC_LEVEL, 0, NUM_NEOPIXELS);
     numNeoPixelsToIlluminate = constrain(numNeoPixelsToIlluminate, 0, NUM_NEOPIXELS);
 
-    noInterrupts();
+    
     for(int pxl = 0; pxl < NUM_NEOPIXELS; pxl++){
       const int hueVal = map(pxl, 0, NUM_NEOPIXELS, 0, MAX_HUE_VALUE * .8);
       uint32_t rgbColor = _neopixelStrip.ColorHSV(hueVal, neoSaturation, neoBrightness);
@@ -215,8 +220,13 @@ void loop() {
         _neopixelStrip.setPixelColor(pxl, 0);
       }
     }
+
+    // This show() call disables interrupts. According to the code here:
+    // https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.cpp
+    // but that then impacts our playback library and causes it to stop working
+    // Specifically, the docs state that we will lose 30 microseconds per RGB pixel
     _neopixelStrip.show();
-    interrupts();
+    
 
     // TODO maybe change min here when music is not playing?
     int ledBrightnessVal = map(peakToPeak, 0, MAX_MIC_LEVEL, 0, MAX_ANALOG_OUT);
