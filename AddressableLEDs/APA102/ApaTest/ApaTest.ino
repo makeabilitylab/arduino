@@ -16,7 +16,8 @@
  * 
  * ---Engineering Log---
  * Jan 7, 2023: I got this to work on an Arduino Nano 33 IOT both with an external 5V supply as
- * as well as simply using the 3.3V Nano output.
+ * as well as simply using the 3.3V Nano output. It's noticeably brighter with the external
+ * 5V supply. In both cases, I had a 470 uF cap on the GND + PWR.
  *
  * By Jon E. Froehlich
  * @jonfroehlich
