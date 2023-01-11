@@ -65,6 +65,11 @@ unsigned long _startSampleTimeMs = -1;
 unsigned int _signalMax = 0;
 unsigned int _signalMin = MAX_ANALOG_INPUT;
 
+int _peakToPeakFader = 0;
+int _peakToPeakFadeStep = 1;
+unsigned long _startFadeTimeMs = -1;
+const int FADE_TIME_THRESHOLD_MS = 10;
+
 void setup() {
   Serial.begin(115200);
 
@@ -78,6 +83,7 @@ void setup() {
   pinMode(MIC_INPUT_PIN, INPUT);
 
   _startSampleTimeMs = millis();
+  _startFadeTimeMs = millis();
 }
 
 void loop() {
@@ -93,35 +99,9 @@ void loop() {
   if(millis() - _startSampleTimeMs > MIC_SAMPLE_WINDOW_MS){
     unsigned int peakToPeak = _signalMax - _signalMin;
 
-    const int neopixelSaturation = MAX_SATURATION_VALUE;
-    const int neopixelBrightness = 150;
-
-    //int hueVal = map(peakToPeak, 0, MAX_MIC_LEVEL, 0, MAX_HUE_VALUE * .8);
-    //uint32_t rgbColor = _neopixelStrip.ColorHSV(hueVal, saturation, brightness);
-
-    unsigned int numNeoPixelsToIlluminate = map(peakToPeak, 0, MAX_MIC_LEVEL, 0, NUM_NEOPIXELS);
-    numNeoPixelsToIlluminate = constrain(numNeoPixelsToIlluminate, 0, NUM_NEOPIXELS);
-
-    for(int pxl = 0; pxl < NUM_NEOPIXELS; pxl++){
-      const int hueVal = map(pxl, 0, NUM_NEOPIXELS, 0, MAX_HUE_VALUE * .8);
-      uint32_t rgbColor = _neopixelStrip.ColorHSV(hueVal, neopixelSaturation, neopixelBrightness);
-
-      // setPixelColor is an overloaded function that takes in the pixel index
-      // with zero-based indexing and red, green, blue or simply pixel index
-      // and a 32-bit type that merges red, green, blue values into a single number
-      //_neopixelStrip.setPixelColor(0, 255, 0, 0);
-      if(pxl < numNeoPixelsToIlluminate){
-        _neopixelStrip.setPixelColor(pxl, rgbColor);
-      }else{
-        _neopixelStrip.setPixelColor(pxl, 0);
-      }
+    if(_peakToPeakFader < peakToPeak){
+      _peakToPeakFader = peakToPeak;
     }
-    
-    // See: https://adafruit.github.io/Adafruit_NeoPixel/html/class_adafruit___neo_pixel.html
-    //_neopixelStrip.clear();
-    // _neopixelStrip.fill(rgbColor, 0, numNeoPixelsToIlluminate);
-    // _neopixelStrip.fill(0, numNeoPixelsToIlluminate, NUM_NEOPIXELS); // clear others
-    _neopixelStrip.show();
 
     Serial.print(_signalMin);
     Serial.print(", ");
@@ -129,7 +109,7 @@ void loop() {
     Serial.print(", ");
     Serial.print(peakToPeak);
     Serial.print(", ");
-    Serial.println(numNeoPixelsToIlluminate);
+    Serial.println(_peakToPeakFader);
     //Serial.print(", ");
     //Serial.println(hueVal);
 
@@ -137,4 +117,38 @@ void loop() {
     _signalMin = MAX_ANALOG_INPUT;
     _startSampleTimeMs = millis();
   }
+
+  const int neopixelSaturation = MAX_SATURATION_VALUE;
+  const int neopixelBrightness = 150;
+
+  //int hueVal = map(peakToPeak, 0, MAX_MIC_LEVEL, 0, MAX_HUE_VALUE * .8);
+  //uint32_t rgbColor = _neopixelStrip.ColorHSV(hueVal, saturation, brightness);
+
+  unsigned int numNeoPixelsToIlluminate = map(_peakToPeakFader, 0, MAX_MIC_LEVEL, 0, NUM_NEOPIXELS);
+  numNeoPixelsToIlluminate = constrain(numNeoPixelsToIlluminate, 0, NUM_NEOPIXELS);
+
+  for(int pxl = 0; pxl < NUM_NEOPIXELS; pxl++){
+    const int hueVal = map(pxl, 0, NUM_NEOPIXELS, 0, MAX_HUE_VALUE * .8);
+    uint32_t rgbColor = _neopixelStrip.ColorHSV(hueVal, neopixelSaturation, neopixelBrightness);
+
+    // setPixelColor is an overloaded function that takes in the pixel index
+    // with zero-based indexing and red, green, blue or simply pixel index
+    // and a 32-bit type that merges red, green, blue values into a single number
+    //_neopixelStrip.setPixelColor(0, 255, 0, 0);
+    if(pxl < numNeoPixelsToIlluminate){
+      _neopixelStrip.setPixelColor(pxl, rgbColor);
+    }else{
+      _neopixelStrip.setPixelColor(pxl, 0);
+    }
+  }
+  
+  _neopixelStrip.show();
+
+  if(millis() - _startSampleTimeMs > FADE_TIME_THRESHOLD_MS){
+    if(_peakToPeakFader > 0){
+      _peakToPeakFader -= _peakToPeakFadeStep;
+    }
+    _startFadeTimeMs = millis();
+  }
+  
 }

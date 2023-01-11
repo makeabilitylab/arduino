@@ -4,7 +4,9 @@
  *
  * Plays music and lights up a NeoPixel corresponding to sound amplitude.
  * 
- *  * Reads the SD card for all .mp3 files and starts playing them
+ * Reads the SD card for all .mp3 files and starts playing them once the
+ * next button (on pin 13) or previous button (on pin 12) is pressed
+ *
  * If connected to Serial, open Serial Monitor and use the following commands:
  *  - Type 'n' for next song 
  *  - Type 'b' for previous song
@@ -96,6 +98,10 @@ long _startSamplingMicTimeMs = -1;
 
 const String SONG_PATH = "/Dance/"; // can be just "/" if your songs are in root of SD card
 
+// For debouncing
+int _nextBtnStateSaved = HIGH;
+int _prevBtnStateSaved = HIGH;
+
 void setup() {
   Serial.begin(115200);
 
@@ -162,19 +168,19 @@ void setup() {
 #endif
 
   // get random sound file index
-  if(_numSoundFiles > 0){
-    randomSeed(analogRead(A0));
-    _curSoundFileIndex = random(_numSoundFiles);
-    Serial.print("The current sound file index: ");
-    Serial.println(_curSoundFileIndex);
-    Serial.print("The current sound filename: ");
-    Serial.println(_soundFiles[_curSoundFileIndex]);
+  // if(_numSoundFiles > 0){
+  //   randomSeed(analogRead(A0));
+  //   _curSoundFileIndex = random(_numSoundFiles);
+  //   Serial.print("The current sound file index: ");
+  //   Serial.println(_curSoundFileIndex);
+  //   Serial.print("The current sound filename: ");
+  //   Serial.println(_soundFiles[_curSoundFileIndex]);
     
-    Serial.println("Playing " + _soundFiles[_curSoundFileIndex] + " now at index " + _curSoundFileIndex);
+  //   Serial.println("Playing " + _soundFiles[_curSoundFileIndex] + " now at index " + _curSoundFileIndex);
 
-    // https://www.arduino.cc/reference/en/language/variables/data-types/string/functions/c_str/
-    _musicPlayer.startPlayingFile(_soundFiles[_curSoundFileIndex].c_str());
-  }
+  //   // https://www.arduino.cc/reference/en/language/variables/data-types/string/functions/c_str/
+  //   _musicPlayer.startPlayingFile(_soundFiles[_curSoundFileIndex].c_str());
+  // }
 
   _startSampleTimeMs = millis();
 }
@@ -210,15 +216,24 @@ void loop() {
     unsigned int numNeoPixelsToIlluminate = map(peakToPeak, 0, MAX_MIC_LEVEL, 0, NUM_NEOPIXELS);
     numNeoPixelsToIlluminate = constrain(numNeoPixelsToIlluminate, 0, NUM_NEOPIXELS);
 
-    
+    _neopixelStrip.clear();
+    _neopixelStrip.setPixelColor(0, 255, 0, 0);
+    _neopixelStrip.setPixelColor(1, 255, 0, 0);
+    _neopixelStrip.setPixelColor(2, 0, 255, 0);
+    _neopixelStrip.setPixelColor(3, 0, 0, 255);
     for(int pxl = 0; pxl < NUM_NEOPIXELS; pxl++){
       const int hueVal = map(pxl, 0, NUM_NEOPIXELS, 0, MAX_HUE_VALUE * .8);
-      uint32_t rgbColor = _neopixelStrip.ColorHSV(hueVal, neoSaturation, neoBrightness);
-      if(pxl < numNeoPixelsToIlluminate){
-        _neopixelStrip.setPixelColor(pxl, rgbColor);
-      }else{
-        _neopixelStrip.setPixelColor(pxl, 0);
-      }
+      uint32_t rgbColor = _neopixelStrip.ColorHSV(0, neoSaturation, neoBrightness);
+
+      // setPixelColor is an overloaded function that takes in the pixel index
+      // with zero-based indexing and red, green, blue or simply pixel index
+      // and a 32-bit type that merges red, green, blue values into a single number
+      //_neopixelStrip.setPixelColor(0, 255, 0, 0);
+      // if(pxl < numNeoPixelsToIlluminate){
+      //   _neopixelStrip.setPixelColor(pxl, rgbColor);
+      // }else{
+      //   _neopixelStrip.setPixelColor(pxl, 0);
+      // }
     }
 
     // This show() call disables interrupts. According to the code here:
@@ -227,7 +242,6 @@ void loop() {
     // Specifically, the docs state that we will lose 30 microseconds per RGB pixel
     _neopixelStrip.show();
     
-
     // TODO maybe change min here when music is not playing?
     int ledBrightnessVal = map(peakToPeak, 0, MAX_MIC_LEVEL, 0, MAX_ANALOG_OUT);
     long avgMicLevel = _cumulativeMicLevel / _numMicSamples;
@@ -264,9 +278,9 @@ void loop() {
   uint8_t soundVolume = (uint8_t)map(volumePotVal, 0, MAX_ANALOG_IN, 0, 255);
   _musicPlayer.setVolume(soundVolume, soundVolume);
 
-  if(nextBtnState == LOW){
+  if(_nextBtnStateSaved == HIGH && nextBtnState == LOW){
     playNextSound();
-  }else if(prevBtnState == LOW){
+  }else if(_prevBtnStateSaved == HIGH && prevBtnState == LOW){
     playPrevSound();
   }
 
@@ -307,6 +321,9 @@ void loop() {
       playPrevSound();
     }
   }
+
+  _nextBtnStateSaved = nextBtnState;
+  _prevBtnStateSaved = prevBtnState;
   //delay(100);
 }
 
