@@ -23,7 +23,8 @@
  * that I've been using.
  *
  * Update 2 (Dec 30): I've now tested with a 100uF capacitor, which *appears* to help. I've
- * also tested with both a MAX9814 and MAX4466. It appears that the MAX9814 works better!
+ * also tested with both a MAX9814 and MAX4466. It appears that the MAX9814 works better but
+ * both are reasonable.
  * 
  * Built on:
  *  - feather_player in File -> Examples -> Adafruit VS1053 Library -> feather_player
@@ -196,7 +197,7 @@ void loop() {
     _signalMin = micLevel;
   }
 
-  // TODO for more on sound
+  // For more on some basic Arduino-based sound processing, see the example code here:
   // See: https://learn.adafruit.com/adafruit-i2s-mems-microphone-breakout/arduino-wiring-and-test
   if(millis() - _startSampleTimeMs > MIC_SAMPLE_WINDOW_MS){
     long peakToPeak = _signalMax - _signalMin;
@@ -227,38 +228,6 @@ void loop() {
     _numMicSamples = 0;
     _cumulativeMicLevel = 0;
   }
-
-  // noInterrupts();
-  // const int maxSamples = 200;
-  // uint32_t signalMin = MAX_ANALOG_IN;
-  // uint32_t signalMax = 0;
-  // long micLevelCumulative = 0;
-  // for(int i=0; i<maxSamples; i++){
-  //   uint32_t micLevel = analogRead(MIC_INPUT_PIN);
-  //   if(micLevel > signalMax){
-  //     signalMax = micLevel;
-  //   }else if(micLevel < signalMin){
-  //     signalMin = micLevel;
-  //   } 
-  //   micLevelCumulative += micLevel;
-  // }
-
-  // unsigned int peakToPeak = signalMax - signalMin;
-  // int ledBrightnessVal = map(peakToPeak, 0, MAX_MIC_LEVEL, 5, MAX_ANALOG_OUT);
-  // long avgLevel = micLevelCumulative / maxSamples;
-  
-  // Serial.print(signalMin);
-  // Serial.print(", ");
-  // Serial.print(signalMax);
-  // Serial.print(", ");
-  // Serial.print(avgLevel);
-  // Serial.print(", ");
-  // Serial.print(peakToPeak);
-  // Serial.print(", ");
-  // Serial.println(ledBrightnessVal);
-
-  // analogWrite(SOUND_LEVEL_LED_PIN, ledBrightnessVal);
-  // interrupts();
 
   // read buttons and volume
   int nextBtnState = digitalRead(NEXT_BUTTON_PIN);
