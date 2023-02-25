@@ -22,61 +22,15 @@
  * 
  */
 
-
 #include <SPI.h>
 #include <SD.h> // https://www.arduino.cc/reference/en/libraries/sd/
+#include <FileUtils.hpp> // From MakeabilityLab_Arduino_Library
+#include <Button.hpp> // From MakeabilityLab_Arduino_Library
 
 // https://github.com/adafruit/Adafruit_VS1053_Library/blob/master/Adafruit_VS1053.h
 // https://github.com/adafruit/Adafruit_VS1053_Library/blob/master/Adafruit_VS1053.cpp
 #include <Adafruit_VS1053.h> 
-
-// Specifically for use with the Adafruit Feather, the pins are pre-set here!
-
-// These are the pins used
-#define VS1053_RESET   -1     // VS1053 reset pin (not used!)
-
-// Feather ESP8266
-#if defined(ESP8266)
-  #define VS1053_CS      16     // VS1053 chip select pin (output)
-  #define VS1053_DCS     15     // VS1053 Data/command select pin (output)
-  #define CARDCS          2     // Card chip select pin
-  #define VS1053_DREQ     0     // VS1053 Data request, ideally an Interrupt pin
-
-// Feather ESP32
-#elif defined(ESP32) && !defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
-  #define VS1053_CS      32     // VS1053 chip select pin (output)
-  #define VS1053_DCS     33     // VS1053 Data/command select pin (output)
-  #define CARDCS         14     // Card chip select pin
-  #define VS1053_DREQ    15     // VS1053 Data request, ideally an Interrupt pin
-
-// Feather Teensy3
-#elif defined(TEENSYDUINO)
-  #define VS1053_CS       3     // VS1053 chip select pin (output)
-  #define VS1053_DCS     10     // VS1053 Data/command select pin (output)
-  #define CARDCS          8     // Card chip select pin
-  #define VS1053_DREQ     4     // VS1053 Data request, ideally an Interrupt pin
-
-// WICED feather
-#elif defined(ARDUINO_STM32_FEATHER)
-  #define VS1053_CS       PC7     // VS1053 chip select pin (output)
-  #define VS1053_DCS      PB4     // VS1053 Data/command select pin (output)
-  #define CARDCS          PC5     // Card chip select pin
-  #define VS1053_DREQ     PA15    // VS1053 Data request, ideally an Interrupt pin
-
-#elif defined(ARDUINO_NRF52832_FEATHER )
-  #define VS1053_CS       30     // VS1053 chip select pin (output)
-  #define VS1053_DCS      11     // VS1053 Data/command select pin (output)
-  #define CARDCS          27     // Card chip select pin
-  #define VS1053_DREQ     31     // VS1053 Data request, ideally an Interrupt pin
-
-// Feather M4, M0, 328, ESP32S2, nRF52840 or 32u4
-#else
-  #define VS1053_CS       6     // VS1053 chip select pin (output)
-  #define VS1053_DCS     10     // VS1053 Data/command select pin (output)
-  #define CARDCS          5     // Card chip select pin
-  // DREQ should be an Int pin *if possible* (not possible on 32u4)
-  #define VS1053_DREQ     9     // VS1053 Data request, ideally an Interrupt pin
-#endif
+#include "VS1053_Pins.h"
 
 Adafruit_VS1053_FilePlayer _musicPlayer = 
   Adafruit_VS1053_FilePlayer(VS1053_RESET, VS1053_CS, VS1053_DCS, VS1053_DREQ, CARDCS);
@@ -86,9 +40,12 @@ String *_soundFiles = NULL;
 int _curSoundFileIndex = 0;
 int _numSoundFiles = 0;
 
-const int NEXT_BUTTON_PIN = 13;
-const int PREV_BUTTON_PIN = 12;
+// Potentiometer on A0
 const int VOLUME_POT_PIN = A0;
+
+// Next and prev buttons
+Button _btnPrev = Button(12);
+Button _btnNext = Button(13);
 
 // Max ADC on the NRF52840 is 12-bit (4096)
 // See: https://learn.adafruit.com/introducing-the-adafruit-nrf52840-feather/pinouts#analog-inputs-3014279
@@ -97,8 +54,9 @@ const int MAX_ADC_VAL = 4096;
 void setup() {
   Serial.begin(115200);
 
-  pinMode(NEXT_BUTTON_PIN, INPUT_PULLUP);
-  pinMode(PREV_BUTTON_PIN, INPUT_PULLUP);
+  // We must initialize the buttons
+  _btnNext.begin();
+  _btnPrev.begin();
 
   // if you're using Bluefruit or LoRa/RFM Feather, disable the radio module
   // pinMode(8, INPUT_PULLUP);
@@ -123,14 +81,13 @@ void setup() {
   Serial.println("SD OK!");
   
   // list files
-  _fileRoot = SD.open("/");
-  printDirectory(_fileRoot, 0); // FILE_READ
-  _fileRoot.rewindDirectory(); // goes back to first file in dir
+  FileUtils::printDirectory("/"); 
+  _numSoundFiles = FileUtils::countMatchingFiles(SONG_PATH, ".mp3", false);
 
-  _numSoundFiles = countFilesInDir(_fileRoot, ".mp3");
-  Serial.print("The number of .mp3 files on the SD card: ");
+  Serial.print("The number of .mp3 files in " + SONG_PATH);
   Serial.println(_numSoundFiles);
-  _soundFiles = getSoundFiles(_fileRoot, ".mp3"); 
+  int numMatchingFiles = 0;
+  _soundFiles = FileUtils::getFilePaths(SONG_PATH, ".mp3", numMatchingFiles); 
   
   // Set volume for left, right channels. lower numbers == louder volume!
   _musicPlayer.setVolume(5,5); // on headphones, i recommend more like 40, 40
@@ -235,17 +192,18 @@ void loop() {
     Serial.print(".");
   }
 
-  int nextBtnState = digitalRead(NEXT_BUTTON_PIN);
-  int prevBtnState = digitalRead(PREV_BUTTON_PIN);
   int volumePotVal = analogRead(VOLUME_POT_PIN);
 
   // TODO switch from linear mapping to logarithmic if using a linear pot
   uint8_t soundVolume = (uint8_t)map(volumePotVal, 0, MAX_ADC_VAL, 0, 255);
   _musicPlayer.setVolume(soundVolume, soundVolume);
 
-  if(nextBtnState == LOW){
+  // Check prev/next buttons
+  _btnNext.read();
+  _btnPrev.read();
+  if(_btnNext.wasPressed()){
     playNextSound();
-  }else if(prevBtnState == LOW){
+  }else if(_btnPrev.wasPressed()){
     playPrevSound();
   }
 

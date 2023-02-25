@@ -69,7 +69,6 @@ const int VOLUME_POT_PIN = A0;
 Button _btnPrev = Button(12);
 Button _btnNext = Button(13);
 
-
 // Max ADC on the NRF52840 is 12-bit (4096)
 // But according to Adafruit docs, default values for ADC is 10-bit
 // The default values for the ADC are 10-bit resolution (0..1023) with 
@@ -105,6 +104,7 @@ void setup() {
   pinMode(MIC_INPUT_PIN, INPUT);
   pinMode(SOUND_LEVEL_LED_PIN, OUTPUT);
 
+  // We must initialize the buttons
   _btnNext.begin();
   _btnPrev.begin();
 
