@@ -1,3 +1,21 @@
+/**
+ * A basic shape library for monochrome OLEDs using Adafruit_SSD1306.h, which is 
+ * Adafruit's library based on the SSD1306 drivers. 
+ * 
+ * Video demo:
+ * https://youtu.be/-dLtvL1bOn8
+ * 
+ * See also:
+ * LineGraph.hpp
+ * ScrollingLineGraph.hpp
+ * 
+ * By Jon E. Froehlich
+ * @jonfroehlich
+ * https://jonfroehlich.github.io/
+ * https://makeabilitylab.github.io/physcomp/advancedio/oled.html 
+ * 
+ */
+
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 

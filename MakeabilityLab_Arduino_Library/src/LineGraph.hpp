@@ -1,3 +1,14 @@
+/**
+ * A basic line graph library for monochrome OLEDs using Adafruit_SSD1306.h, 
+ * which is Adafruit's library based on the SSD1306 drivers. 
+ * 
+ * By Jon E. Froehlich
+ * @jonfroehlich
+ * https://jonfroehlich.github.io/
+ * https://makeabilitylab.github.io/physcomp/advancedio/oled.html 
+ * 
+ */
+
 enum PointSymbol {
   CIRCLE,
   SQUARE,

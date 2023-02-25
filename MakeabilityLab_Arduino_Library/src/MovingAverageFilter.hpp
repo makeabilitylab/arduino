@@ -1,3 +1,12 @@
+/**
+ * A basic moving average filter class.
+ * 
+ * By Jon E. Froehlich
+ * @jonfroehlich
+ * https://jonfroehlich.github.io/
+ * https://makeabilitylab.github.io/physcomp/advancedio/smoothing-input.html
+ * 
+ */
 class MovingAverageFilter{
   protected:
     int* _samples = NULL; // circular buffer

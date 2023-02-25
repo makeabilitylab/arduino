@@ -25,6 +25,10 @@
  * We can also just call ledcWriteTone(uint8_t chan, double freq) to play a raw
  * frequency at that PWM channel.
  * 
+ * By Jon E. Froehlich
+ * @jonfroehlich
+ * https://jonfroehlich.github.io/
+ * https://makeabilitylab.github.io/physcomp/
  */
 class Tone32{
 

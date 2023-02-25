@@ -1,3 +1,21 @@
+/**
+ * A scrolling line graph multi-value library for monochrome OLEDs using 
+ * Adafruit_SSD1306.h, which is Adafruit's library based on the SSD1306 drivers. 
+ * 
+ * Video demo:
+ * https://youtu.be/EJDewh8Y1TY
+ * 
+ * See also:
+ * LineGraph.hpp
+ * ScrollingLineGraph.hpp
+ * 
+ * By Jon E. Froehlich
+ * @jonfroehlich
+ * https://jonfroehlich.github.io/
+ * https://makeabilitylab.github.io/physcomp/advancedio/oled.html 
+ * 
+ */
+
 enum PointSymbol {
   CIRCLE,
   SQUARE,

@@ -1,7 +1,16 @@
-//
-// Some relevant links to explore in future
-// - https://forum.arduino.cc/t/how-to-get-the-directory-name-of-a-file/565501/2
-// - https://forum.arduino.cc/t/how-to-read-full-name-of-a-file-with-sdfat/167689/2
+/**
+ * Provides a set of storage card related utility methods
+ * 
+ * TODO:Some relevant links to explore in future
+ *  - https://forum.arduino.cc/t/how-to-get-the-directory-name-of-a-file/565501/2
+ *  - https://forum.arduino.cc/t/how-to-read-full-name-of-a-file-with-sdfat/167689/2
+ * 
+ * By Jon E. Froehlich
+ * @jonfroehlich
+ * https://jonfroehlich.github.io/
+ * https://makeabilitylab.github.io/physcomp/
+ * 
+ */
 
 #include <SD.h> // https://www.arduino.cc/reference/en/libraries/sd/
 

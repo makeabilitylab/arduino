@@ -1,3 +1,14 @@
+/**
+ * A convenience class to work with the Parallax 2-axis joystick
+ * 
+ * See: https://www.parallax.com/product/2-axis-joystick/
+ * 
+ * By Jon E. Froehlich
+ * @jonfroehlich
+ * https://jonfroehlich.github.io/
+ * https://makeabilitylab.github.io/physcomp/
+ * 
+ */
 
 // The joysticks orientation with respect to the user
 // We need this because sometimes we have to place a joystick
@@ -8,8 +19,6 @@ enum JoystickYDirection {
   DOWN,
   LEFT
 };
-
-
 
 class ParallaxJoystick {
 

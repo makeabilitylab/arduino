@@ -1,3 +1,12 @@
+/**
+ * Creates a named color and provides color-related methods (e.g., find closest color)
+ * 
+ * By Jon E. Froehlich
+ * @jonfroehlich
+ * https://jonfroehlich.github.io/
+ * https://makeabilitylab.github.io/physcomp/
+ * 
+ */
 class ColorName {
   protected:
     String _name;
