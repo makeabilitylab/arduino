@@ -48,6 +48,7 @@
 #include <SPI.h>
 #include <SD.h> // https://www.arduino.cc/reference/en/libraries/sd/
 #include <FileUtils.hpp> // From MakeabilityLab_Arduino_Library
+#include <Button.hpp> // From MakeabilityLab_Arduino_Library
 #include <Adafruit_NeoPixel.h> // https://github.com/adafruit/Adafruit_NeoPixel
 
 // https://github.com/adafruit/Adafruit_VS1053_Library/blob/master/Adafruit_VS1053.h
@@ -72,8 +73,10 @@ String *_soundFiles = NULL;
 int _curSoundFileIndex = 0;
 int _numSoundFiles = 0;
 
-const int NEXT_BUTTON_PIN = 13;
-const int PREV_BUTTON_PIN = 12;
+// Next and prev buttons
+Button _btnPrev = Button(12);
+Button _btnNext = Button(13);
+
 const int SOUND_LEVEL_LED_PIN = 11;
 const int VOLUME_POT_PIN = A0;
 
@@ -122,12 +125,13 @@ void setup() {
 
   pinMode(MIC_INPUT_PIN, INPUT);
   pinMode(SOUND_LEVEL_LED_PIN, OUTPUT);
-  pinMode(NEXT_BUTTON_PIN, INPUT_PULLUP);
-  pinMode(PREV_BUTTON_PIN, INPUT_PULLUP);
+
+  // We must initialize the buttons
+  _btnNext.begin();
+  _btnPrev.begin();
 
   //if you're using Bluefruit or LoRa/RFM Feather, disable the radio module
   //pinMode(8, INPUT_PULLUP);
-
 
   delay(500);
   Serial.println("\n\nAdafruit VS1053 Feather Test");
@@ -270,17 +274,17 @@ void loop() {
   }
   //interrupts();
 
-  // read buttons and volume
-  int nextBtnState = digitalRead(NEXT_BUTTON_PIN);
-  int prevBtnState = digitalRead(PREV_BUTTON_PIN);
 
   // TODO switch from linear mapping to logarithmic if using a linear pot
   uint8_t soundVolume = (uint8_t)map(volumePotVal, 0, MAX_ANALOG_IN, 0, 255);
   _musicPlayer.setVolume(soundVolume, soundVolume);
 
-  if(_nextBtnStateSaved == HIGH && nextBtnState == LOW){
+   // Check prev/next buttons
+  _btnNext.read();
+  _btnPrev.read();
+  if(_btnNext.wasPressed()){
     playNextSound();
-  }else if(_prevBtnStateSaved == HIGH && prevBtnState == LOW){
+  }else if(_btnPrev.wasPressed()){
     playPrevSound();
   }
 
@@ -321,9 +325,7 @@ void loop() {
       playPrevSound();
     }
   }
-
-  _nextBtnStateSaved = nextBtnState;
-  _prevBtnStateSaved = prevBtnState;
+  
   //delay(100);
 }
 
