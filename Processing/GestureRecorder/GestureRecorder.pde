@@ -22,6 +22,7 @@
  * Future ideas:
  * - Shows capture snapshot?
  * - GUI to select which gesture to record
+ * - Print out which mode we are using for comm (BLUETOOTH, Serial, WiFi)
  * 
  */
 
@@ -29,6 +30,7 @@ import processing.serial.*;
 import java.awt.Rectangle;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import processing.net.*;
 
 final String GESTURE_DIR_NAME = "Gestures";
 final String FULL_DATASTREAM_RECORDING_FILENAME = "fulldatastream.csv";
@@ -45,7 +47,13 @@ final int DISPLAY_TIMEWINDOW_MS = 1000 * 20; // 20 secs. You can change this to 
 
 // Make sure to change this! If you're not sure what port your Arduino is using
 // Run this Processing sketch and look in the console, then change the number accordingly
-final int ARDUINO_SERIAL_PORT_INDEX = 0; // CHANGE THIS TO APPROPRIATE PORT! 
+
+final String ARDUINO_SERIAL_PORT_NAME = "COM3"; // CHANGE THIS TO APPROPRIATE PORT! 
+// WIFI SETTINGS
+// This should be false even in bluetooth mode since that just emulates a com port
+final boolean ARDUINO_WIFI_MODE = false; // CHANGE THIS TO TRUE IF AND ONLY IF YOU ARE USING WIFI MODE
+final int ARDUINO_WIFI_PORT = 10002; // THIS IS THE PORT THAT THEY WILL TRY TO COMMUNICATE OVER
+
 
 // Set the baud rate to same as Arduino (e.g., 9600 or 115200)
 final int SERIAL_BAUD_RATE = 115200; // CHANGE THIS TO MATCH BAUD RATE ON ARDUINO
@@ -63,6 +71,9 @@ PrintWriter _printWriterAllData;
 
 // The serial port is necessary to read data in from the Arduino
 Serial _serialPort;
+
+// Wifi server
+Server _wifiServer;
 
 long _currentXMin; // the far left x-axis value on the graph
 Rectangle _legendRect; // location and drawing area of the legend
@@ -123,48 +134,62 @@ void setup() {
     e.printStackTrace();
   }
 
-  // Print to console all the available serial ports
-  String [] serialPorts = getAndPrintSerialPortInfo();
+  if (ARDUINO_WIFI_MODE) {
+    // https://www.processing.org/reference/libraries/net/Server.html
+    _wifiServer = new Server(this, ARDUINO_WIFI_PORT);
+    print("Starting server");
+    while (!_wifiServer.active()) {
+      print(".");
+      delay(50);
+    }
+    println("\nWe have started a server at "+Server.ip());
+    thread("processServer"); // start a thread that reads for the server
+  } else {
 
-  if (serialPorts.length <= 0) {
-    println("You appear to have *ZERO* active serial ports. Make sure your Arduino is plugged in. Exiting...");
-    exit();
-  } else if (ARDUINO_SERIAL_PORT_INDEX > serialPorts.length) {
-    println("You set ARDUINO_SERIAL_PORT_INDEX = " + ARDUINO_SERIAL_PORT_INDEX + "; however, you only have " +
-      serialPorts.length + " total serial ports.");
-    println("Please make sure your Arduino is plugged in. Then update ARDUINO_SERIAL_PORT_INDEX to the appropriate index.");
-    println("Exiting...");
-    exit();
-    return;
+    // Print to console all the available serial ports
+    String [] serialPorts = getAndPrintSerialPortInfo();
+
+    if (serialPorts.length <= 0) {
+      println("You appear to have *ZERO* active serial ports. Make sure your Arduino is plugged in. Exiting...");
+      exit();
+      return;
+    }
+
+    int ARDUINO_SERIAL_PORT_INDEX = getIndexOfArduinoSerialPort(ARDUINO_SERIAL_PORT_NAME);
+
+    if (ARDUINO_SERIAL_PORT_INDEX == -1) {
+      println("Could not find the serial port: " + ARDUINO_SERIAL_PORT_NAME + ". Exiting...");
+      exit();
+      return;
+    }
+
+    // Open the serial port
+    try {
+      println("Attempting to initialize the serial port " + ARDUINO_SERIAL_PORT_NAME + " with baud rate = " + SERIAL_BAUD_RATE);
+      println("This index corresponds to serial port at index: " + ARDUINO_SERIAL_PORT_INDEX);
+      _serialPort = new Serial(this, serialPorts[ARDUINO_SERIAL_PORT_INDEX], SERIAL_BAUD_RATE);
+
+      // We need to clear the port (or sometimes there is leftover data)
+      // (Yes, this is strange, but once we implemented this clear,
+      // we were no longer seeing garbage data in the beginning of our printwriter stream)
+      _serialPort.clear();
+    }
+    catch(Exception e) {
+      println("Serial port exception: " + e);
+      e.printStackTrace();
+      exit();
+      return;
+    }
+
+    if (_serialPort == null) {
+      println("Could not initialize the serial port at " + ARDUINO_SERIAL_PORT_INDEX + ". Exiting...");
+      exit();
+      return;
+    }
+
+    // Don't generate a serialEvent() unless you get a newline character:
+    _serialPort.bufferUntil('\n');
   }
-
-  // Open the serial port
-  try {
-    println("Attempting to initialize the serial port at index " + ARDUINO_SERIAL_PORT_INDEX + " with baud rate = " + SERIAL_BAUD_RATE);
-    println("This index corresponds to serial port " + serialPorts[ARDUINO_SERIAL_PORT_INDEX]);
-    _serialPort = new Serial(this, serialPorts[ARDUINO_SERIAL_PORT_INDEX], SERIAL_BAUD_RATE);
-
-    // We need to clear the port (or sometimes there is leftover data)
-    // (Yes, this is strange, but once we implemented this clear,
-    // we were no longer seeing garbage data in the beginning of our printwriter
-    // strea,)
-    _serialPort.clear();
-  }
-  catch(Exception e) {
-    println("Serial port exception: " + e);
-    e.printStackTrace();
-    exit();
-    return;
-  }
-
-  if (_serialPort == null) {
-    println("Could not initialize the serial port at " + ARDUINO_SERIAL_PORT_INDEX + ". Exiting...");
-    exit();
-    return;
-  }
-
-  // Don't generate a serialEvent() unless you get a newline character:
-  _serialPort.bufferUntil('\n');
 
   _currentXMin = System.currentTimeMillis() - DISPLAY_TIMEWINDOW_MS;
 
@@ -378,9 +403,9 @@ void toggleGestureRecording() {
 }
 
 /**
- * Convenience method that returns the number of gestures recoreded with the given name
+ * Convenience method that returns the number of gestures recorded with the given name
  */
-int getNumGesturesRecordedWithName(String name) {
+int getNumGesturesRecordedWithName(String name){
   return _mapGestureNameToRecordedCount.containsKey(name) ? (int)_mapGestureNameToRecordedCount.get(name) : 0;
 }
 
@@ -420,6 +445,9 @@ void drawDebugInfo() {
   }
 }
 
+/**
+ * Draws the y-axis ticks and labels
+ */ 
 void drawYAxis() {
   final int numYTickMarks = 5; 
   final int tickMarkWidth = 6;
@@ -468,14 +496,26 @@ String[] getAndPrintSerialPortInfo() {
   String[] listOfSerialPorts = Serial.list();
   printArray(listOfSerialPorts);
   println("** END SERIAL PORT LIST**");
-  println("Make sure to change ARDUINO_SERIAL_PORT_INDEX to the correct port number!");
 
-  if (listOfSerialPorts.length > 0) {
+  if(listOfSerialPorts.length > 0){
     String firstPortName = listOfSerialPorts[0];
     println("For example, if your Arduino is on port " + firstPortName + 
-      " then you would set ARDUINO_SERIAL_PORT_INDEX = " + 0);
+      " then you would set ARDUINO_SERIAL_PORT_NAME = " + firstPortName);
   }
   return listOfSerialPorts;
+}
+
+/**
+ * Convenience method that returns index of serialPortName or -1 if not found 
+ */
+int getIndexOfArduinoSerialPort(String serialPortName) {
+  String[] listOfSerialPorts = Serial.list();
+  for (int i=0; i< listOfSerialPorts.length; i++) {
+    if (listOfSerialPorts[i].equals(serialPortName)){
+      return i;
+    }
+  }
+  return -1;
 }
 
 /**
@@ -664,9 +704,6 @@ void drawGestureRecordingAnnotations() {
  * Note: this method is called by a different thread (EventThread) than the draw() method (Animation Thread)
  */
 void serialEvent (Serial myPort) {
-  long currentTimestampMs = System.currentTimeMillis();
-  _currentXMin = currentTimestampMs - DISPLAY_TIMEWINDOW_MS;
-
   //println(Thread.currentThread());
 
   String inString = "";
@@ -681,6 +718,40 @@ void serialEvent (Serial myPort) {
     println(e);
     return;
   }
+
+  processInputFromClient(inString);
+}
+
+void processServer() {
+  if (_wifiServer == null){
+    return;
+  }
+  
+  Client thisClient = _wifiServer.available();
+  
+  // If the client is not null, and says something, display what it said
+  if (thisClient !=null) {
+    String whatClientSaid = thisClient.readString();
+    if (whatClientSaid != null) {
+      processInputFromClient(whatClientSaid);
+      println(thisClient.ip() + "t" + whatClientSaid);
+    }
+  } 
+  delay(10);
+}
+
+// ServerEvent message is generated when a new client connects 
+// to an existing server.
+void serverEvent(Server someServer, Client someClient) {
+  println("We have a new client: " + someClient.ip());
+}
+
+/**
+ * This processes data from a client (serial or wifi)
+ */
+void processInputFromClient(String inString) {
+  long currentTimestampMs = System.currentTimeMillis();
+  _currentXMin = currentTimestampMs - DISPLAY_TIMEWINDOW_MS;
 
   try {
     if (inString != null) {
@@ -764,6 +835,11 @@ void exit() {
       _printWriterAllData.close();
     }
   }
+
+  if (_wifiServer != null) {
+    _wifiServer.stop();
+  }
+
   super.exit();
 }
 
