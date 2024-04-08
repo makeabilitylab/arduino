@@ -7,7 +7,7 @@
  * to false. With a pull-up resistor, when the button is not pressed, Pin 2 is HIGH
  * and when the button is pressed Pin 2 is LOW.
  * 
- * See: 
+ * See: https://makeabilitylab.github.io/physcomp/arduino/buttons.html
  * 
  * By Jon Froehlich
  * @jonfroehlich
