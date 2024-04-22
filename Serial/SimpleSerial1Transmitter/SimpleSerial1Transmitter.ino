@@ -31,7 +31,8 @@ void loop() {
   // We only send data when the analog input value has changed
   if(_lastOutVal != outVal){
 
-    // Send the data out of the TX pin using Serial
+    // Send the data out of the TX pin using Serial1
+    // Since we're using println, the data will be encoded as text
     Serial1.println(outVal);
 
     // Set the local LED pin value

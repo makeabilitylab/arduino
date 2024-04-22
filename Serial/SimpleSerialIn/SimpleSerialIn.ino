@@ -1,6 +1,7 @@
 /**
- * Receives a string off of the serial port and writes this value
- * out to the OUTPUT_PIN.
+ * Receives a string off of the serial port, parses it to a 
+ * number between 0-255, and writes this value out to the 
+ * OUTPUT_PIN using analogWrite
  * 
  * By Jon E. Froehlich
  * @jonfroehlich
