@@ -49,15 +49,18 @@ void loop() {
   // Check to see if there is any incoming serial data. We are transmitting
   // in binary encoding (rather than text). 
   // See: https://makeabilitylab.github.io/physcomp/communication/serial-intro.html#why-use-binary-vs-ascii
-  while (Serial1.available() >= 0) {
+  while (Serial1.available() > 0) {
     byte receivedData = Serial1.read();   // read one byte from serial buffer
     
-    if (receivedData == 0) {
+    if (receivedData == 1) {
       digitalWrite(LED_OUTPUT_PIN, HIGH); // switch LED On
     }
-    else if (receivedData == 1) {
+    else if (receivedData == 0) {
       digitalWrite(LED_OUTPUT_PIN, LOW);  // switch LED Off
     }
+
+    Serial.print("Received over Serial1: ");
+    Serial.println(receivedData);
   }
 
   delay(DELAY_MS);
