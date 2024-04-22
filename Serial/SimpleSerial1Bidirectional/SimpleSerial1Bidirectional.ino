@@ -1,6 +1,8 @@
 /**
- * Receives a string off of the serial port and writes this value
- * out to the OUTPUT_PIN.
+ * A simple Serial1 bidirectional demo. Reads a digital input and
+ * writes (as a byte) either 0 or 1 to Serial1 accordingly.
+ * Similarly, listens on Serial1 for either 0 or 1 and lights
+ * up an LED accordingly.
  *
  * Partially remixed from:
  * https://docs.arduino.cc/learn/communication/uart/#serial-usb-examples
