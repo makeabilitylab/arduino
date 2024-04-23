@@ -1,5 +1,5 @@
 /**
- * Simple example that shows circle in middle of OLED
+ * Simple example that animates an increasingly large circle on screen
  * 
  * Adafruit Gfx Library:
  * https://learn.adafruit.com/adafruit-gfx-graphics-library/overview 
@@ -35,11 +35,27 @@ void setup() {
   }
   
   _display.clearDisplay();
-
-  const int circleRadius = 40;
-  _display.fillCircle(_display.width() / 2, _display.height() / 2, circleRadius, SSD1306_WHITE);
 }
 
 void loop() {
+  // Clear the buffer
+  _display.clearDisplay();
 
+  // We could certainly modify this to not use an embedded loop
+  // But fine for now just to demonstrate drawing function
+  int16_t i = 0;
+  for(; i<max(_display.width(),_display.height())/2; i+=2) {
+    _display.fillCircle(_display.width() / 2, _display.height() / 2, i, SSD1306_WHITE);
+    _display.display();
+    delay(1);
+  }
+
+  for(; i>0; i-=2) {
+    _display.clearDisplay(); // have to clear each time as getting smaller
+    _display.fillCircle(_display.width() / 2, _display.height() / 2, i, SSD1306_WHITE);  
+    _display.display();
+    delay(1);
+  }
+
+  delay(100);
 }
