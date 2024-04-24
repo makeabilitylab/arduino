@@ -1,5 +1,7 @@
 /**
  * Simple example that shows circle in middle of OLED
+ *
+ * See: https://makeabilitylab.github.io/physcomp/advancedio/oled.html#drawing-subsystem
  * 
  * Adafruit Gfx Library:
  * https://learn.adafruit.com/adafruit-gfx-graphics-library/overview 
@@ -26,7 +28,7 @@
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(9600); // Just for debugging
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!_display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
@@ -34,10 +36,18 @@ void setup() {
     for(;;); // Don't proceed, loop forever
   }
   
+  // Clear all contents of the display buffer (set all pixels to off)
   _display.clearDisplay();
 
+  // Draw a circle in the middle of the screen
   const int circleRadius = 40;
-  _display.fillCircle(_display.width() / 2, _display.height() / 2, circleRadius, SSD1306_WHITE);
+  const int xCirclePos = _display.width() / 2;
+  const int yCirclePos = _display.height() / 2;
+  _display.fillCircle(xCirclePos, yCirclePos, circleRadius, SSD1306_WHITE);
+
+  // Contents of the screen buffer (memory) are not render to the display
+  // until display is called.
+  _display.display();
 }
 
 void loop() {
