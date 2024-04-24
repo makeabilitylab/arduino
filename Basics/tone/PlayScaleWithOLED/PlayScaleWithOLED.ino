@@ -1,9 +1,11 @@
 /**
  * Plays the C Scale using tone and prints the note and frequency to the screen.
- * See:
- * https://www.arduino.cc/reference/en/language/functions/advanced-io/tone/
  *
  * There is also a non-OLED variant in this repo: PlayScale.ino
+ *
+ * Note: Use of the tone() function will interfere with PWM output on pins 3 and 11 
+ * (on boards other than the Mega). See:
+ * https://www.arduino.cc/reference/en/language/functions/advanced-io/tone/
  * 
  * By Jon E. Froehlich
  * @jonfroehlich

@@ -4,6 +4,9 @@
  *
  * See also the OLED variant: PlayScaleWithOLED.ino
  * 
+ * Note: Use of the tone() function will interfere with PWM output on pins 3 and 11 
+ * (on boards other than the Mega).
+ * 
  * By Jon E. Froehlich
  * @jonfroehlich
  * http://makeabilitylab.io
