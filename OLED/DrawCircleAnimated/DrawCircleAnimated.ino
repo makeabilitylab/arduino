@@ -64,5 +64,6 @@ void loop() {
     delay(1);
   }
 
+  // Delay a bit in its smallest state
   delay(100);
 }
