@@ -23,7 +23,7 @@ Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 // Change this depending on where you put your speaker
 // It needs to be hooked up to a PWM pin. We assume Leonardo for this
 // demonstration
-const int SPEAKER_OUTPUT_PIN = 5;
+const int SPEAKER_OUTPUT_PIN = 11;
 
 // The Leonardo has 7 PWM pins most of which run at 490 Hz
 // but two (3 and 11) run at 980 Hz
@@ -59,32 +59,41 @@ void setup() {
   // Write out wave form
   int dutyCycle = 128; // 255 is 100% duty cycle
   analogWrite(SPEAKER_OUTPUT_PIN, dutyCycle);
-  drawFreqAndDutyCycle(PWM_FREQS_ARDUINO_LEONARDO[_indexOfSpeakerOutputPin], dutyCycle);
+  drawPinInfo(PWM_PINS_ARDUINO_LEONARDO[_indexOfSpeakerOutputPin], 
+              PWM_FREQS_ARDUINO_LEONARDO[_indexOfSpeakerOutputPin], dutyCycle);
 }
 
 void loop() {
   // Empty on purpose
 }
 
-void drawFreqAndDutyCycle(int freq, int analogOutVal){
+void drawPinInfo(int pin, int freq, int analogOutVal){
   _display.clearDisplay();
 
   int16_t x1, y1;
   uint16_t textWidth, textHeight;
-  _display.setTextSize(3);
-  String strFreq = (String)(freq) + " Hz";
+  
+  // Draw the pin
+  _display.setTextSize(2);
+  String strPin = "Pin " + (String)pin;      
+  _display.getTextBounds(strPin, 0, 0, &x1, &y1, &textWidth, &textHeight);
+  uint16_t yText = 9;
+  uint16_t xText = _display.width() / 2 - textWidth / 2;
+  _display.setCursor(xText, yText);
+  _display.print(strPin);
 
   // Draw the freq 
-  _display.setTextSize(2);      
+  yText += textHeight + 4;
+  String strFreq = (String)(freq) + " Hz";
+  _display.setTextSize(1);      
   _display.getTextBounds(strFreq, 0, 0, &x1, &y1, &textWidth, &textHeight);
-  uint16_t yText = _display.height() / 2 - textHeight - 2;
-  uint16_t xText = _display.width() / 2 - textWidth / 2;
+  xText = _display.width() / 2 - textWidth / 2;
   _display.setCursor(xText, yText);
   _display.print(strFreq);
 
   // Draw the duty cycle
-  _display.setTextSize(1);
   yText += textHeight + 4;
+  _display.setTextSize(1);
   float dutyCycle = analogOutVal / (float)MAX_ANALOG_OUT * 100;
   
   String strDutyCycle = String(dutyCycle, 0) + "% duty cycle";
