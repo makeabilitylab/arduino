@@ -1,5 +1,5 @@
 /**
- * Swaps between two Makeability Lab logos.
+ * Shows Mario on the OLED screen
  * 
  * Based on the tutorial by Last Minute Engineers:
  * https://lastminuteengineers.com/oled-display-arduino-tutorial/
