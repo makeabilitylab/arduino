@@ -66,6 +66,7 @@ void setup() {
 
   // Gets a random long between min and max - 1
   // https://www.arduino.cc/reference/en/language/functions/random-numbers/random/
+  randomSeed(analogRead(A0)); // Seed the randomness with random voltage value
   _xSpeed = random(1, 4);
   _ySpeed = random(1, 4);
 

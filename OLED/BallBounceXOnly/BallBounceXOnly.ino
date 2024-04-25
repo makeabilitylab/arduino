@@ -1,6 +1,6 @@
 
 /**
- *  Draws a bouncing ball on the OLED display
+ *  Draws a x-axis only bouncing ball on the OLED display
  *
  *  Based on: https://makeabilitylab.github.io/p5js/Animation/BallBounce2D
  *  Source: https://github.com/makeabilitylab/p5js/tree/master/Animation/BallBounce2D
@@ -37,7 +37,6 @@ const int _ballRadius = 5;
 int _xBall = 0;
 int _yBall = 0;
 int _xSpeed = 0;
-int _ySpeed = 0;
 
 // for tracking fps
 float _fps = 0;
@@ -60,7 +59,6 @@ void setup() {
   // https://www.arduino.cc/reference/en/language/functions/random-numbers/random/
   randomSeed(analogRead(A0)); // Seed the randomness with random voltage value
   _xSpeed = random(1, 4);
-  _ySpeed = random(1, 4);
 
   //Serial.println((String)"_xBall:" + _xBall + " _xBall:" + _xBall + " _xSpeed:" + _xSpeed + " _ySpeed:" + _ySpeed);
   _fpsStartTimeStamp = millis();
@@ -78,15 +76,10 @@ void loop() {
   
   // Update ball based on speed location
   _xBall += _xSpeed;
-  _yBall += _ySpeed;
 
   // Check for ball bounce
   if(_xBall - _ballRadius <= 0 || _xBall + _ballRadius >= _display.width()){
     _xSpeed = _xSpeed * -1; // reverse x direction
-  }
-  
-  if(_yBall - _ballRadius <= 0 || _yBall + _ballRadius >= _display.height()){
-    _ySpeed = _ySpeed * -1; // reverse y direction
   }
 
   // Draw circle
@@ -120,7 +113,7 @@ void initializeOledAndShowStartupScreen(){
   _display.setTextColor(WHITE, BLACK);
   int16_t x1, y1;
   uint16_t textWidth, textHeight;
-  String strOpeningScreen = "Ball Bounce X,Y Demo!";      
+  String strOpeningScreen = "Ball Bounce X Only!";      
   _display.getTextBounds(strOpeningScreen, 0, 0, &x1, &y1, &textWidth, &textHeight);
   uint16_t xText = _display.width() / 2 - textWidth / 2;
   uint16_t yText = _display.height() / 2 - textHeight / 2;
