@@ -104,7 +104,7 @@ class Shape {
     /**
      * @brief Gets the y location of the shape
      * 
-     * @return int y locaiton of the shape
+     * @return int y location of the shape
      */
     int getY() const{
       return _y;
@@ -216,7 +216,13 @@ class Shape {
     /**
      * @brief Checks to see if the current shape overlaps with the provided shape.
      * Overlap is defined as any pixel between this shape touching (equaling)
-     * the passed in shape
+     * the passed in shape.
+     * 
+     * This function is useful for collision detection between objects.
+     * 
+     * While you can use this parent class function, it is recommended that
+     * sub-classes override this function to provide more precise overlap detection
+     * as this method is a simple bounding box check.
      * 
      * @param shape The shape to check for overlap
      * @return true If the shape overlaps
