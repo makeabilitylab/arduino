@@ -162,7 +162,6 @@ void setup() {
   // Center sprite
   _xSprite = display.width() / 2 - SPRITE_WIDTH / 2;
   _ySprite = display.height() / 2 - SPRITE_HEIGHT / 2;
-  
 }
 
 void loop() {
