@@ -48,7 +48,7 @@ void loop() {
   int16_t radius = 0;
   int16_t maxRadius = max(_display.width(), _display.height()) / 2;
   const int16_t xCenter = _display.width() / 2;
-  const int16_t yCenter = _display.width() / 2;
+  const int16_t yCenter = _display.height() / 2;
   for(; radius < maxRadius; radius += 2) {
     // Draw a filled circle in center of screen with radius i
     _display.fillCircle(xCenter, yCenter, radius, SSD1306_WHITE);
