@@ -114,12 +114,20 @@ void initializeOledAndShowStartupScreen(){
   // Clear the buffer
   _display.clearDisplay();
 
+  // Display opening screen
   _display.setTextSize(1);
   _display.setTextColor(WHITE, BLACK);
-  _display.setCursor(0, 0);
-  _display.println("Screen initialized!");
+  int16_t x1, y1;
+  uint16_t textWidth, textHeight;
+  String strOpeningScreen = "Ball Bounce Demo!";      
+  _display.getTextBounds(strOpeningScreen, 0, 0, &x1, &y1, &textWidth, &textHeight);
+  uint16_t xText = _display.width() / 2 - textWidth / 2;
+  uint16_t yText = _display.height() / 2 - textHeight / 2;
+  _display.setCursor(xText, yText);
+  _display.println(strOpeningScreen);
   _display.display();
-  delay(500);
+  delay(1000);
+
   _display.clearDisplay();
 }
 
@@ -144,6 +152,7 @@ void drawStatusBar() {
   // Draw frame count
   int16_t x1, y1;
   uint16_t w, h;
+  _display.setTextSize(1);
   _display.getTextBounds("XX.XX fps", 0, 0, &x1, &y1, &w, &h);
   _display.setCursor(_display.width() - w, 0);
   _display.print(_fps);
