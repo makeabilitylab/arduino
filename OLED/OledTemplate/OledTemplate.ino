@@ -30,7 +30,17 @@ Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 void setup() {
   Serial.begin(9600); // Just for debugging
 
+  // The following line of code is just for initialization. You will
+  // not need to change it but providing some details below.
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  // If you look at the source (Adafruit_SSD1306.cpp), you'll see that
+  // the first parameter is the VCC selection and that, for most cases, you should pass
+  // SSD1306_SWITCHCAPVCC
+  // And the second parameter is the I2C address of corresponding SSD1306 display
+  // Note: if you wire this up with SPI, it won't use an address; however, you still
+  // need to pass a param. So you can pass zero.
+  // For more on this, see: 
+  // https://github.com/adafruit/Adafruit_SSD1306/blob/1d52453e3b722e4c7a7bc6b81128138d721b5c27/Adafruit_SSD1306.cpp#L458
   if(!_display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
     Serial.println(F("SSD1306 allocation failed"));
     for(;;); // Don't proceed, loop forever
