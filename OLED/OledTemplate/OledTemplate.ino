@@ -48,7 +48,7 @@ void loop() {
   // Draw something!
   // In this case, we are drawing a circle in the center of the screen
   // But you can put all your drawing code here!
-  const int circleRadius = 40;
+  const int circleRadius = 10;
   const int xCirclePos = _display.width() / 2;
   const int yCirclePos = _display.height() / 2;
   _display.fillCircle(xCirclePos, yCirclePos, circleRadius, SSD1306_WHITE);
