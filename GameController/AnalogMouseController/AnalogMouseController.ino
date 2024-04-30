@@ -81,8 +81,8 @@ void loop() {
 
     // There are many ways that you may want to convert the incoming
     // analog values to mouse movement. This is just one way
-    int yDistFromCenter = analogX - ANALOG_CENTER_VALUE;
-    int xDistFromCenter = analogY - ANALOG_CENTER_VALUE;
+    int xDistFromCenter = analogX - ANALOG_CENTER_VALUE;
+    int yDistFromCenter = analogY - ANALOG_CENTER_VALUE;
     int yMouse = 0, xMouse = 0;
       
     if(abs(xDistFromCenter) > JOYSTICK_MOVEMENT_THRESHOLD){
