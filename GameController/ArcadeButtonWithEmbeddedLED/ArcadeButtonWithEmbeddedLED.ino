@@ -49,17 +49,17 @@ void loop() {
       _fadeStep *= -1;
     }
   }else{
-      // If we are here, the button is not pressed, so continue fade loop
-      // Check to see if enough time has passed to fade since last fade step
-      if(millis() - _lastFadeTimestampMs > TIME_BETWEEN_FADE_STEP_IN_MS){
-        analogWrite(ARCADE_BUTTON_LED_PIN, _curFadeVal);
-        _lastFadeTimestampMs = millis();
+    // If we are here, the button is not pressed, so continue fade loop
+    // Check to see if enough time has passed to fade since last fade step
+    if(millis() - _lastFadeTimestampMs > TIME_BETWEEN_FADE_STEP_IN_MS){
+      analogWrite(ARCADE_BUTTON_LED_PIN, _curFadeVal);
+      _lastFadeTimestampMs = millis();
 
-        _curFadeVal += _fadeStep;
-        _curFadeVal = constrain(_curFadeVal, 0, MAX_FADE_VAL);
-        if(_curFadeVal <= 0 || _curFadeVal >= MAX_FADE_VAL){
-          _fadeStep *= -1;
-        }     
-      }
+      _curFadeVal += _fadeStep;
+      _curFadeVal = constrain(_curFadeVal, 0, MAX_FADE_VAL);
+      if(_curFadeVal <= 0 || _curFadeVal >= MAX_FADE_VAL){
+        _fadeStep *= -1;
+      }     
+    }
   }
 }
