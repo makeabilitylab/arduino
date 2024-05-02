@@ -145,7 +145,5 @@ void loop() {
     }
   }
 
-  
-  
-  delay(50);
+  delay(50); // Only send mouse updates ~20 times/sec
 }
