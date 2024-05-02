@@ -29,8 +29,8 @@ void loop() {
     _btnPressed = true;
     Keyboard.press(' ');
     Serial.println("Spacebar PRESSED!");
-  }else{
-    if(_btnPressed){
+  }else{ // if btnVal is HIGH, its not pressed
+    if(_btnPressed){ // if prev pressed, release
       _btnPressed = false;
       Keyboard.release(' ');
       Serial.println("Spacebar RELEASED!");
