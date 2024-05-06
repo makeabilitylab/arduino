@@ -1,5 +1,5 @@
 /**
- * Reads in an analog value and sends a normalized value [0, 1] inclusive
+ * Reads in an analog value on A0 and sends a normalized value [0, 1] inclusive
  * over the serial port with 4 decimal point precision.
  * 
  * By Jon E. Froehlich
@@ -8,7 +8,7 @@
  * 
  */
 
-const int DELAY_MS = 5;
+const int DELAY_MS = 100;
 
 const int ANALOG_INPUT_PIN = A0;
 const int MAX_ANALOG_INPUT = 1023;
