@@ -1,8 +1,6 @@
 /**
  * Reads in an analog value and sends a normalized value [0, 1] inclusive
  * over the serial port with 4 decimal point precision.
- *
- * TODO: update textbook links to point to AnalogOutCircleOLED and delete this one
  * 
  * By Jon E. Froehlich
  * @jonfroehlich

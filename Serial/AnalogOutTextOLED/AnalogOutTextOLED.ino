@@ -1,8 +1,6 @@
 /**
  * Reads in an analog value and sends a normalized value [0, 1] inclusive
  * over the serial port with 4 decimal point precision.
- *
- * TODO: update textbook links to point to AnalogOutCircleOLED and delete this one
  * 
  * By Jon E. Froehlich
  * @jonfroehlich
@@ -28,14 +26,13 @@ const int ANALOG_INPUT_PIN = A0;
 const int MAX_ANALOG_INPUT = 1023;
 
 int _lastAnalogVal = -1;
-float _curShapeSizeFraction = -1;
 
 // If false, only sends new data when the new analog value does not
 // equal the last analog value. If true, always sends the data
 boolean _alwaysSendData = true; 
 
-const int MIN_SHAPE_SIZE = 4;
-int MAX_SHAPE_SIZE;
+// OLED display fraction or raw analog val
+boolean _displayFraction = false;
 
 void setup() {
   Serial.begin(115200);
@@ -46,8 +43,6 @@ void setup() {
     for(;;); // Don't proceed, loop forever
   }
 
-  MAX_SHAPE_SIZE = min(_display.width(), _display.height());
-
   _display.clearDisplay();
   _display.setTextSize(1);      // Normal 1:1 pixel scale
   _display.setTextColor(SSD1306_WHITE); // Draw white text
@@ -55,21 +50,36 @@ void setup() {
 }
 
 void loop() {
-  _display.clearDisplay();
-
+  
   int analogVal = analogRead(ANALOG_INPUT_PIN);
-  int shapeSize = map(analogVal, 0, MAX_ANALOG_INPUT, MIN_SHAPE_SIZE, MAX_SHAPE_SIZE);
-  int radius = shapeSize / 2;
-  int xCenter = _display.width() / 2;
-  int yCenter = _display.height() / 2; 
-
-  _display.fillCircle(xCenter, yCenter, radius, SSD1306_WHITE);
-  _display.display();
 
   // If the analog value has changed, send a new one over serial
   if(_alwaysSendData || _lastAnalogVal != analogVal){
-    float sizeFrac = analogVal / (float)MAX_ANALOG_INPUT;
-    Serial.println(sizeFrac, 4); // 4 decimal point precision
+    float valFrac = analogVal / (float)MAX_ANALOG_INPUT;
+    Serial.println(valFrac, 4); // 4 decimal point precision
+
+    int16_t x1, y1;
+    uint16_t textWidth, textHeight;
+
+    _display.setTextSize(3);
+    String strAnalogVal = (String)analogVal;
+    if(_displayFraction){
+      _display.getTextBounds("0.0000", 0, 0, &x1, &y1, &textWidth, &textHeight);
+    }else{
+      _display.getTextBounds(strAnalogVal, 0, 0, &x1, &y1, &textWidth, &textHeight);
+    }
+    
+    uint16_t yText = _display.height() / 2 - textHeight / 2;
+    uint16_t xText = _display.width() / 2 - textWidth / 2;
+
+    _display.clearDisplay();
+    _display.setCursor(xText, yText);
+    if(_displayFraction){
+      _display.println(valFrac, 4);
+    }else{
+      _display.println(strAnalogVal);
+    }
+    _display.display();
   }
 
   _lastAnalogVal = analogVal;
