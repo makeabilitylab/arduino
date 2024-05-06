@@ -135,7 +135,7 @@ void loop() {
   }
 
   // We control how often we send mouse updates via MOUSE_UPDATE_FREQ 
-  if(millis() - _lastSentMouseSampleTimestampInMs > _sendMouseSampleThresholdInMs){
+  if(isMouseActive && millis() - _lastSentMouseSampleTimestampInMs > _sendMouseSampleThresholdInMs){
     // Mouse.move takes xVal, yVal, and wheel
     // See: https://www.arduino.cc/reference/tr/language/functions/usb/mouse/mousemove/
     Mouse.move(xMouse, yMouse, 0);

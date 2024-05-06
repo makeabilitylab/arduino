@@ -138,21 +138,22 @@ void loop() {
     xMouse = map(joystickXVal, 0, MAX_ANALOG_VAL, -MAX_MOUSE_MOVE_VAL, MAX_MOUSE_MOVE_VAL);
   }
 
-  // We control how often we send mouse updates via MOUSE_UPDATE_FREQ 
-  if(millis() - _lastSentMouseSampleTimestampInMs > _sendMouseSampleThresholdInMs){
-    // Mouse.move takes xVal, yVal, and wheel
-    // See: https://www.arduino.cc/reference/tr/language/functions/usb/mouse/mousemove/
-    Mouse.move(xMouse, yMouse, 0);
-    _lastSentMouseSampleTimestampInMs = millis();
-    Serial.println((String)"Sent xMouse: " + xMouse + " yMouse: " + yMouse);
-  }
+  if(isMouseActive){
+    // We control how often we send mouse updates via MOUSE_UPDATE_FREQ 
+    if(millis() - _lastSentMouseSampleTimestampInMs > _sendMouseSampleThresholdInMs){
+      // Mouse.move takes xVal, yVal, and wheel
+      // See: https://www.arduino.cc/reference/tr/language/functions/usb/mouse/mousemove/
+      Mouse.move(xMouse, yMouse, 0);
+      _lastSentMouseSampleTimestampInMs = millis();
+      Serial.println((String)"Sent xMouse: " + xMouse + " yMouse: " + yMouse);
+    }
 
-  // Read mouse button
-  int mousePressBtn = digitalRead(BUTTON_MOUSE_PRESS_PIN);
-  if (!Mouse.isPressed() && mousePressBtn == LOW) { // pull-up input
-    Mouse.press();
-  }else if(Mouse.isPressed() && mousePressBtn == HIGH){
-    Mouse.release();
+    // Read mouse button
+    int mousePressBtn = digitalRead(BUTTON_MOUSE_PRESS_PIN);
+    if (!Mouse.isPressed() && mousePressBtn == LOW) { // pull-up input
+      Mouse.press();
+    }else if(Mouse.isPressed() && mousePressBtn == HIGH){
+      Mouse.release();
+    }
   }
-
 }
