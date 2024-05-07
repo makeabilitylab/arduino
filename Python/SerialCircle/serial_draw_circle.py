@@ -13,11 +13,18 @@
 # @jonfroehlich
 # http://makeabilitylab.io
 
-import sys
 import serial
+import serial.tools.list_ports
 import argparse
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
+
+def list_serial_ports():
+    """Lists serial ports on the system."""
+    print("Available serial ports:")
+    ports = serial.tools.list_ports.comports()
+    for port in ports:
+        print(port)
 
 def read_serial_value(serial_port):
     """
@@ -34,7 +41,14 @@ def read_serial_value(serial_port):
 
 def main():
     print("Plotting data off serial port. Hit ctrl-C to exit...")
-    parser = argparse.ArgumentParser(description="Serial Circle Plotter")
+    parser = argparse.ArgumentParser(
+        description="Serial Circle Plotter",
+        epilog="Example usage:\n"
+           "  1. python serial_draw_circle.py COM3 9600\n"
+           '  2. python serial_draw_circle.py "/dev/cu.usbmodem11301" 115200',
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+
     parser.add_argument("port", nargs="?", default="COM3", help="Serial port name (e.g., COM1 or /dev/ttyUSB0)")
     parser.add_argument("baud", nargs="?", type=int, default=115200, help="Baud rate (e.g., 9600)")
 
@@ -73,6 +87,7 @@ def main():
                     plt.pause(0.01)
     except serial.SerialException:
         print(f"Error opening or reading from {args.port}. Make sure the device is connected.")
+        list_serial_ports()
 
 if __name__ == "__main__":
     main()
