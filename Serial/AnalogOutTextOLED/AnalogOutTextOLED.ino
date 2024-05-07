@@ -35,7 +35,7 @@ int _lastAnalogVal = -1;
 boolean _alwaysSendData = true; 
 
 // Send fractional value or raw analog value
-boolean _transmitFraction = false;
+boolean _transmitFraction = true;
 
 void setup() {
   Serial.begin(115200);
