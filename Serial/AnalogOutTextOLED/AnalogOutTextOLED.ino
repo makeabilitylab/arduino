@@ -1,6 +1,9 @@
 /**
- * Reads in an analog value and sends a normalized value [0, 1] inclusive
- * over the serial port with 4 decimal point precision.
+ * Reads in an analog value and sends over the serial port either:
+ * 1. A normalized value [0, 1] inclusive with 4 decimal point precision
+ * 2. The raw analog value (e.g., 0-1023)
+ *
+ * Also displays either the normalized val on the OLED or the raw analog val
  * 
  * By Jon E. Froehlich
  * @jonfroehlich
@@ -31,8 +34,8 @@ int _lastAnalogVal = -1;
 // equal the last analog value. If true, always sends the data
 boolean _alwaysSendData = true; 
 
-// OLED display fraction or raw analog val
-boolean _displayFraction = false;
+// Send fractional value or raw analog value
+boolean _transmitFraction = false;
 
 void setup() {
   Serial.begin(115200);
@@ -56,14 +59,13 @@ void loop() {
   // If the analog value has changed, send a new one over serial
   if(_alwaysSendData || _lastAnalogVal != analogVal){
     float valFrac = analogVal / (float)MAX_ANALOG_INPUT;
-    Serial.println(valFrac, 4); // 4 decimal point precision
 
     int16_t x1, y1;
     uint16_t textWidth, textHeight;
 
     _display.setTextSize(3);
     String strAnalogVal = (String)analogVal;
-    if(_displayFraction){
+    if(_transmitFraction){
       _display.getTextBounds("0.0000", 0, 0, &x1, &y1, &textWidth, &textHeight);
     }else{
       _display.getTextBounds(strAnalogVal, 0, 0, &x1, &y1, &textWidth, &textHeight);
@@ -74,10 +76,12 @@ void loop() {
 
     _display.clearDisplay();
     _display.setCursor(xText, yText);
-    if(_displayFraction){
+    if(_transmitFraction){
       _display.println(valFrac, 4);
+      Serial.println(valFrac, 4); // 4 decimal point precision
     }else{
       _display.println(strAnalogVal);
+      Serial.println(analogVal);
     }
     _display.display();
   }
