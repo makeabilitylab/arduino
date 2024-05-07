@@ -83,7 +83,7 @@ void loop() {
       _display.println(strAnalogVal);
       Serial.println(analogVal);
     }
-    _display.display();
+    _display.display(); 
   }
 
   _lastAnalogVal = analogVal;
