@@ -15,6 +15,10 @@
  * ArduinoGraphics.h MUST be included before Arduino_LED_Matrix.h.
  * The LED matrix library checks for ArduinoGraphics with __has_include()
  * and only enables text/drawing support if it finds it.
+ *
+ * By Professor Jon E. Froehlich
+ * https://makeabilitylab.github.io/physcomp/
+ * https://github.com/makeabilitylab/arduino 
  */
 
 #include "ArduinoGraphics.h"

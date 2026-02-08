@@ -12,6 +12,10 @@
  * pointer (like an array element), sizeof() returns the pointer size
  * (4 bytes), causing 0 frames to be loaded. We work around this by
  * storing each animation's byte size alongside its pointer.
+ *
+ * By Professor Jon E. Froehlich
+ * https://makeabilitylab.github.io/physcomp/
+ * https://github.com/makeabilitylab/arduino 
  */
 
 #include "Arduino_LED_Matrix.h"
