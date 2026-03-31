@@ -1,6 +1,12 @@
 /**
  * Basic button as keyboard input example. Sends "The joy of making and learning!" via
- * Keyboard.println(). 
+ * Keyboard.println().
+ *
+ * The Keyboard library must be downloaded and installed first:
+ *   1. Open the Library Manager in the Arduino IDE (Tools > Manage Libraries... or Ctrl+Shift+I).
+ *   2. Search for "Keyboard".
+ *   3. Scroll down to find the library explicitly named "Keyboard" authored by "Arduino".
+ *   4. Click Install. 
  *
  * See:
  * https://www.arduino.cc/reference/en/language/functions/usb/keyboard/keyboardprintln/
