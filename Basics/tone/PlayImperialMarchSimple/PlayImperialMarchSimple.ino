@@ -57,6 +57,9 @@ int noteDurations[] = {
 // by the memory size of a single element (the first item at index 0).
 const int NUM_NOTES = sizeof(melody) / sizeof(melody[0]);
 
+// The tempo in Beats Per Minute
+const int BPM = 104;
+
 // A minute has 60,000 ms. Divide by BPM to get the duration of one quarter note.
 // Multiply by 4 because our array uses '4' to represent a quarter note divisor.
 const int DURATION_BASE = (60000 / BPM) * 4;
