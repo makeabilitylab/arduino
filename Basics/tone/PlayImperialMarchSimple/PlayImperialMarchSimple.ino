@@ -52,11 +52,14 @@ int noteDurations[] = {
   4, 6, 16, 2
 };
 
+// In C/C++, arrays don't have a built-in .length property. 
+// We calculate the number of elements by dividing the total array memory size (in bytes)
+// by the memory size of a single element (the first item at index 0).
 const int NUM_NOTES = sizeof(melody) / sizeof(melody[0]);
 
-// Base value for duration calculation, derived from tempo.
-// At 104 BPM: quarter note = 60000/104 ≈ 577ms, and 2308/4 = 577.
-const int DURATION_BASE = 2308;
+// A minute has 60,000 ms. Divide by BPM to get the duration of one quarter note.
+// Multiply by 4 because our array uses '4' to represent a quarter note divisor.
+const int DURATION_BASE = (60000 / BPM) * 4;
 
 // Pause between notes as a multiplier of note duration.
 // 0.3 means 30% of the note length itself
