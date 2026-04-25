@@ -11,7 +11,7 @@
  * Wiring:
  *  - Pot 1 wiper   → A0
  *  - Pot 2 wiper   → A1
- *  - NeoPixel DIN  → Pin 2 (any digital pin works)
+ *  - NeoPixel DIN  → Pin 7 (avoid pin 2 on Leonardo; it's I2C SDA)
  *  - NeoPixel VCC  → 5V
  *  - NeoPixel GND  → GND
  *  - OLED SDA      → A4
@@ -46,7 +46,7 @@
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // NeoPixel configuration
-const int NEOPIXEL_PIN = 2;
+const int NEOPIXEL_PIN = 7; // Can't use PIN 2 on Leonardo because used by SDA
 const int NUM_LEDS = 8;
 Adafruit_NeoPixel _strip(NUM_LEDS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -128,9 +128,6 @@ void loop()
   _display.drawCircle(tw + 2, 19 + 1, 1, SSD1306_WHITE);
 
   drawRightAlignedText("raw:" + String(huePotVal), 19);
-
-  // ========== DIVIDER (y=29) ==========
-  _display.drawFastHLine(0, 29, SCREEN_WIDTH, SSD1306_WHITE);
 
   // ========== BRIGHTNESS SECTION (bottom half, y = 32..63) ==========
 

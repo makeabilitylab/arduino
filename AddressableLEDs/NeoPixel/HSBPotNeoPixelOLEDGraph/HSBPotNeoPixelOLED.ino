@@ -13,7 +13,7 @@
  *  - Pot 1 wiper   → A0 (hue)
  *  - Pot 2 wiper   → A1 (saturation)
  *  - Pot 3 wiper   → A2 (brightness)
- *  - NeoPixel DIN  → Pin 2
+ *  - NeoPixel DIN  → Pin 7 (avoid pin 2 on Leonardo; it's I2C SDA)
  *  - NeoPixel VCC  → 5V
  *  - NeoPixel GND  → GND
  *  - OLED SDA      → A4
@@ -48,7 +48,7 @@
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // NeoPixel configuration
-const int NEOPIXEL_PIN = 2;
+const int NEOPIXEL_PIN = 7; // Can't use PIN 2 on Leonardo because used by SDA
 const int NUM_LEDS = 8;
 Adafruit_NeoPixel _strip(NUM_LEDS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
