@@ -20,7 +20,7 @@
 const int LED_PIN = 2;
 const int NUM_LEDS = 8;
 
-// Argument 1 = Number of pixels in NeoPixel _ledStrip
+// Argument 1 = Number of pixels in NeoPixel _led_ledStrip
 // Argument 2 = Arduino pin number
 // Argument 3 = Pixel type flags, add together as needed:
 //   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
@@ -32,20 +32,20 @@ Adafruit_NeoPixel _ledStrip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 
 void setup() {
-  strip.begin();
-  strip.setBrightness(50);  // Keep it gentle on the eyes!
+  _ledStrip.begin();
+  _ledStrip.setBrightness(50);  // Keep it gentle on the eyes!
 
   // Set each LED to a different color
-  strip.setPixelColor(0, strip.Color(255, 0, 0));     // Red
-  strip.setPixelColor(1, strip.Color(255, 128, 0));   // Orange
-  strip.setPixelColor(2, strip.Color(255, 255, 0));   // Yellow
-  strip.setPixelColor(3, strip.Color(0, 255, 0));     // Green
-  strip.setPixelColor(4, strip.Color(0, 255, 255));   // Cyan
-  strip.setPixelColor(5, strip.Color(0, 0, 255));     // Blue
-  strip.setPixelColor(6, strip.Color(128, 0, 255));   // Purple
-  strip.setPixelColor(7, strip.Color(255, 0, 128));   // Pink
+  _ledStrip.setPixelColor(0, _ledStrip.Color(255, 0, 0));     // Red
+  _ledStrip.setPixelColor(1, _ledStrip.Color(255, 128, 0));   // Orange
+  _ledStrip.setPixelColor(2, _ledStrip.Color(255, 255, 0));   // Yellow
+  _ledStrip.setPixelColor(3, _ledStrip.Color(0, 255, 0));     // Green
+  _ledStrip.setPixelColor(4, _ledStrip.Color(0, 255, 255));   // Cyan
+  _ledStrip.setPixelColor(5, _ledStrip.Color(0, 0, 255));     // Blue
+  _ledStrip.setPixelColor(6, _ledStrip.Color(128, 0, 255));   // Purple
+  _ledStrip.setPixelColor(7, _ledStrip.Color(255, 0, 128));   // Pink
 
-  strip.show();  // Don't forget this!
+  _ledStrip.show();  // Don't forget this!
 }
 
 void loop() {

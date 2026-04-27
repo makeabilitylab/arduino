@@ -31,8 +31,8 @@ const int NUM_LEDS = 8;
 Adafruit_NeoPixel _ledStrip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 void setup() {
-  strip.begin();
-  strip.setBrightness(50);  // Keep it gentle on the eyes!
+  _ledStrip.begin();
+  _ledStrip.setBrightness(50);  // Keep it gentle on the eyes!
 
   // 65536 total hues. Dividing by NUM_LEDS gives us equal spacing across the color wheel.
   long hueStep = 65536L / NUM_LEDS; 
@@ -42,16 +42,16 @@ void setup() {
 
     // Saturation and Value are 8-bit (0-255). We use max for both here.
     // Generate and store the raw HSV color
-    uint32_t rawColor = strip.ColorHSV(hue, 255, 255);
+    uint32_t rawColor = _ledStrip.ColorHSV(hue, 255, 255);
 
     // Gamma correction prevents colors from washing out by compensating for our eye's high sensitivity to dim light.
-    uint32_t correctedColor = strip.gamma32(rawColor);
+    uint32_t correctedColor = _ledStrip.gamma32(rawColor);
 
     // Set the pixel
-    strip.setPixelColor(i, correctedColor); 
+    _ledStrip.setPixelColor(i, correctedColor); 
   }
 
-  strip.show();  // Don't forget this!
+  _ledStrip.show();  // Don't forget this!
 }
 
 void loop() {
