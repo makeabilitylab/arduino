@@ -1,0 +1,210 @@
+
+/**
+ * Displays a rainbow across an 8-LED WS2812B NeoPixel stick.
+ * Two potentiometers control the hue position and LED brightness.
+ * An SSD1306 OLED display shows both values: a hue position
+ * indicator with a sliding window, and a brightness bar graph.
+ *
+ * Pot 1 (A0): Controls hue position (0-360 degrees)
+ * Pot 2 (A1): Controls brightness (0-100%)
+ *
+ * Wiring:
+ *  - Pot 1 wiper   -> A0 (hue position)
+ *  - Pot 2 wiper   -> A1 (brightness)
+ *  - NeoPixel DIN  -> Pin 7 (avoid pin 2 on Leonardo; it's I2C SDA)
+ *  - NeoPixel VCC  -> 5V
+ *  - NeoPixel GND  -> GND
+ *  - OLED SDA      -> SDA (pin 2 on Leonardo, A4 on Uno)
+ *  - OLED SCL      -> SCL (pin 3 on Leonardo, A5 on Uno)
+ *
+ * For our NeoPixel tutorials, see:
+ * https://makeabilitylab.github.io/physcomp/advancedio/addressable-leds.html
+ *
+ * For our OLED tutorials, see:
+ * https://makeabilitylab.github.io/physcomp/advancedio/oled.html
+ *
+ * By Jon E. Froehlich
+ * @jonfroehlich
+ * http://makeabilitylab.io
+ *
+ */
+
+// Includes for OLED
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+// Include for NeoPixels
+#include <Adafruit_NeoPixel.h>
+
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+#define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
+Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+// NeoPixel configuration
+const int NEOPIXEL_PIN = 7;  // Avoid pin 2 on Leonardo (I2C SDA)
+const int NUM_LEDS = 8;
+const uint32_t MAX_HUE = 65536; // Full circle (360 degrees) in 16-bit hue
+Adafruit_NeoPixel _ledStrip(NUM_LEDS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+
+// Potentiometer pins
+const int HUE_POT_PIN = A0;
+const int BRI_POT_PIN = A1;
+const int MAX_ANALOG_VAL = 1023;
+
+// Set to true to reverse the hue position indicator direction on the OLED
+const bool REVERSE_HUE_INDICATOR = false;
+
+// Bar / indicator height
+const int BAR_HEIGHT = 10;
+
+// Vertical layout (two sections, no dividers):
+//   HUE POS:  y=0  label (size 1, 8px) + large value (size 2, 16px)
+//             y=20 position indicator bar (10px tall)
+//   BRI:      y=34 label (size 1, 8px) + large value (size 2, 16px)
+//             y=54 bar graph (10px tall)
+const int HUE_LABEL_Y = 0;
+const int HUE_BAR_Y = 20;
+const int BRI_LABEL_Y = 34;
+const int BRI_BAR_Y = 54;
+
+void setup()
+{
+  Serial.begin(9600);
+
+  // Initialize the OLED
+  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  if(!_display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
+  }
+
+  _display.clearDisplay();
+  _display.setTextColor(SSD1306_WHITE);
+
+  // Initialize the NeoPixel strip
+  _ledStrip.begin();
+  _ledStrip.show(); // Initialize all pixels to off
+}
+
+void loop()
+{
+  // Read potentiometers (with brief delay for ADC multiplexer settling)
+  int huePotVal = analogRead(HUE_POT_PIN);
+  delay(1);
+  int briPotVal = analogRead(BRI_POT_PIN);
+
+  // Map pot values
+  int32_t firstPixelHue = map(huePotVal, MAX_ANALOG_VAL, 0, 0, MAX_HUE - 1);
+  uint8_t brightness = map(briPotVal, 0, MAX_ANALOG_VAL, 0, 255);
+  int briPercent = map(briPotVal, 0, MAX_ANALOG_VAL, 0, 100);
+  int hueDegrees = map(huePotVal, 0, MAX_ANALOG_VAL, 0, 360);
+
+  // Update NeoPixels: spread the rainbow across all LEDs
+  _ledStrip.setBrightness(brightness);
+  for(int i = 0; i < NUM_LEDS; i++) {
+    int32_t hueOffset = (int32_t)i * MAX_HUE / NUM_LEDS;
+    if(REVERSE_HUE_INDICATOR) {
+      hueOffset = -hueOffset;  // spread rainbow in opposite direction
+    }
+    uint32_t pixelHue = firstPixelHue + hueOffset;
+    _ledStrip.setPixelColor(i, _ledStrip.gamma32(_ledStrip.ColorHSV(pixelHue)));
+  }
+  _ledStrip.show();
+
+  // ========== OLED DISPLAY ==========
+  _display.clearDisplay();
+
+  // ========== HUE POSITION (top section) ==========
+  // Label (size 1) on the left, large value (size 2) right-aligned
+  _display.setTextSize(1);
+  _display.setCursor(0, HUE_LABEL_Y);
+  _display.print(F("HUE POS"));
+
+  _display.setTextSize(2);
+  String hueStr = String(hueDegrees);
+  int16_t hx1, hy1;
+  uint16_t htw, hth;
+  _display.getTextBounds(hueStr, 0, 0, &hx1, &hy1, &htw, &hth);
+  int hueValX = SCREEN_WIDTH - htw - 5;  // leave room for degree circle
+  _display.setCursor(hueValX, HUE_LABEL_Y);
+  _display.print(hueStr);
+  _display.drawCircle(hueValX + htw + 2, HUE_LABEL_Y + 1, 1, SSD1306_WHITE);
+
+  // Hue position indicator: outlined bar with a sliding filled window
+  // showing where the 8 LEDs sit on the hue wheel
+  _display.drawRect(0, HUE_BAR_Y, SCREEN_WIDTH, BAR_HEIGHT, SSD1306_WHITE);
+
+  int cursorX;
+  if(REVERSE_HUE_INDICATOR) {
+    cursorX = map(firstPixelHue, 0, MAX_HUE - 1, 1, SCREEN_WIDTH - 3);
+  } else {
+    cursorX = map(firstPixelHue, 0, MAX_HUE - 1, SCREEN_WIDTH - 3, 1);
+  }
+
+  int windowWidth = SCREEN_WIDTH / 8;  // the 8 LEDs span 1/8 of the wheel
+
+  // Clamp the window to stay within the bar
+  if(cursorX + windowWidth > SCREEN_WIDTH - 1) {
+    cursorX = SCREEN_WIDTH - 1 - windowWidth;
+  }
+  if(cursorX < 1) {
+    cursorX = 1;
+  }
+
+  _display.fillRect(cursorX, HUE_BAR_Y + 1, windowWidth, BAR_HEIGHT - 2, SSD1306_WHITE);
+
+  // ========== BRIGHTNESS (bottom section) ==========
+  // Label (size 1) on the left, large value (size 2) right-aligned
+  _display.setTextSize(1);
+  _display.setCursor(0, BRI_LABEL_Y);
+  _display.print(F("BRI"));
+
+  _display.setTextSize(2);
+  String briStr = String(briPercent) + "%";
+  drawRightAlignedText(briStr, BRI_LABEL_Y);
+
+  // Brightness bar graph: filled from left proportional to brightness
+  int briBarFill = map(briPercent, 0, 100, 0, SCREEN_WIDTH - 2);
+  drawBarGraph(0, BRI_BAR_Y, SCREEN_WIDTH, BAR_HEIGHT, briBarFill);
+
+  _display.display();
+
+  delay(10);
+}
+
+/**
+ * Draws a horizontal bar graph: an outlined rectangle with a filled
+ * portion representing the current value.
+ *
+ * @param x       Top-left x of the bar
+ * @param y       Top-left y of the bar
+ * @param w       Total width of the bar outline
+ * @param h       Height of the bar
+ * @param fillW   Width of the filled portion (0 to w-2)
+ */
+void drawBarGraph(int x, int y, int w, int h, int fillW) {
+  _display.drawRect(x, y, w, h, SSD1306_WHITE);
+  if(fillW > 0) {
+    _display.fillRect(x + 1, y + 1, fillW, h - 2, SSD1306_WHITE);
+  }
+}
+
+/**
+ * Draws a right-aligned string at the given y position.
+ * Assumes text size is already set.
+ *
+ * @param text  The string to draw
+ * @param y     The y position for the top of the text
+ */
+void drawRightAlignedText(const String &text, int y) {
+  int16_t x1, y1;
+  uint16_t tw, th;
+  _display.getTextBounds(text, 0, 0, &x1, &y1, &tw, &th);
+  _display.setCursor(SCREEN_WIDTH - tw, y);
+  _display.print(text);
+}
