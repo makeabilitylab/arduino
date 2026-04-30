@@ -56,21 +56,36 @@ void setup()
  
 void loop() 
 { 
+  _display.clearDisplay(); 
+
+  // Read pot and output angle
   int potVal = analogRead(POTENTIOMETER_INPUT_PIN); 
   int servoAngle = map(potVal, 0, MAX_ANALOG_VAL, 0, 180);
   _servo.write(servoAngle); 
 
+  // Draw raw potentiometer value in upper-left at small size
+  _display.setTextSize(1);
+  _display.setCursor(0, 0);
+  _display.print("A0:");
+  _display.print(potVal);
+
   // Display the angle of the servo on the OLED
-  _display.clearDisplay(); 
   _display.setTextSize(4);
   int16_t x1, y1;
   uint16_t textWidth, textHeight;
   String strAngle = (String)servoAngle;
   _display.getTextBounds(strAngle, 0, 0, &x1, &y1, &textWidth, &textHeight);
-  uint16_t yText = _display.height() / 2 - textHeight / 2;
+  uint16_t yText = _display.height() / 2 - textHeight / 2 + 1;
   uint16_t xText = _display.width() / 2 - textWidth / 2;
   _display.setCursor(xText, yText);
   _display.print(strAngle);
+
+  // Draw degree symbol as a small circle to the upper-right of the angle text
+  int circleRadius = 3;
+  int circleX = xText + textWidth + circleRadius + 2;
+  int circleY = yText + circleRadius;
+  _display.drawCircle(circleX, circleY, circleRadius, SSD1306_WHITE);
+
   _display.display();
 
   delay(10);
