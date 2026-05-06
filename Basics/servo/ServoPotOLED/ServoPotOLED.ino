@@ -17,7 +17,16 @@
  * http://makeabilitylab.io
  *
  */
-#include <Servo.h> 
+
+#if defined(ESP32)
+  // Install ESP32Servo library by Kevin Harrington via the 
+  // Arduino Library Manager (search "ESP32Servo")
+  #include <ESP32Servo.h>  
+#else
+  // Install Servo library by Michael Margolis via
+  // the Arduino Library Manager (search "Servo")
+  #include <Servo.h>
+#endif
 
 // Includes for OLED
 #include <SPI.h>
@@ -33,8 +42,13 @@
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 const int POTENTIOMETER_INPUT_PIN = A0;  
-const int SERVO_OUTPUT_PIN = 9;
-const int MAX_ANALOG_VAL = 1023;
+#if defined(ESP32)
+  const int MAX_ANALOG_VAL = 4095; // The ESP32 has a 12-bit ADC
+  const int SERVO_OUTPUT_PIN = 13; // Safe pin on ESP32 Huzzah32
+#else
+  const int MAX_ANALOG_VAL = 1023;
+  const int SERVO_OUTPUT_PIN = 9;
+#endif
 Servo _servo; 
  
 void setup() 
@@ -75,7 +89,7 @@ void loop()
   uint16_t textWidth, textHeight;
   String strAngle = (String)servoAngle;
   _display.getTextBounds(strAngle, 0, 0, &x1, &y1, &textWidth, &textHeight);
-  uint16_t yText = _display.height() / 2 - textHeight / 2 + 1;
+  uint16_t yText = _display.height() / 2 - textHeight / 2 + 3;
   uint16_t xText = _display.width() / 2 - textWidth / 2;
   _display.setCursor(xText, yText);
   _display.print(strAngle);

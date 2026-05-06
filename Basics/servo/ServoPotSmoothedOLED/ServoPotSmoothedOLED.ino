@@ -18,7 +18,15 @@
  * http://makeabilitylab.io
  *
  */
-#include <Servo.h> 
+#if defined(ESP32)
+  // Install ESP32Servo library by Kevin Harrington via the 
+  // Arduino Library Manager (search "ESP32Servo")
+  #include <ESP32Servo.h>  
+#else
+  // Install Servo library by Michael Margolis via
+  // the Arduino Library Manager (search "Servo")
+  #include <Servo.h>
+#endif
 
 // Includes for OLED
 #include <SPI.h>
@@ -34,8 +42,15 @@
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 const int POTENTIOMETER_INPUT_PIN = A0;  
-const int SERVO_OUTPUT_PIN = 9;
-const int MAX_ANALOG_VAL = 1023;
+
+#if defined(ESP32)
+  const int MAX_ANALOG_VAL = 4095;
+  const int SERVO_OUTPUT_PIN = 13; // Safe pin on ESP32 Huzzah32
+#else
+  const int MAX_ANALOG_VAL = 1023;
+  const int SERVO_OUTPUT_PIN = 9;
+#endif
+
 Servo _servo; 
 
 // Exponential moving average (EMA) smoothing for the potentiometer input.
@@ -73,7 +88,8 @@ void setup()
  
 void loop() 
 { 
-  // Read the raw analog value (0-1023) from the potentiometer
+  // Read the raw analog value (0-1023 for 10-bit ADC or 0-4095 for 12-bit ADC) 
+  // from the potentiometer
   int potVal = analogRead(POTENTIOMETER_INPUT_PIN); 
 
   // Apply exponential moving average to smooth out ADC noise.
@@ -86,6 +102,11 @@ void loop()
   // Only attach and write to the servo when the angle has actually changed.
   // This prevents servo buzz caused by repeatedly writing the same
   // (or nearly the same) position every loop iteration.
+  // 
+  // Tradeoffs: Detaching removes all holding torque, allowing the servo 
+  // to be physically back-driven if under load. Additionally, re-attaching 
+  // causes a brief physical twitch and current spike as the servo snaps back 
+  // to the target angle.
   if(servoAngle != _lastServoAngle) {
     if(!_servo.attached()) {
       _servo.attach(SERVO_OUTPUT_PIN);
