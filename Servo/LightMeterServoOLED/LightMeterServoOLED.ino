@@ -176,6 +176,28 @@ int _lastServoAngle = -1;  // Track last written angle to avoid redundant writes
 // (OLED layout constants are computed inside drawDisplay)
 
 // ─────────────────────────────────────────────────────────────
+// DISPLAY SLEEP (OLED burn-in protection)
+// ─────────────────────────────────────────────────────────────
+
+// OLED pixels are organic LEDs with finite lifespans. Static elements
+// (like bar outlines and labels) will "burn in" over time — the pixels
+// degrade unevenly, leaving ghost images. To protect the display on a
+// long-lived prototype, we turn it off after a period of inactivity
+// and show a countdown warning before sleeping.
+//
+// Any user interaction (button press or pot movement) resets the timer
+// and wakes the display immediately.
+
+const unsigned long DISPLAY_TIMEOUT_MS = 30000;  // Sleep after 30s of inactivity
+const unsigned long COUNTDOWN_DURATION_MS = 10000; // Show countdown for last 10s
+const int POT_WAKE_THRESHOLD = 30;  // Min ADC change in pot to count as "interaction"
+                                     // (prevents noise from resetting the timer)
+
+unsigned long _lastInteractionTime = 0;  // millis() of last button press or pot move
+bool _displayOn = true;                  // Current display power state
+int _lastRawPot = 0;                     // Previous pot reading for movement detection
+
+// ─────────────────────────────────────────────────────────────
 // SETUP
 // ─────────────────────────────────────────────────────────────
 
@@ -203,6 +225,10 @@ void setup() {
   // ramp up to the actual reading, causing a visible sweep on startup.
   _smoothedPotVal = analogRead(POT_PIN);
   _smoothedLdrVal = analogRead(LDR_PIN);
+
+  // Initialize interaction tracking for display sleep
+  _lastInteractionTime = millis();
+  _lastRawPot = analogRead(POT_PIN);
 
   // Clear any Adafruit splash screen and prepare for drawing
   _display.clearDisplay();
@@ -278,9 +304,58 @@ void loop() {
     _servo.detach();
   }
 
-  // ── 5. UPDATE OLED DISPLAY ──────────────────────────────
+  // ── 5. DISPLAY SLEEP / WAKE MANAGEMENT ───────────────────
+  //
+  // To prevent OLED burn-in on a long-lived prototype, we track
+  // user interaction (pot movement + button presses) and sleep the
+  // display after a timeout. A countdown warning is shown before
+  // the display turns off. Any interaction wakes it immediately.
 
-  drawDisplay(rawPot, smoothedPot, rawLdr, smoothedLdr, servoAngle);
+  // Check if the pot has moved enough to count as user interaction.
+  // We compare against the raw (unsmoothed) reading so small
+  // intentional movements aren't filtered out by the EMA.
+  if (abs(rawPot - _lastRawPot) > POT_WAKE_THRESHOLD) {
+    _lastInteractionTime = millis();
+    _lastRawPot = rawPot;
+  }
+
+  unsigned long timeSinceInteraction = millis() - _lastInteractionTime;
+
+  if (timeSinceInteraction >= DISPLAY_TIMEOUT_MS) {
+    // ── SLEEP: display has timed out ──
+    if (_displayOn) {
+      // Clear the framebuffer and turn off the display's charge pump.
+      // This stops all pixel emission, eliminating burn-in entirely.
+      _display.clearDisplay();
+      _display.display();
+      _display.ssd1306_command(SSD1306_DISPLAYOFF);
+      _displayOn = false;
+    }
+    // While asleep, we skip drawing but the loop still runs —
+    // button presses and pot reads continue so we can wake instantly.
+
+  } else if (timeSinceInteraction >= DISPLAY_TIMEOUT_MS - COUNTDOWN_DURATION_MS) {
+    // ── COUNTDOWN: approaching sleep, warn the user ──
+    if (!_displayOn) {
+      // Re-enable the display if it was off (e.g., interaction
+      // happened right at the boundary)
+      _display.ssd1306_command(SSD1306_DISPLAYON);
+      _displayOn = true;
+    }
+    // Compute seconds remaining until sleep
+    unsigned long msRemaining = DISPLAY_TIMEOUT_MS - timeSinceInteraction;
+    int secondsLeft = (msRemaining + 999) / 1000;  // Ceiling so we show "1" not "0"
+    drawCountdown(secondsLeft);
+
+  } else {
+    // ── AWAKE: normal display ──
+    if (!_displayOn) {
+      // Wake the display back up after user interaction
+      _display.ssd1306_command(SSD1306_DISPLAYON);
+      _displayOn = true;
+    }
+    drawDisplay(rawPot, smoothedPot, rawLdr, smoothedLdr, servoAngle);
+  }
 
   // ── 6. SERIAL OUTPUT (for Serial Plotter / debugging) ───
 
@@ -335,6 +410,10 @@ void handleButtonPress() {
         // Toggle between LDR and POT modes
         _currentMode = (_currentMode == MODE_LDR) ? MODE_POT : MODE_LDR;
 
+        // Any button press counts as user interaction — reset the
+        // display sleep timer so the screen stays on
+        _lastInteractionTime = millis();
+
         Serial.print("Mode switched to: ");
         Serial.println(_currentMode == MODE_LDR ? "LDR" : "POT");
       }
@@ -346,20 +425,64 @@ void handleButtonPress() {
 }
 
 // ─────────────────────────────────────────────────────────────
+// DISPLAY SLEEP COUNTDOWN
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Shows a countdown screen before the display sleeps.
+ * Layout:
+ * 
+ * ┌──────────────────────┐
+ * │ Display off in...      │  ← Small text header
+ * │                        │
+ * │      7                 │  ← Big bold countdown number (in secs)
+ * │                        │
+ * └──────────────────────┘
+ * 
+ * Any user interaction (button or pot) resets the timer and
+ * returns to the normal display immediately.
+ * 
+ * @param secondsLeft  Seconds remaining before display sleeps (1–10)
+ */
+void drawCountdown(int secondsLeft) {
+  _display.clearDisplay();
+
+  // ── Header text ──
+  _display.setTextSize(1);
+  _display.setCursor(0, 0);
+  _display.print("Display off in...");
+
+  // ── Big countdown number, centered ──
+  _display.setTextSize(4);
+  String strSeconds = String(secondsLeft);
+
+  int16_t x1, y1;
+  uint16_t textWidth, textHeight;
+  _display.getTextBounds(strSeconds, 0, 0, &x1, &y1, &textWidth, &textHeight);
+
+  uint16_t xText = (SCREEN_WIDTH - textWidth) / 2;
+  uint16_t yText = (SCREEN_HEIGHT - textHeight) / 2 + 4;  // Slightly below center
+  _display.setCursor(xText, yText);
+  _display.print(strSeconds);
+
+  _display.display();
+}
+
+// ─────────────────────────────────────────────────────────────
 // OLED DISPLAY DRAWING
 // ─────────────────────────────────────────────────────────────
 
 /**
  * Draws the full OLED interface. Layout (128×64 pixels):
  * 
- * ┌────────────────────────────────────┐
- * │ ● LDR:512            POT:1023 ○   │  Row 0: raw values + active dots
+ * ┌─────────────────────────────────┐
+ * │ ● LDR:512            ○ POT:1023    │  Row 0: raw values + active dots
  * │                                    │
  * │            102°                    │  Center: large servo angle
  * │                                    │
  * │ ● LDR [████████░░░░] 2048/4095    │  Row 1: LDR bar graph + smoothed/max
  * │ ○ POT [██░░░░░░░░░░] 1023/4095    │  Row 2: POT bar graph + smoothed/max
- * └────────────────────────────────────┘
+ * └─────────────────────────────────┘
  * 
  * ● = filled circle (active input)  ○ = hollow circle (inactive)
  * 
