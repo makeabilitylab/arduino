@@ -60,6 +60,11 @@ Servo _servo;
 float _smoothedPotVal = 0;
 const float ALPHA = 0.4;
 
+// Minimum angle change required to move the servo. Prevents the servo
+// from buzzing back and forth between two adjacent angles due to ADC
+// noise or EMA rounding. A value of 1 absorbs ±1° jitter.
+const int SERVO_DEAD_BAND = 1;
+
 // Track the last angle written to the servo so we only send updates
 // when the value actually changes. This prevents the servo from
 // continuously micro-correcting and buzzing.
@@ -99,19 +104,20 @@ void loop()
   int smoothedVal = (int)(_smoothedPotVal + 0.5); // Round to nearest int
   int servoAngle = map(smoothedVal, 0, MAX_ANALOG_VAL, 0, 180);
 
-  // Only attach and write to the servo when the angle has actually changed.
-  // This prevents servo buzz caused by repeatedly writing the same
-  // (or nearly the same) position every loop iteration.
-  // 
-  // Tradeoffs: Detaching removes all holding torque, allowing the servo 
-  // to be physically back-driven if under load. Additionally, re-attaching 
-  // causes a brief physical twitch and current spike as the servo snaps back 
-  // to the target angle.
-  if(servoAngle != _lastServoAngle) {
-    if(!_servo.attached()) {
+  // Writing the same angle repeatedly causes micro-corrections
+  // that produce an audible buzz. We only write when the angle
+  // actually changes by a threshold (set by SERVO_DEAD_BAND), 
+  // and detach when idle to save power and eliminate holding-torque 
+  // buzz.
+  //
+  // Trade-off: detaching removes holding torque, so an external
+  // force could push the servo horn. For a light meter gauge
+  // with no mechanical load, this is fine.
+   if (abs(servoAngle - _lastServoAngle) > SERVO_DEAD_BAND) {
+    if (!_servo.attached()) {
       _servo.attach(SERVO_OUTPUT_PIN);
     }
-    _servo.write(servoAngle); 
+    _servo.write(servoAngle);
     _lastServoAngle = servoAngle;
   } else {
     _servo.detach();
