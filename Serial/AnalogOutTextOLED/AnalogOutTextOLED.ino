@@ -25,8 +25,14 @@ const int DELAY_MS = 50;
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-const int ANALOG_INPUT_PIN = A0;
-const int MAX_ANALOG_INPUT = 1023;
+// Preprocessor defines for cross-platform portability
+#if defined(ESP32)
+  const int MAX_ANALOG_VAL = 4095;  // ESP32 has a 12-bit ADC (0-4095)
+  const int ANALOG_INPUT_PIN = A5;  // Use A5 on ESP32
+#else
+  const int MAX_ANALOG_VAL = 1023;  // AVR Arduinos have a 10-bit ADC (0-1023)
+  const int ANALOG_INPUT_PIN = A0;  // Use A0 on Arduino
+#endif
 
 int _lastAnalogVal = -1;
 
@@ -58,7 +64,7 @@ void loop() {
 
   // If the analog value has changed, send a new one over serial
   if(_alwaysSendData || _lastAnalogVal != analogVal){
-    float valFrac = analogVal / (float)MAX_ANALOG_INPUT;
+    float valFrac = analogVal / (float)MAX_ANALOG_VAL;
 
     int16_t x1, y1;
     uint16_t textWidth, textHeight;
