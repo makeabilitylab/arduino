@@ -18,7 +18,15 @@
  * http://makeabilitylab.io
  *
  */
-#include <Servo.h> 
+#if defined(ESP32)
+  // Install ESP32Servo library by Kevin Harrington via the 
+  // Arduino Library Manager (search "ESP32Servo")
+  #include <ESP32Servo.h>  
+#else
+  // Install Servo library by Michael Margolis via
+  // the Arduino Library Manager (search "Servo")
+  #include <Servo.h>
+#endif
 
 // Includes for OLED
 #include <SPI.h>
@@ -34,8 +42,15 @@
 Adafruit_SSD1306 _display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 const int POTENTIOMETER_INPUT_PIN = A0;  
-const int SERVO_OUTPUT_PIN = 9;
-const int MAX_ANALOG_VAL = 1023;
+
+#if defined(ESP32)
+  const int MAX_ANALOG_VAL = 4095;
+  const int SERVO_OUTPUT_PIN = 13; // Safe pin on ESP32 Huzzah32
+#else
+  const int MAX_ANALOG_VAL = 1023;
+  const int SERVO_OUTPUT_PIN = 9;
+#endif
+
 Servo _servo; 
 
 // Exponential moving average (EMA) smoothing for the potentiometer input.
@@ -44,6 +59,11 @@ Servo _servo;
 // introducing noticeable lag.
 float _smoothedPotVal = 0;
 const float ALPHA = 0.4;
+
+// Minimum angle change required to move the servo. Prevents the servo
+// from buzzing back and forth between two adjacent angles due to ADC
+// noise or EMA rounding. A value of 1 absorbs ±1° jitter.
+const int SERVO_DEAD_BAND = 1;
 
 // Track the last angle written to the servo so we only send updates
 // when the value actually changes. This prevents the servo from
@@ -73,7 +93,8 @@ void setup()
  
 void loop() 
 { 
-  // Read the raw analog value (0-1023) from the potentiometer
+  // Read the raw analog value (0-1023 for 10-bit ADC or 0-4095 for 12-bit ADC) 
+  // from the potentiometer
   int potVal = analogRead(POTENTIOMETER_INPUT_PIN); 
 
   // Apply exponential moving average to smooth out ADC noise.
@@ -83,14 +104,20 @@ void loop()
   int smoothedVal = (int)(_smoothedPotVal + 0.5); // Round to nearest int
   int servoAngle = map(smoothedVal, 0, MAX_ANALOG_VAL, 0, 180);
 
-  // Only attach and write to the servo when the angle has actually changed.
-  // This prevents servo buzz caused by repeatedly writing the same
-  // (or nearly the same) position every loop iteration.
-  if(servoAngle != _lastServoAngle) {
-    if(!_servo.attached()) {
+  // Writing the same angle repeatedly causes micro-corrections
+  // that produce an audible buzz. We only write when the angle
+  // actually changes by a threshold (set by SERVO_DEAD_BAND), 
+  // and detach when idle to save power and eliminate holding-torque 
+  // buzz.
+  //
+  // Trade-off: detaching removes holding torque, so an external
+  // force could push the servo horn. For a light meter gauge
+  // with no mechanical load, this is fine.
+   if (abs(servoAngle - _lastServoAngle) > SERVO_DEAD_BAND) {
+    if (!_servo.attached()) {
       _servo.attach(SERVO_OUTPUT_PIN);
     }
-    _servo.write(servoAngle); 
+    _servo.write(servoAngle);
     _lastServoAngle = servoAngle;
   } else {
     _servo.detach();

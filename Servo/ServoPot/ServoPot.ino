@@ -13,11 +13,24 @@
  * http://makeabilitylab.io
  *
  */
-#include <Servo.h> 
+#if defined(ESP32)
+  // Install ESP32Servo library by Kevin Harrington via the 
+  // Arduino Library Manager (search "ESP32Servo")
+  #include <ESP32Servo.h>  
+#else
+  // Install Servo library by Michael Margolis via
+  // the Arduino Library Manager (search "Servo")
+  #include <Servo.h>
+#endif
 
 const int POTENTIOMETER_INPUT_PIN = A0;  
-const int SERVO_OUTPUT_PIN = 9;
-const int MAX_ANALOG_VAL = 1023;
+#if defined(ESP32)
+  const int MAX_ANALOG_VAL = 4095; // The ESP32 has a 12-bit ADC
+  const int SERVO_OUTPUT_PIN = 13; // Safe pin on ESP32 Huzzah32
+#else
+  const int MAX_ANALOG_VAL = 1023;
+  const int SERVO_OUTPUT_PIN = 9;
+#endif
 Servo _servo; 
  
 void setup() 
