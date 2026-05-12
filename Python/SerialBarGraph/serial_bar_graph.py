@@ -73,26 +73,24 @@ except ImportError:
     raise SystemExit(1)
 
 import argparse
+import serial.tools.list_ports
 
 # Width of the bar in characters. Increase for more resolution,
 # decrease if your terminal is narrow.
 BAR_WIDTH = 50
 
 def list_serial_ports():
-    """Lists all available serial ports on the system.
-    
-    Useful for discovering the correct port name, which varies by OS:
-      - Windows: COM3, COM4, etc.
-      - macOS:   /dev/cu.usbmodem11301, etc.
-      - Linux:   /dev/ttyUSB0, /dev/ttyACM0, etc.
-    """
-    ports = serial.tools.list_ports.comports()
-    if ports:
-        print("Available serial ports:")
-        for port in ports:
-            print(f"  {port}")
-    else:
-        print("No serial ports found. Is your Arduino plugged in?")
+    """Lists all available serial ports on the system."""
+    try:
+        ports = serial.tools.list_ports.comports()
+        if ports:
+            print("Available serial ports:")
+            for port in ports:
+                print(f"  {port}")
+        else:
+            print("No serial ports found. Is your Arduino plugged in?")
+    except Exception:
+        print("(Could not enumerate serial ports.)")
 
 def main():
     parser = argparse.ArgumentParser(
