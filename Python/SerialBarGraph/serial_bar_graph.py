@@ -1,4 +1,4 @@
-# serial_terminal_bar.py
+# serial_bar_graph.py
 #
 # The simplest possible visualization of incoming Arduino sensor data: a text-based
 # bar graph rendered directly in the terminal. No GUI window, no matplotlib — just

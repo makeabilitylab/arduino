@@ -225,10 +225,9 @@ def main():
                     # Update the text overlay to show the current value
                     value_text.set_text(f"{clamped:.2f}")
 
-                # Redraw the plot and pause briefly. plt.pause() handles both
-                # the screen refresh and GUI event processing (so the window
-                # stays responsive to clicks, resizes, and the close button).
-                plt.draw()
+                # Pause briefly to refresh the plot and process GUI events
+                # (so the window stays responsive to clicks, resizes, and the
+                # close button). plt.pause() handles both the redraw and event loop.
                 plt.pause(0.01)
 
     except serial.SerialException:
