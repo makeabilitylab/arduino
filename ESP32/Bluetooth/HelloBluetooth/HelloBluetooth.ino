@@ -2,7 +2,8 @@
  * HelloBluetooth: creates a bidirectional bridge between USB Serial
  * and Bluetooth Serial (SPP). Sends a greeting over Bluetooth every
  * 2 seconds. Data received over Bluetooth is echoed to USB Serial
- * and vice versa.
+ * and vice versa. The built-in LED flashes briefly whenever data is
+ * sent or received over Bluetooth, giving you a visual heartbeat.
  *
  * Requires: Original ESP32 (e.g., Huzzah32). Will NOT compile on ESP32-S3.
  *
@@ -26,14 +27,35 @@
 #error Serial Bluetooth (SPP) is not available. It is only supported on the original ESP32 chip.
 #endif
 
+// LED_BUILTIN is defined by the board package (e.g., pin 13 on the Huzzah32).
+// We alias it here so you can easily swap in a different pin if needed.
+const int LED_PIN = LED_BUILTIN;
+const unsigned long LED_FLASH_MS = 60;  // How long a single flash cycle takes
+const unsigned int NUM_FLASHES = 3;
+
 BluetoothSerial SerialBT;
 
 unsigned long _lastGreetingMs = 0;
 unsigned long _greetingCount = 0;
 const unsigned long GREETING_INTERVAL_MS = 2000;
 
+/**
+ * Briefly flashes the built-in LED. Uses a blocking delay, which is
+ * fine for a simple example — the ~180 ms pause won't noticeably affect
+ * the 2-second greeting interval or byte-at-a-time forwarding.
+ */
+void flashLED() {
+  for(int i=0; i< NUM_FLASHES; i++){
+    digitalWrite(LED_PIN, HIGH);
+    delay(LED_FLASH_MS / 2);
+    digitalWrite(LED_PIN, LOW);
+    delay(LED_FLASH_MS / 2);
+  }
+}
+
 void setup() {
   Serial.begin(115200);
+  pinMode(LED_PIN, OUTPUT);
 
   // Initialize Bluetooth with a device name. You can choose any name you
   // like — "ESP32-Bluetooth", "Jon's ESP32", "Pikachu", etc. This is the
@@ -47,7 +69,7 @@ void setup() {
 }
 
 void loop() {
-  // Periodic greeting
+  // --- Periodic greeting ------------------------------------------------
   unsigned long now = millis();
   if (now - _lastGreetingMs >= GREETING_INTERVAL_MS) {
     _lastGreetingMs = now;
@@ -59,22 +81,30 @@ void loop() {
     // Check if Bluetooth Serial is connected
     if (SerialBT.connected()) {
       SerialBT.println("[Bluetooth] " + msg);
+      flashLED();  // Visual confirmation: data sent over Bluetooth
     } else {
       Serial.println("[USB Serial] Waiting for Bluetooth connection...");
     }
     Serial.println("[USB Serial] " + msg);
   }
 
-  // Forward everything received from Serial (e.g., typed in Serial Monitor) 
-  // to the Bluetooth peer. We use read()/write() (byte-at-a-time) rather than 
-  // readStringUntil() because it's non-blocking — the loop keeps running without 
+  // --- USB Serial → Bluetooth ------------------------------------------
+  // Forward everything received from Serial (e.g., typed in Serial Monitor)
+  // to the Bluetooth peer. We use read()/write() (byte-at-a-time) rather than
+  // readStringUntil() because it's non-blocking — the loop keeps running without
   // waiting for a newline or timeout.
   while (Serial.available()) {
     SerialBT.write(Serial.read());
   }
 
-  // Forward everything received over Bluetooth to Serial Monitor
-  while (SerialBT.available()) {
-    Serial.write(SerialBT.read());
+  // --- Bluetooth → USB Serial ------------------------------------------
+  // Forward everything received over Bluetooth to Serial Monitor.
+  // The outer `if` avoids flashing when there's nothing to read, and
+  // ensures we flash once per burst of data rather than once per byte.
+  if (SerialBT.available()) {
+    while (SerialBT.available()) {
+      Serial.write(SerialBT.read());
+    }
+    flashLED();  // Visual confirmation: data received over Bluetooth
   }
 }
