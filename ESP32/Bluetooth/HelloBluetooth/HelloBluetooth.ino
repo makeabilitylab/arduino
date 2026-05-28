@@ -78,8 +78,11 @@ void loop() {
   // to the Bluetooth peer. We use read()/write() (byte-at-a-time) rather than
   // readStringUntil() because it's non-blocking — the loop keeps running without
   // waiting for a newline or timeout.
-  while (Serial.available()) {
-    SerialBT.write(Serial.read());
+  if (Serial.available()) {
+    while (Serial.available()) {
+      SerialBT.write(Serial.read());
+    }
+    flashLED(); // Data sent over Bluetooth
   }
 
   // Forward everything received over Bluetooth to USB Serial.

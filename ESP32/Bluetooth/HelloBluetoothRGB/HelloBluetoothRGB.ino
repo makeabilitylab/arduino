@@ -5,8 +5,9 @@
  * and vice versa.
  *
  * Uses an onboard NeoPixel to show Bluetooth activity with color:
- *   - BLUE flash:  data sent over Bluetooth
- *   - GREEN flash: data received over Bluetooth
+ *   - BLUE flash:   data sent over Bluetooth (periodic greeting)
+ *   - GREEN flash:  data received from Bluetooth peer
+ *   - PURPLE flash: USB Serial data forwarded to Bluetooth
  *
  * The flash animation is fully non-blocking (millis()-based), so serial
  * data is never delayed. For a simpler version that uses the built-in
@@ -54,6 +55,7 @@ const unsigned int NUM_FLASHES = 3;
 // Colors for Bluetooth activity
 const uint32_t COLOR_BT_SEND = Adafruit_NeoPixel::Color(0, 0, 255);  // Blue
 const uint32_t COLOR_BT_RECV = Adafruit_NeoPixel::Color(0, 255, 0);  // Green
+const uint32_t COLOR_USB_TO_BT = Adafruit_NeoPixel::Color(180, 0, 255); // Purple
 const uint32_t COLOR_OFF     = Adafruit_NeoPixel::Color(0, 0, 0);
 
 Adafruit_NeoPixel pixel(NUM_PIXELS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
@@ -120,8 +122,11 @@ void loop() {
   }
 
   // USB Serial → Bluetooth
-  while (Serial.available()) {
-    SerialBT.write(Serial.read());
+  if (Serial.available()) {
+    while (Serial.available()) {
+      SerialBT.write(Serial.read());
+    }
+    startFlash(COLOR_USB_TO_BT);  // Purple flash: USB data forwarded to Bluetooth
   }
 
   // Bluetooth → USB Serial
