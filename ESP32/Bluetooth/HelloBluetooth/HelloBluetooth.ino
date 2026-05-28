@@ -35,23 +35,9 @@ const unsigned int NUM_FLASHES = 3;
 
 BluetoothSerial SerialBT;
 
-unsigned long _lastGreetingMs = 0;
-unsigned long _greetingCount = 0;
+unsigned long _lastMsgMs = 0;
+unsigned long _msgCount = 0;
 const unsigned long GREETING_INTERVAL_MS = 2000;
-
-/**
- * Briefly flashes the built-in LED. Uses a blocking delay, which is
- * fine for a simple example — the ~180 ms pause won't noticeably affect
- * the 2-second greeting interval or byte-at-a-time forwarding.
- */
-void flashLED() {
-  for(int i=0; i< NUM_FLASHES; i++){
-    digitalWrite(LED_PIN, HIGH);
-    delay(LED_FLASH_MS / 2);
-    digitalWrite(LED_PIN, LOW);
-    delay(LED_FLASH_MS / 2);
-  }
-}
 
 void setup() {
   Serial.begin(115200);
@@ -64,18 +50,18 @@ void setup() {
   SerialBT.begin("ESP32-Bluetooth");
 
   Serial.println("Bluetooth started! You can now pair with 'ESP32-Bluetooth'.");
-  Serial.println("Open a Bluetooth serial connection to see greetings.");
+  Serial.println("Open a Bluetooth serial connection to see messages.");
   Serial.println("Anything you type here will be forwarded over Bluetooth (and vice versa).\n");
 }
 
 void loop() {
   // --- Periodic greeting ------------------------------------------------
   unsigned long now = millis();
-  if (now - _lastGreetingMs >= GREETING_INTERVAL_MS) {
-    _lastGreetingMs = now;
-    _greetingCount++;
+  if (now - _lastMsgMs >= GREETING_INTERVAL_MS) {
+    _lastMsgMs = now;
+    _msgCount++;
 
-    String msg = "Hello from ESP32! [Msg #" + String(_greetingCount)
+    String msg = "Hello from ESP32! [Msg #" + String(_msgCount)
                + " | Uptime: " + String(now / 1000.0, 1) + "s]";
 
     // Check if Bluetooth Serial is connected
@@ -88,8 +74,7 @@ void loop() {
     Serial.println("[USB Serial] " + msg);
   }
 
-  // --- USB Serial → Bluetooth ------------------------------------------
-  // Forward everything received from Serial (e.g., typed in Serial Monitor)
+  // Forward everything received from USB Serial (e.g., typed in Serial Monitor)
   // to the Bluetooth peer. We use read()/write() (byte-at-a-time) rather than
   // readStringUntil() because it's non-blocking — the loop keeps running without
   // waiting for a newline or timeout.
@@ -97,8 +82,7 @@ void loop() {
     SerialBT.write(Serial.read());
   }
 
-  // --- Bluetooth → USB Serial ------------------------------------------
-  // Forward everything received over Bluetooth to Serial Monitor.
+  // Forward everything received over Bluetooth to USB Serial.
   // The outer `if` avoids flashing when there's nothing to read, and
   // ensures we flash once per burst of data rather than once per byte.
   if (SerialBT.available()) {
@@ -106,5 +90,20 @@ void loop() {
       Serial.write(SerialBT.read());
     }
     flashLED();  // Visual confirmation: data received over Bluetooth
+  }
+}
+
+/**
+ * Briefly flashes the built-in LED. Uses a blocking delay, which is
+ * fine for a simple example — the ~180 ms pause won't noticeably affect
+ * the 2-second greeting interval or byte-at-a-time forwarding.
+ */
+void flashLED() {
+  Serial.println("Flashing LED...");
+  for(int i=0; i< NUM_FLASHES; i++){
+    digitalWrite(LED_PIN, HIGH);
+    delay(LED_FLASH_MS / 2);
+    digitalWrite(LED_PIN, LOW);
+    delay(LED_FLASH_MS / 2);
   }
 }
