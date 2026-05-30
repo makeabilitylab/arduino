@@ -102,7 +102,6 @@ void loop() {
  * the 2-second greeting interval or byte-at-a-time forwarding.
  */
 void flashLED() {
-  Serial.println("Flashing LED...");
   for(int i=0; i< NUM_FLASHES; i++){
     digitalWrite(LED_PIN, HIGH);
     delay(LED_FLASH_MS / 2);
