@@ -17,26 +17,59 @@
 # If you get an execution policy error, run this first:
 #   Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 #
-# Written by Jon E. Froehlich
-# @jonfroehlich
-# http://makeabilitylab.io
+# See: https://makeabilitylab.github.io/physcomp/esp32/bluetooth-serial
+#
+# By Professor Jon E. Froehlich
+# Director, Makeability Lab, https://makeabilitylab.cs.uw.edu
+# Author, Interactive Physical Computing Textbook, https://makeabilitylab.github.io/physcomp/
 
 param(
     [string]$Port,
     [int]$Baud = 115200
 )
 
+function Get-SerialPortInfo {
+    # Lists available COM ports with friendly names where available.
+    # GetPortNames() only returns bare COM names (e.g., "COM20"), so we
+    # query Plug-and-Play devices via CIM/WMI to get human-readable
+    # descriptions like "Standard Serial over Bluetooth link (COM20)".
+    # This helps you tell your USB cable apart from your Bluetooth port.
+    $portNames = [System.IO.Ports.SerialPort]::GetPortNames() | Sort-Object
+
+    if (-not $portNames) {
+        Write-Host "  (none found)" -ForegroundColor Yellow
+        return
+    }
+
+    # Build a lookup of COM name -> friendly name from PnP devices
+    $friendly = @{}
+    try {
+        Get-CimInstance Win32_PnPEntity -ErrorAction Stop |
+            Where-Object { $_.Name -match '\(COM\d+\)' } |
+            ForEach-Object {
+                if ($_.Name -match '\((COM\d+)\)') {
+                    $friendly[$matches[1]] = $_.Name
+                }
+            }
+    }
+    catch {
+        # CIM/WMI unavailable — fall back to bare COM names
+    }
+
+    foreach ($p in $portNames) {
+        if ($friendly.ContainsKey($p)) {
+            # Friendly name already includes "(COMxx)", so print as-is
+            Write-Host "  $($friendly[$p])"
+        } else {
+            Write-Host "  $p"
+        }
+    }
+}
+
 # If no port specified, list available COM ports and exit
 if (-not $Port) {
     Write-Host "Available COM ports:" -ForegroundColor Cyan
-    $ports = [System.IO.Ports.SerialPort]::GetPortNames() | Sort-Object
-    if ($ports) {
-        foreach ($p in $ports) {
-            Write-Host "  $p"
-        }
-    } else {
-        Write-Host "  (none found)" -ForegroundColor Yellow
-    }
+    Get-SerialPortInfo
     Write-Host ""
     Write-Host "Usage: .\serial_reader.ps1 -Port COM16 [-Baud 115200]"
     exit
@@ -75,14 +108,7 @@ catch {
     Write-Host "  $_" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "Available COM ports:"
-    $ports = [System.IO.Ports.SerialPort]::GetPortNames() | Sort-Object
-    if ($ports) {
-        foreach ($p in $ports) {
-            Write-Host "  $p"
-        }
-    } else {
-        Write-Host "  (none found)"
-    }
+    Get-SerialPortInfo
 }
 finally {
     if ($serial -and $serial.IsOpen) {
