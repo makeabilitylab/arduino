@@ -40,6 +40,9 @@ String *_soundFiles = NULL;
 int _curSoundFileIndex = 0;
 int _numSoundFiles = 0;
 
+// The folder on the SD card to search for .mp3 files
+const String SONG_PATH = "/Dance/"; // can be just "/" if your songs are in root of SD card
+
 // Potentiometer on A0
 const int VOLUME_POT_PIN = A0;
 

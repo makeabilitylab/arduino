@@ -11,8 +11,9 @@
  */
 
 
-// 1024 with 5V, 676 with 3.3V on Arduino Uno or Leonardo
-const int MIN_ANALOG_IN = 300;
+// Max analog input value from the mic amp; tuned to match SoundLevelSixLEDsWithOLED.
+// (Full ADC range is ~1024 with 5V, ~676 with 3.3V on Arduino Uno/Leonardo; tune to taste.)
+const int MAX_ANALOG_IN = 600;
 
 const int MAX_ANALOG_OUT = 255;
 const int MIC_INPUT_PIN = A0;
@@ -43,20 +44,6 @@ void setup() {
     pinMode(ledPin, OUTPUT);
   }
   pinMode(MIC_INPUT_PIN, INPUT);
-
-  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  if(!_display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) { // Address 0x3D for 128x64
-    Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
-  }
-
-  _maxShapeSize = min(_display.width(), _display.height());
-
-  _display.clearDisplay();
-  _display.setTextSize(1);      // Normal 1:1 pixel scale
-  _display.setTextColor(SSD1306_WHITE); // Draw white text
-  _display.setCursor(0, 0);     // Start at top-left corner
-  _display.display();
 }
 
 void loop() {  

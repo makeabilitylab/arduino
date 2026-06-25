@@ -51,7 +51,7 @@ class Sprite : public Shape{
     //unsigned char **_sprites;
     
     int _numFrames = 2;
-    int _curFrameIndex = 0;
+    mutable int _curFrameIndex = 0; // mutable: advanced inside the const draw() override
 
     // To read about program memory PROGMEM: 
     // https://www.arduino.cc/reference/en/language/variables/utilities/progmem/
@@ -74,12 +74,12 @@ class Sprite : public Shape{
      * 
      * @param display 
      */
-    void draw (Adafruit_SSD1306& display) override{
+    void draw (Adafruit_SSD1306& display) const override{
       // Draw sprite frames
       if(_curFrameIndex == 0){
-        _display.drawBitmap(_x, _y,  _frame1, _width, _height, WHITE);
+        display.drawBitmap(_x, _y,  _frame1, _width, _height, WHITE);
       }else{
-        _display.drawBitmap(_x, _y,  _frame2, _width, _height, WHITE);
+        display.drawBitmap(_x, _y,  _frame2, _width, _height, WHITE);
       }
       
       _curFrameIndex++;
@@ -89,7 +89,7 @@ class Sprite : public Shape{
       }
     }
 
-    String getName() const override{
+    const char* getName() const override{
       return "Sprite";
     }
 };
