@@ -1,3 +1,11 @@
+// ============================================================================
+// LEGACY EXAMPLE (ESP32 Arduino core v2.x).
+// Superseded by native tone()/noTone(), now supported on the ESP32 in core v3.x.
+// Kept as the source behind demo videos in the modernized lesson:
+//   https://makeabilitylab.github.io/physcomp/esp32/tone
+// Will NOT compile on ESP32 core v3.x; excluded from compile CI.
+// See docs/legacy-sketches.md.
+// ============================================================================
 /**
  * Demonstrates how to use the Tone32 class with durations. Hook up a sensor like a pot
  * to A1 and then walk up and down the C scale. OLED will show currently played
