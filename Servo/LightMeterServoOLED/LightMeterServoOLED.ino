@@ -107,8 +107,8 @@ const int MIN_BRIGHTNESS_ANGLE = 20;
 #if defined(ESP32)
   const int MAX_ANALOG_VAL = 4095;        // ESP32 has a 12-bit ADC
   const int MIN_ANALOG_LDR_VAL = 950;     // Empirically measured min analog LDR val
-  const int SERVO_OUTPUT_PIN = 13;        // Safe PWM pin on Huzzah32
-  const int BUTTON_PIN = 27;              // Mode toggle button
+  const int SERVO_OUTPUT_PIN = 27;        // Safe PWM pin on Huzzah32
+  const int BUTTON_PIN = 13;              // Mode toggle button
 #else
   const int MAX_ANALOG_VAL = 1023;        // AVR Arduinos have a 10-bit ADC
   const int MIN_ANALOG_LDR_VAL = 230;     // Empirically measured min analog LDR val
