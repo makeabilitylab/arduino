@@ -1,3 +1,10 @@
+// ============================================================================
+// LEGACY EXAMPLE (does not compile).
+// An abandoned experiment: it #includes the SAMD-only <I2S.h> on an nRF52840
+// Feather, and—per the original note below—the i2s-mic and VS1053 mp3 libraries
+// are mutually incompatible, so it never worked. Kept for reference only.
+// Excluded from compile CI. See docs/legacy-sketches.md.
+// ============================================================================
 /**
  * WARNING: this sketch doesn't work due to incompatibilities between the i2s mic library
  * and the mp3 player library.

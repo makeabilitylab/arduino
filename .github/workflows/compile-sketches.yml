@@ -1,13 +1,18 @@
 # Compiles sketches on every push to master and every PR, so a change that breaks
 # a sketch is caught before it lands. Mirrors the CI in makelab-arduino-lib.
 #
-# START-GREEN POLICY: this gates only on folders verified to compile cleanly (via
+# START-GREEN POLICY: this gates only on sketches verified to compile cleanly (via
 # a full arduino-cli sweep). Coverage grows as issues close:
 #   - ESP32/ is mid core-v3.x migration .......... #12
-#   - Sensors/PlayingMusic/AddressableLEDs/Serial   have wrong-board sketches that
-#     need per-sketch sketch.yaml board targeting .. #11
-#   - CPX/ (samd), nRF52840/ (nrf52), UnoR4WiFi/ ... add once their heavier cores
-#     are wired in here.
+#   - The board-specific sketches in Sensors/AddressableLEDs/Serial are now gated
+#     on their real boards (SAMD / nRF52 / Leonardo) via the matrix jobs below; the
+#     per-sketch target lives in each sketch's sketch.yaml ........... #11
+#   - The remaining plain-Uno sketches in Sensors/PlayingMusic/AddressableLEDs/
+#     Serial all compile green and can be added to the Uno job in a follow-up.
+# NOTE: arduino/compile-sketches compiles every sketch in a job with that job's
+# single fqbn — it does NOT read sketch.yaml. So a folder path can only be gated
+# wholesale when every sketch under it targets the same board; mixed-board folders
+# must list individual sketches under the matching board's job.
 # Legacy sketches (docs/legacy-sketches.md) are never gated; add a skip step here
 # when a gated folder starts including any.
 name: Compile Sketches
@@ -27,17 +32,40 @@ jobs:
       matrix:
         include:
           - fqbn: arduino:avr:uno
-            platform: arduino:avr
+            platforms: |
+              - name: arduino:avr
             sketch-paths: |
               - Basics
               - OLED
               - Filters
               - Servo
           - fqbn: arduino:avr:leonardo
-            platform: arduino:avr
+            platforms: |
+              - name: arduino:avr
             sketch-paths: |
               - HumanInterfaceDevice
               - GameController
+              # Serial1 (a second hardware UART) doesn't exist on the Uno; these
+              # need a Leonardo-class board. See each sketch's sketch.yaml.
+              - Serial/SimpleSerial1Transmitter
+              - Serial/SimpleSerial1Receiver
+              - Serial/SimpleSerial1Bidirectional
+          # I2S MEMS-mic sketches: hardware I2S peripheral ⇒ SAMD (Feather M0).
+          # I2S.h ships with the Adafruit SAMD core (no separate library).
+          - fqbn: adafruit:samd:adafruit_feather_m0_express
+            platforms: |
+              - name: adafruit:samd
+                source-url: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+            sketch-paths: |
+              - Sensors/i2s-Microphone
+          # Onboard-NeoPixel sketches (PIN_NEOPIXEL) ⇒ nRF52840 Feather.
+          - fqbn: adafruit:nrf52:feather52840
+            platforms: |
+              - name: adafruit:nrf52
+                source-url: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+            sketch-paths: |
+              - AddressableLEDs/NeoPixel/BlinkOnboardNeoPixel
+              - Sensors/Microphone/SoundLevelOnboardNeopixel
 
     steps:
       - name: Checkout
@@ -47,8 +75,7 @@ jobs:
         uses: arduino/compile-sketches@v1
         with:
           fqbn: ${{ matrix.fqbn }}
-          platforms: |
-            - name: ${{ matrix.platform }}
+          platforms: ${{ matrix.platforms }}
           # Libraries used by the gated folders. The MakeabilityLab library is
           # installed straight from its repo (not yet in Library Manager). The
           # rest come from Library Manager; deps are listed explicitly so an
@@ -65,6 +92,9 @@ jobs:
             - name: Servo
             - name: Mouse
             - name: Keyboard
+            - name: Adafruit NeoPixel
+            - name: Adafruit Zero I2S Library
+            - name: Adafruit Zero DMA Library
           sketch-paths: ${{ matrix.sketch-paths }}
           enable-warnings-report: true
           verbose: false
