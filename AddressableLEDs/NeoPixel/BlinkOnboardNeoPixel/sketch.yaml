@@ -1,1 +1,4 @@
+# Records the board this sketch is written for, so the Arduino CLI and our
+# compile-check CI build it for the right target. In the IDE you still pick the
+# board yourself via Tools -> Board (here: Adafruit Feather nRF52840 Express).
 default_fqbn: adafruit:nrf52:feather52840
