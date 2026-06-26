@@ -11,7 +11,7 @@ A teaching collection of **~260 Arduino sketches** — plus supporting Python, P
 >
 > Textbook source & issues: [github.com/makeabilitylab/physcomp](https://github.com/makeabilitylab/physcomp)
 
-> ## 🧩 Most sketches use our shared Arduino library
+> ## 🧩 Many sketches use our shared Arduino library
 > The **MakeabilityLab Arduino Library** provides reusable classes for physical computing — joystick input, OLED graphics and shapes, signal filters, scrolling graphs, and more. Many sketches `#include` its headers, so install it before compiling them.
 >
 > ### 👉 [github.com/makeabilitylab/makelab-arduino-lib](https://github.com/makeabilitylab/makelab-arduino-lib)
