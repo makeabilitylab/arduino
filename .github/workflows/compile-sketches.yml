@@ -71,6 +71,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # The Adafruit nRF52 core invokes adafruit-nrfutil (a pip tool) from its
+      # build recipe even for a plain compile, so it must be on PATH. It's
+      # bundled in a normal IDE install but not on the CI runner.
+      - name: Install adafruit-nrfutil (nRF52 build recipe needs it)
+        if: startsWith(matrix.fqbn, 'adafruit:nrf52')
+        run: pip install adafruit-nrfutil
+
       - name: Compile sketches
         uses: arduino/compile-sketches@v1
         with:
