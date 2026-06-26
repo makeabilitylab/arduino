@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A teaching collection of **~260 Arduino sketches** — plus supporting Python, PowerShell, and Processing helpers — that accompany the **Makeability Lab Physical Computing textbook**. Everything here is instructional material, written to be *read*: clarity and pedagogical value matter as much as correctness.
+A teaching collection of **~260 Arduino sketches** — plus supporting Python, PowerShell, and Processing helpers — that accompany the **Makeability Lab Physical Computing textbook**. Everything here is instructional material, written to be *fun*, *engaging*, and *helpful* for your individual learning journey.
 
 > ## 📖 New here? Start with the textbook.
 > These sketches are meant to be used **alongside the lessons**, which explain the wiring, the concepts, and the code step by step.
