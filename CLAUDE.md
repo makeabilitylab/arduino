@@ -18,7 +18,7 @@ There is **no build system, package manifest, or automated test suite.** Each pr
   ```
   arduino-cli compile --fqbn <board-fqbn> <SketchFolder>
   ```
-  Each sketch lives in its own folder whose name matches the `.ino` file (Arduino requirement). There is no committed board config; choose the FQBN per sketch by hardware folder:
+  Each sketch lives in its own folder whose name matches the `.ino` file (Arduino requirement). Most sketches have no committed board config — choose the FQBN per sketch by hardware folder (table below). The exceptions are board-specific sketches that carry a `sketch.yaml` pinning their exact target (see note after the table):
   | Folder | Board | FQBN |
   |---|---|---|
   | `Basics/`, `OLED/`, `Filters/`, `Sensors/`, `Servo/`, etc. | Arduino Uno (AVR) | `arduino:avr:uno` |
@@ -29,6 +29,8 @@ There is **no build system, package manifest, or automated test suite.** Each pr
   | `nRF52840/` | nRF52840 board (verify exact board) | `adafruit:nrf52:feather52840` |
 
   Installed cores: `arduino:avr`, `arduino:renesas_uno`, `esp32:esp32`, `adafruit:samd`, `adafruit:nrf52`. The AVR/HID split is inferred from each sketch's APIs (`Mouse.h`/`Keyboard.h` ⇒ Leonardo-class); the `nRF52840/` board defaults to Feather Express but confirm the exact board from the sketch header. Legacy `RedBearDuo/` and Processing have no installable core — skip compile-checking them.
+
+  **Per-sketch `sketch.yaml` (board pinning):** a handful of sketches whose required board differs from their folder default (e.g. the i2s-mic sketches under `Sensors/` need SAMD, the `Serial1` sketches need a Leonardo) carry a one-key `sketch.yaml` with `default_fqbn:`. `arduino-cli` reads it so a bare `arduino-cli compile <Folder>` targets the right board; students using the Arduino IDE still select the board manually via `Tools → Board` (the file just shows as a tab). Each `sketch.yaml` is commented to explain this so it isn't a mystery to readers. Note: `arduino/compile-sketches` (the CI action) does **not** read `sketch.yaml` — it compiles a folder with one FQBN per matrix job — so the CI matrix in `.github/workflows/compile-sketches.yml` must independently list mixed-board sketches under the matching board's job.
 - **Python helpers** (`Python/`): require Python 3 and `pip install pyserial`. Run directly, e.g. `python Python/SerialReader/serial_reader.py --list`. Note the common pitfall: install `pyserial`, **not** `serial`.
 - **Processing sketches** (`.pde`, `Processing/`): legacy/historical only — the project has shifted to p5.js. Don't invest in modernizing these unless asked.
 

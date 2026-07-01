@@ -27,3 +27,12 @@ ESP32/Tone/AnalogInputToneWithOLED
 ESP32/Tone/BallBounceTone32WithOLED
 ESP32/Tone/PlayScale
 ESP32/Tone/PlayScaleWithOLED
+
+## PlayingMusic — abandoned i2s-mic + mp3 experiment (never worked)
+
+`SimpleMp3PlayerWithi2sMic` #includes the SAMD-only `<I2S.h>` on an nRF52840
+Feather and combines the i2s-mic and Adafruit VS1053 mp3 libraries, which are
+mutually incompatible — the sketch's own header documents that it never worked.
+Kept for reference; it compiles on no board.
+
+PlayingMusic/SimpleMp3PlayerWithi2sMic
